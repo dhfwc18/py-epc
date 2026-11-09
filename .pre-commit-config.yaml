@@ -1,0 +1,45 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0
+    hooks:
+      # Raw data never reach the repository.
+      - id: check-added-large-files
+        args: [--enforce-all]
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: trailing-whitespace
+
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        entry: uv run --locked ruff check --fix
+        language: unsupported
+        types_or: [python, pyi]
+      - id: black
+        name: black
+        entry: uv run --locked black
+        language: unsupported
+        types_or: [python, pyi]
+      - id: prettier
+        name: prettier
+        entry: prettier --write --ignore-unknown
+        language: node
+        additional_dependencies: [prettier@3.9.10]
+        files: \.(md|jsonc?|ya?ml)$
+      - id: markdownlint
+        name: markdownlint
+        entry: markdownlint-cli2
+        language: node
+        additional_dependencies: [markdownlint-cli2@0.23.3]
+        types: [markdown]
+        pass_filenames: false
+      - id: ascii-only
+        name: ASCII and £ only
+        entry: '[\x80-\xA2\xA4-\xC1\xC3-\xFF]|\xC2(?!\xA3)|(?<!\xC2)\xA3'
+        language: pygrep
+        files: \.(py|pyi|md|toml|jsonc?|ya?ml)$

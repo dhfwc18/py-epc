@@ -1,0 +1,15 @@
+// Mirrors the markdownlint settings in .zed/settings.json.
+{
+  "config": {
+    "default": true,
+    "MD013": {
+      "line_length": 120,
+      "tables": false,
+    },
+    "MD024": {
+      "siblings_only": true,
+    },
+  },
+  "globs": ["**/*.md"],
+  "gitignore": true,
+}

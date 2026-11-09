@@ -1,0 +1,67 @@
+{
+  "languages": {
+    "Python": {
+      "preferred_line_length": 88,
+      "wrap_guides": [79, 88],
+      "format_on_save": "on",
+      "formatter": {
+        "external": {
+          "command": "uv",
+          "arguments": ["run", "--locked", "black", "--quiet", "--stdin-filename", "{buffer_path}", "-"]
+        }
+      }
+    },
+    "Markdown": {
+      "preferred_line_length": 120,
+      "wrap_guides": [120],
+      "format_on_save": "on",
+      "prettier": {
+        "proseWrap": "always",
+        "printWidth": 120
+      }
+    },
+    "JSON": {
+      "tab_size": 2,
+      "preferred_line_length": 120,
+      "format_on_save": "on",
+      "formatter": "prettier",
+      "prettier": {
+        "printWidth": 120
+      }
+    },
+    "JSONC": {
+      "tab_size": 2,
+      "preferred_line_length": 120,
+      "format_on_save": "on",
+      "formatter": "prettier",
+      "prettier": {
+        "printWidth": 120
+      }
+    }
+  },
+  "lsp": {
+    "json-language-server": {
+      "settings": {
+        "json": {
+          "schemas": [
+            {
+              "fileMatch": ["src/py_epc/**/*.schema.json"],
+              "url": "https://json-schema.org/draft/2020-12/schema"
+            }
+          ]
+        }
+      }
+    },
+    "markdownlint": {
+      "settings": {
+        "MD013": {
+          "line_length": 120,
+          "tables": false
+        },
+        "MD024": {
+          "siblings_only": true
+        }
+      }
+    }
+  }
+}

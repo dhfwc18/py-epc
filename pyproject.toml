@@ -1,0 +1,52 @@
+[project]
+name = "py-epc"
+version = "0.1.0"
+description = "Python package to collect and clean the Energy Performance of Building data."
+readme = "README.md"
+requires-python = ">=3.14"
+authors = [{ name = "David Huang", email = "dh.fwc18@gmail.com" }]
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "black>=26.10.1",
+  "pre-commit>=4.7.0",
+  "pyright>=1.1.414",
+  "pytest>=9.2.0",
+  "ruff>=0.17.4",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.10,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.black]
+line-length = 88
+target-version = ["py314"]
+
+[tool.pyright]
+include = ["src", "tests"]
+typeCheckingMode = "standard"
+reportDeprecated = "error"
+deprecateTypingAliases = true
+
+[tool.pytest.ini_options]
+filterwarnings = [
+  "error::ResourceWarning",
+  "error::pytest.PytestUnraisableExceptionWarning",
+]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88  # Black.
+target-version = "py314"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 79  # PEP 8.
+
+[tool.ruff.lint.isort]
+known-first-party = ["py_epc"]
