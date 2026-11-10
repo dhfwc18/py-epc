@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "epc": {
+    "england-and-wales": {
+      "domestic": {
+        "name": "epc-england-and-wales-domestic",
+        "url": "https://api.get-energy-performance-data.communities.gov.uk/api/files/domestic/csv",
+        "publisher": "Ministry of Housing, Communities and Local Government",
+        "requires_token": true
+      },
+      "non-domestic": {
+        "name": "epc-england-and-wales-non-domestic",
+        "url": "https://api.get-energy-performance-data.communities.gov.uk/api/files/non-domestic/csv",
+        "publisher": "Ministry of Housing, Communities and Local Government",
+        "requires_token": true
+      },
+      "display": {
+        "name": "epc-england-and-wales-display",
+        "url": "https://api.get-energy-performance-data.communities.gov.uk/api/files/display/csv",
+        "publisher": "Ministry of Housing, Communities and Local Government",
+        "requires_token": true
+      }
+    },
+    "scotland": {
+      "domestic": {
+        "name": "epc-scotland-domestic",
+        "url": "https://api.data.gov.scot/resource/b7bc304c-debb-4365-9a86-1c8cb82cc60d/download",
+        "publisher": "Scottish Government",
+        "requires_token": false
+      },
+      "non-domestic": {
+        "name": "epc-scotland-non-domestic",
+        "url": "https://api.data.gov.scot/resource/c7873ae4-d19a-43ee-8d9f-415e7d0f05d7/download",
+        "publisher": "Scottish Government",
+        "requires_token": false
+      }
+    }
+  }
+}

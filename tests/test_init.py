@@ -3,8 +3,8 @@
 import py_epc
 
 
-class TestImport:
-    """Importing the package."""
+class TestPackage:
+    """The `py_epc` package can be imported."""
 
-    def test_import_package_resolves_to_py_epc(self) -> None:
+    def test_import_resolves_to_py_epc(self) -> None:
         assert py_epc.__name__ == "py_epc"
