@@ -1,7 +1,6 @@
 """Tests for the package config."""
 
 import json
-import traceback
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -20,6 +19,37 @@ _DATASET: dict[str, Any] = {
 
 # Key of the setting most tests change.
 _URL_KEY = "epc.scotland.domestic.url"
+
+
+@pytest.fixture
+def config_path(tmp_path: Path) -> Path:
+    """Return where the test's saved config is written."""
+    return tmp_path / "mine.json"
+
+
+@pytest.fixture
+def write_config(config_path: Path) -> Callable[[object], Path]:
+    """Return a function that writes a JSON document as the saved config."""
+
+    def write(document: object) -> Path:
+        config_path.write_text(json.dumps(document), encoding="utf-8")
+        return config_path
+
+    return write
+
+
+@pytest.fixture
+def replace_defaults(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> Callable[[object], None]:
+    """Return a function that ships other defaults, like a later release."""
+
+    def replace(document: object) -> None:
+        path = tmp_path / "defaults.json"
+        path.write_text(json.dumps(document), encoding="utf-8")
+        monkeypatch.setattr("py_epc._config._DEFAULT_CONFIG_PATH", path)
+
+    return replace
 
 
 def read_json(path: Path) -> object:
@@ -153,11 +183,12 @@ class TestConfigSet:
         with pytest.raises(KeyError, match="No config setting named"):
             Config.set("epc.scotland.display.url", "https://x.invalid")
 
-    def test_invalid_value_is_not_shown_in_error(self) -> None:
+    def test_invalid_value_is_not_shown_in_error(
+        self, error_text: Callable[[BaseException], str]
+    ) -> None:
         with pytest.raises(ValidationError) as caught:
             Config.set("epc.scotland.domestic.token", "not-for-logs")
-        shown = "".join(traceback.format_exception_only(caught.value))
-        assert "not-for-logs" not in shown
+        assert "not-for-logs" not in error_text(caught.value)
 
 
 class TestConfigReset:
@@ -369,13 +400,15 @@ class TestConfigLoad:
         assert caught.value.__notes__ == [f"while loading {path}"]
 
     def test_invalid_file_values_are_not_shown_in_error(
-        self, write_config: Callable[[object], Path]
+        self,
+        write_config: Callable[[object], Path],
+        error_text: Callable[[BaseException], str],
     ) -> None:
         values = {"token": "not-for-logs", "requires_token": "no-log"}
         path = write_config({"version": 1, "epc": {"scotland": {"domestic": values}}})
         with pytest.raises(ValidationError) as caught:
             Config.load(path)
-        shown = "".join(traceback.format_exception_only(caught.value))
+        shown = error_text(caught.value)
         assert "not-for-logs" not in shown
         assert "no-log" not in shown
 

@@ -1,8 +1,7 @@
 """Fixtures shared by the tests."""
 
-import json
+import traceback
 from collections.abc import Callable
-from pathlib import Path
 
 import pytest
 
@@ -15,31 +14,27 @@ def fresh_config(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.fixture
-def config_path(tmp_path: Path) -> Path:
-    """Return where the test's saved config is written."""
-    return tmp_path / "mine.json"
+def error_text() -> Callable[[BaseException], str]:
+    """
+    Return a function giving every message a traceback shows for an error.
 
+    The text holds the messages and notes of the error and of every error
+    chained to it, so a test can check that no secret appears anywhere a user
+    or a log would see it.
 
-@pytest.fixture
-def write_config(config_path: Path) -> Callable[[object], Path]:
-    """Return a function that writes a JSON document as the saved config."""
+    The source lines are left out, because a test's own source may hold the
+    secret it checks for.
+    """
 
-    def write(document: object) -> Path:
-        config_path.write_text(json.dumps(document), encoding="utf-8")
-        return config_path
+    def text(error: BaseException) -> str:
+        shown: traceback.TracebackException | None
+        shown = traceback.TracebackException.from_exception(error)
+        messages: list[str] = []
+        while shown is not None:
+            messages.extend(shown.format_exception_only())
+            shown = shown.__cause__ or (
+                None if shown.__suppress_context__ else shown.__context__
+            )
+        return "".join(messages)
 
-    return write
-
-
-@pytest.fixture
-def replace_defaults(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> Callable[[object], None]:
-    """Return a function that ships other defaults, like a later release."""
-
-    def replace(document: object) -> None:
-        path = tmp_path / "defaults.json"
-        path.write_text(json.dumps(document), encoding="utf-8")
-        monkeypatch.setattr("py_epc._config._DEFAULT_CONFIG_PATH", path)
-
-    return replace
+    return text
