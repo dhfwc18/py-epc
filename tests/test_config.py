@@ -8,10 +8,10 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from py_epc import Config, Dataset, EPCOrigin, EPCSegment, ONSProduct, OSProduct
+from py_epc import Config, EPCOrigin, EPCSegment, ONSProduct, OSProduct, Source
 
-# Fields of a minimal valid dataset.
-_DATASET: dict[str, Any] = {
+# Fields of a minimal valid source.
+_SOURCE: dict[str, Any] = {
     "name": "n",
     "url": "https://example.invalid/file",
     "publisher": "p",
@@ -58,9 +58,9 @@ def read_json(path: Path) -> object:
 
 
 class TestDefaultsJson:
-    """The shipped ``defaults.json`` holds the expected datasets."""
+    """The shipped ``defaults.json`` holds the expected sources."""
 
-    def test_epc_datasets_cover_expected_origin_segment_pairs(self) -> None:
+    def test_epc_sources_cover_expected_origin_segment_pairs(self) -> None:
         pairs = {
             (origin, segment)
             for origin, segments in Config.state()["epc"].items()
@@ -72,26 +72,26 @@ class TestDefaultsJson:
         } - {(EPCOrigin.SCOTLAND, EPCSegment.DISPLAY)}
         assert pairs == expected
 
-    def test_all_epc_dataset_names_are_unique(self) -> None:
+    def test_all_epc_source_names_are_unique(self) -> None:
         names = [
-            dataset["name"]
+            source["name"]
             for segments in Config.state()["epc"].values()
-            for dataset in segments.values()
+            for source in segments.values()
         ]
         assert len(names) == len(set(names))
 
-    def test_only_england_and_wales_epc_datasets_require_token(self) -> None:
+    def test_only_england_and_wales_epc_sources_require_token(self) -> None:
         epc = Config.state()["epc"]
         assert all(d["requires_token"] for d in epc["england-and-wales"].values())
         assert not any(d["requires_token"] for d in epc["scotland"].values())
 
-    def test_ons_datasets_cover_every_product(self) -> None:
+    def test_ons_sources_cover_every_product(self) -> None:
         assert set(Config.state()["ons"]) == set(ONSProduct)
 
     def test_ons_postcode_directory_needs_no_token(self) -> None:
         assert not Config.get("ons.postcode-directory.requires_token")
 
-    def test_os_datasets_cover_every_product(self) -> None:
+    def test_os_sources_cover_every_product(self) -> None:
         assert set(Config.state()["os"]) == set(OSProduct)
 
     def test_os_open_uprn_needs_no_token(self) -> None:
@@ -104,8 +104,8 @@ class TestConfigGet:
     def test_field_key_returns_value(self) -> None:
         assert Config.get("epc.scotland.domestic.publisher") == "Scottish Government"
 
-    def test_dataset_key_returns_dataset(self) -> None:
-        assert isinstance(Config.get("epc.scotland.domestic"), Dataset)
+    def test_source_key_returns_source(self) -> None:
+        assert isinstance(Config.get("epc.scotland.domestic"), Source)
 
     def test_key_built_from_enums_returns_same_value_as_string_key(self) -> None:
         key = f"epc.{EPCOrigin.SCOTLAND}.{EPCSegment.DOMESTIC}"
@@ -119,7 +119,7 @@ class TestConfigGet:
         "key",
         [
             pytest.param("epc.scottland", id="unknown-origin"),
-            pytest.param("epc.scotland.display", id="missing-dataset"),
+            pytest.param("epc.scotland.display", id="missing-source"),
             pytest.param("epc.scotland.domestic.token", id="unknown-field"),
             pytest.param("postcode", id="unknown-section"),
             pytest.param("version", id="version"),
@@ -146,13 +146,13 @@ class TestConfigSet:
     @pytest.mark.parametrize(
         "value",
         [
-            pytest.param(Dataset(**_DATASET), id="dataset"),
-            pytest.param(_DATASET, id="dict"),
+            pytest.param(Source(**_SOURCE), id="source"),
+            pytest.param(_SOURCE, id="dict"),
         ],
     )
-    def test_new_dataset_key_adds_dataset(self, value: object) -> None:
+    def test_new_source_key_adds_source(self, value: object) -> None:
         Config.set("epc.scotland.display", value)
-        assert Config.get("epc.scotland.display") == Dataset(**_DATASET)
+        assert Config.get("epc.scotland.display") == Source(**_SOURCE)
 
     @pytest.mark.parametrize(
         ("key", "value", "match"),
@@ -212,8 +212,8 @@ class TestConfigReset:
         Config.reset(_URL_KEY)
         assert Config.get(_URL_KEY) == default
 
-    def test_added_dataset_key_removes_dataset(self) -> None:
-        Config.set("epc.scotland.display", _DATASET)
+    def test_added_source_key_removes_source(self) -> None:
+        Config.set("epc.scotland.display", _SOURCE)
         Config.reset("epc.scotland.display")
         with pytest.raises(KeyError):
             Config.get("epc.scotland.display")
@@ -221,7 +221,7 @@ class TestConfigReset:
     def test_no_key_restores_all_defaults(self) -> None:
         default = Config.state()
         Config.set(_URL_KEY, "https://x.invalid")
-        Config.set("epc.scotland.display", _DATASET)
+        Config.set("epc.scotland.display", _SOURCE)
         Config.reset()
         assert Config.state() == default
 
@@ -258,17 +258,17 @@ class TestConfigSave:
             "epc": {"scotland": {"domestic": {"url": "https://x.invalid"}}},
         }
 
-    def test_added_dataset_writes_whole_dataset(self, config_path: Path) -> None:
-        Config.set("epc.scotland.display", _DATASET)
+    def test_added_source_writes_whole_source(self, config_path: Path) -> None:
+        Config.set("epc.scotland.display", _SOURCE)
         Config.save(config_path)
         assert read_json(config_path) == {
             "version": 1,
-            "epc": {"scotland": {"display": Dataset(**_DATASET).model_dump()}},
+            "epc": {"scotland": {"display": Source(**_SOURCE).model_dump()}},
         }
 
     def test_changed_config_loads_back_equal(self, config_path: Path) -> None:
         Config.set(_URL_KEY, "https://x.invalid")
-        Config.set("epc.scotland.display", _DATASET)
+        Config.set("epc.scotland.display", _SOURCE)
         changed = Config.state()
         Config.save(config_path)
         Config.reset()
@@ -356,7 +356,7 @@ class TestConfigLoad:
                 id="unknown-section",
             ),
             pytest.param(
-                {"version": 1, "epc": {"scottland": {"domestic": _DATASET}}},
+                {"version": 1, "epc": {"scottland": {"domestic": _SOURCE}}},
                 ValidationError,
                 r"epc\.scottland\.\[key\]\n  Input should be",
                 id="unknown-origin",
@@ -371,7 +371,7 @@ class TestConfigLoad:
                 {"version": 1, "epc": {"scotland": {"display": {"url": "u"}}}},
                 ValidationError,
                 r"epc\.scotland\.display\.name\n  Field required",
-                id="new-dataset-missing-field",
+                id="new-source-missing-field",
             ),
             pytest.param(
                 {"version": 1, "epc": {"scotland": {"domestic": {"token": "t"}}}},

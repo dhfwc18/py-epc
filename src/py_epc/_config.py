@@ -11,8 +11,8 @@ from typing import Any, Final, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from py_epc._dataset import Dataset
 from py_epc._enums import EPCOrigin, EPCSegment, ONSProduct, OSProduct
+from py_epc._source import Source
 
 _DEFAULT_CONFIG_PATH: Final[Traversable] = files("py_epc") / "defaults.json"
 
@@ -34,14 +34,14 @@ class _ConfigContent(BaseModel):
     version: Literal[1]
     """Version of the config format."""
 
-    epc: dict[EPCOrigin, dict[EPCSegment, Dataset]] = Field(default_factory=dict)
-    """EPC datasets, keyed by origin, then by segment."""
+    epc: dict[EPCOrigin, dict[EPCSegment, Source]] = Field(default_factory=dict)
+    """EPC sources, keyed by origin, then by segment."""
 
-    ons: dict[ONSProduct, Dataset] = Field(default_factory=dict)
-    """Datasets of the Office for National Statistics, keyed by product."""
+    ons: dict[ONSProduct, Source] = Field(default_factory=dict)
+    """Sources of the Office for National Statistics, keyed by product."""
 
-    os: dict[OSProduct, Dataset] = Field(default_factory=dict)
-    """Datasets of Ordnance Survey, keyed by product."""
+    os: dict[OSProduct, Source] = Field(default_factory=dict)
+    """Sources of Ordnance Survey, keyed by product."""
 
 
 _current_config: _ConfigContent | None = None
@@ -137,16 +137,16 @@ class Config(ContextDecorator):
     @classmethod
     def set(cls, key: str, value: object) -> None:
         """
-        Change a setting, or add an entry, such as a dataset.
+        Change a setting, or add an entry, such as a source.
 
         Parameters
         ----------
         key : str
-            Dotted key of the setting. New entries, such as a dataset, may be
-            entred to parts of the config that accepts them.
+            Dotted key of the setting. New entries, such as a source, may be
+            added to parts of the config that accept them.
         value : object
             The new value, which must be JSON-compatible. An entry may be
-            given as a model, such as a `Dataset`, or as a dict.
+            given as a model, such as a `Source`, or as a dict.
 
         Raises
         ------
@@ -173,7 +173,7 @@ class Config(ContextDecorator):
         ----------
         key : str, optional
             Dotted key of the setting. An entry that is not in the defaults,
-            such as an added dataset, is removed. Without a key, the whole
+            such as an added source, is removed. Without a key, the whole
             config is reset.
 
         Raises
@@ -182,7 +182,7 @@ class Config(ContextDecorator):
             If there is no setting with that key.
         pydantic.ValidationError
             If the reset would leave an added entry incomplete, such as
-            resetting a field of an added dataset.
+            resetting a field of an added source.
         """
         defaults = _defaults()
         if key is None:
@@ -231,14 +231,14 @@ class Config(ContextDecorator):
         pydantic.ValidationError
             If the file does not match the config.
         """
-        source = Path(path)
+        config_file = Path(path)
         try:
-            saved = json.loads(source.read_bytes())
+            saved = json.loads(config_file.read_bytes())
             if not isinstance(saved, dict) or "version" not in saved:
                 raise ValueError('a saved config is a JSON object with "version"')
             config = _validate(_merge(_defaults().model_dump(mode="json"), saved))
         except ValueError as error:
-            error.add_note(f"while loading {source}")
+            error.add_note(f"while loading {config_file}")
             raise
         _replace(config)
 

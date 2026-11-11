@@ -19,8 +19,8 @@ from py_epc import (
     download_os_open_uprn,
 )
 
-# Key of the dataset most tests download.
-_DATASET_KEY = "epc.scotland.domestic"
+# Key of the source most tests download.
+_SOURCE_KEY = "epc.scotland.domestic"
 
 # Key of the ONS Postcode Directory.
 _ONS_POSTCODE_DIRECTORY_KEY = "ons.postcode-directory"
@@ -28,7 +28,7 @@ _ONS_POSTCODE_DIRECTORY_KEY = "ons.postcode-directory"
 # Key of OS Open UPRN.
 _OS_OPEN_UPRN_KEY = "os.open-uprn"
 
-# Stable URL of the dataset, as the config holds it.
+# Stable URL of the source, as the config holds it.
 _STABLE_URL = "https://publisher.invalid/resource/download"
 
 # Pre-signed URL the publisher redirects to. Its query is a credential.
@@ -58,7 +58,7 @@ class FakePublisher:
 @pytest.fixture
 def publisher() -> FakePublisher:
     """Return the fake publisher, for tests to change or inspect."""
-    Config.set(f"{_DATASET_KEY}.url", _STABLE_URL)
+    Config.set(f"{_SOURCE_KEY}.url", _STABLE_URL)
     return FakePublisher()
 
 
@@ -80,19 +80,19 @@ class TestDownload:
     def test_served_file_is_saved_unchanged(
         self, tmp_path: Path, client: httpx.Client
     ) -> None:
-        path = download(_DATASET_KEY, tmp_path, client=client)
+        path = download(_SOURCE_KEY, tmp_path, client=client)
         assert path.read_bytes() == _PUBLISHED_BYTES
 
-    def test_served_file_is_named_after_dataset_and_published_suffix(
+    def test_served_file_is_named_after_source_and_published_suffix(
         self, tmp_path: Path, client: httpx.Client
     ) -> None:
-        path = download(_DATASET_KEY, tmp_path, client=client)
+        path = download(_SOURCE_KEY, tmp_path, client=client)
         assert path.name == "epc-scotland-domestic.7z"
 
     def test_served_file_is_saved_in_a_folder_per_download_under_key(
         self, tmp_path: Path, client: httpx.Client
     ) -> None:
-        path = download(_DATASET_KEY, tmp_path, client=client)
+        path = download(_SOURCE_KEY, tmp_path, client=client)
         assert path.parent.parent == tmp_path / "raw" / "epc" / "scotland" / "domestic"
         assert path.parent.name.endswith("Z")
 
@@ -100,13 +100,13 @@ class TestDownload:
         self, tmp_path: Path, client: httpx.Client, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         monkeypatch.setenv("HOME", str(tmp_path))
-        path = download(_DATASET_KEY, "~/data", client=client)
+        path = download(_SOURCE_KEY, "~/data", client=client)
         assert path.is_relative_to(tmp_path / "data")
 
     def test_manifest_records_size_and_sha256(
         self, tmp_path: Path, client: httpx.Client
     ) -> None:
-        path = download(_DATASET_KEY, tmp_path, client=client)
+        path = download(_SOURCE_KEY, tmp_path, client=client)
         manifest = DownloadManifest.model_validate_json(
             (path.parent / "manifest.json").read_bytes()
         )
@@ -117,7 +117,7 @@ class TestDownload:
     def test_manifest_records_stable_url_not_signed_url(
         self, tmp_path: Path, client: httpx.Client
     ) -> None:
-        path = download(_DATASET_KEY, tmp_path, client=client)
+        path = download(_SOURCE_KEY, tmp_path, client=client)
         text = (path.parent / "manifest.json").read_text(encoding="utf-8")
         assert DownloadManifest.model_validate_json(text).source_url == _STABLE_URL
         assert "secret-signature" not in text
@@ -125,13 +125,13 @@ class TestDownload:
     def test_folder_holds_only_file_and_manifest(
         self, tmp_path: Path, client: httpx.Client
     ) -> None:
-        path = download(_DATASET_KEY, tmp_path, client=client)
+        path = download(_SOURCE_KEY, tmp_path, client=client)
         assert set(path.parent.iterdir()) == {path, path.parent / "manifest.json"}
 
     def test_first_download_makes_git_ignore_raw_folder(
         self, tmp_path: Path, client: httpx.Client
     ) -> None:
-        download(_DATASET_KEY, tmp_path, client=client)
+        download(_SOURCE_KEY, tmp_path, client=client)
         lines = (tmp_path / "raw" / ".gitignore").read_text(encoding="utf-8")
         assert "*" in lines.splitlines()
 
@@ -141,14 +141,14 @@ class TestDownload:
         gitignore = tmp_path / "raw" / ".gitignore"
         gitignore.parent.mkdir()
         gitignore.write_text("mine\n", encoding="utf-8")
-        download(_DATASET_KEY, tmp_path, client=client)
+        download(_SOURCE_KEY, tmp_path, client=client)
         assert gitignore.read_text(encoding="utf-8") == "mine\n"
 
-    def test_token_is_sent_to_dataset_url_only(
+    def test_token_is_sent_to_source_url_only(
         self, tmp_path: Path, client: httpx.Client, publisher: FakePublisher
     ) -> None:
-        Config.set(f"{_DATASET_KEY}.requires_token", True)
-        download(_DATASET_KEY, tmp_path, token="not-for-s3", client=client)
+        Config.set(f"{_SOURCE_KEY}.requires_token", True)
+        download(_SOURCE_KEY, tmp_path, token="not-for-s3", client=client)
         stable, signed = publisher.requests
         assert stable.headers["Authorization"] == "Bearer not-for-s3"
         assert "Authorization" not in signed.headers
@@ -156,9 +156,9 @@ class TestDownload:
     def test_missing_token_raises_value_error_and_sends_nothing(
         self, tmp_path: Path, client: httpx.Client, publisher: FakePublisher
     ) -> None:
-        Config.set(f"{_DATASET_KEY}.requires_token", True)
+        Config.set(f"{_SOURCE_KEY}.requires_token", True)
         with pytest.raises(ValueError, match="requires a token"):
-            download(_DATASET_KEY, tmp_path, client=client)
+            download(_SOURCE_KEY, tmp_path, client=client)
         assert publisher.requests == []
 
     def test_refused_request_raises_download_error_and_leaves_nothing(
@@ -166,7 +166,7 @@ class TestDownload:
     ) -> None:
         publisher.signed_status = 403
         with pytest.raises(DownloadError, match="HTTP 403"):
-            download(_DATASET_KEY, tmp_path, client=client)
+            download(_SOURCE_KEY, tmp_path, client=client)
         assert saved_files(tmp_path / "raw" / "epc") == []
 
     @pytest.mark.parametrize(
@@ -195,15 +195,15 @@ class TestDownload:
         publisher.signed_status = signed_status
         publisher.signed_error = signed_error
         with pytest.raises(DownloadError) as caught:
-            download(_DATASET_KEY, tmp_path, client=client)
+            download(_SOURCE_KEY, tmp_path, client=client)
         assert "secret-signature" not in error_text(caught.value)
 
     def test_wrong_size_raises_download_error_and_leaves_nothing(
         self, tmp_path: Path, client: httpx.Client
     ) -> None:
-        Config.set(f"{_DATASET_KEY}.expected_bytes", len(_PUBLISHED_BYTES) + 1)
+        Config.set(f"{_SOURCE_KEY}.expected_bytes", len(_PUBLISHED_BYTES) + 1)
         with pytest.raises(DownloadError, match="expected"):
-            download(_DATASET_KEY, tmp_path, client=client)
+            download(_SOURCE_KEY, tmp_path, client=client)
         assert saved_files(tmp_path / "raw" / "epc") == []
 
     def test_unknown_key_raises_key_error(
@@ -212,21 +212,21 @@ class TestDownload:
         with pytest.raises(KeyError, match="No config setting named"):
             download("epc.scotland.display", tmp_path, client=client)
 
-    def test_non_dataset_key_raises_type_error(
+    def test_non_source_key_raises_type_error(
         self, tmp_path: Path, client: httpx.Client
     ) -> None:
-        with pytest.raises(TypeError, match="not a dataset"):
+        with pytest.raises(TypeError, match="not a source"):
             download("epc.scotland", tmp_path, client=client)
 
     def test_given_client_is_left_open(
         self, tmp_path: Path, client: httpx.Client
     ) -> None:
-        download(_DATASET_KEY, tmp_path, client=client)
+        download(_SOURCE_KEY, tmp_path, client=client)
         assert not client.is_closed
 
 
 class TestDownloadEpc:
-    """`download_epc` downloads the EPC dataset for an origin and segment."""
+    """`download_epc` downloads the EPC source for an origin and segment."""
 
     @pytest.mark.parametrize(
         ("origin", "segment"),
@@ -235,7 +235,7 @@ class TestDownloadEpc:
             pytest.param(EPCOrigin.SCOTLAND, EPCSegment.DOMESTIC, id="enum-members"),
         ],
     )
-    def test_origin_and_segment_download_their_dataset(
+    def test_origin_and_segment_download_their_source(
         self,
         tmp_path: Path,
         client: httpx.Client,
@@ -246,13 +246,13 @@ class TestDownloadEpc:
         manifest = DownloadManifest.model_validate_json(
             (path.parent / "manifest.json").read_bytes()
         )
-        assert manifest.dataset_key == _DATASET_KEY
+        assert manifest.source_key == _SOURCE_KEY
         assert path.read_bytes() == _PUBLISHED_BYTES
 
     def test_token_is_passed_on_to_download(
         self, tmp_path: Path, client: httpx.Client, publisher: FakePublisher
     ) -> None:
-        Config.set(f"{_DATASET_KEY}.requires_token", True)
+        Config.set(f"{_SOURCE_KEY}.requires_token", True)
         download_epc("scotland", "domestic", tmp_path, token="t", client=client)
         assert publisher.requests[0].headers["Authorization"] == "Bearer t"
 
@@ -284,7 +284,7 @@ class TestDownloadEpc:
 class TestDownloadOnsPostcodeDirectory:
     """`download_ons_postcode_directory` downloads the postcode directory."""
 
-    def test_plain_call_saves_dataset_under_its_key(
+    def test_plain_call_saves_source_under_its_key(
         self, tmp_path: Path, client: httpx.Client
     ) -> None:
         Config.set(f"{_ONS_POSTCODE_DIRECTORY_KEY}.url", _STABLE_URL)
@@ -292,11 +292,11 @@ class TestDownloadOnsPostcodeDirectory:
         manifest = DownloadManifest.model_validate_json(
             (path.parent / "manifest.json").read_bytes()
         )
-        assert manifest.dataset_key == _ONS_POSTCODE_DIRECTORY_KEY
+        assert manifest.source_key == _ONS_POSTCODE_DIRECTORY_KEY
         assert path.parent.parent == tmp_path / "raw" / "ons" / "postcode-directory"
         assert path.read_bytes() == _PUBLISHED_BYTES
 
-    def test_missing_dataset_raises_key_error(
+    def test_missing_source_raises_key_error(
         self, tmp_path: Path, client: httpx.Client
     ) -> None:
         Config.set("ons", {})
@@ -307,7 +307,7 @@ class TestDownloadOnsPostcodeDirectory:
 class TestDownloadOsOpenUprn:
     """`download_os_open_uprn` downloads OS Open UPRN."""
 
-    def test_plain_call_saves_dataset_under_its_key(
+    def test_plain_call_saves_source_under_its_key(
         self, tmp_path: Path, client: httpx.Client
     ) -> None:
         Config.set(f"{_OS_OPEN_UPRN_KEY}.url", _STABLE_URL)
@@ -315,11 +315,11 @@ class TestDownloadOsOpenUprn:
         manifest = DownloadManifest.model_validate_json(
             (path.parent / "manifest.json").read_bytes()
         )
-        assert manifest.dataset_key == _OS_OPEN_UPRN_KEY
+        assert manifest.source_key == _OS_OPEN_UPRN_KEY
         assert path.parent.parent == tmp_path / "raw" / "os" / "open-uprn"
         assert path.read_bytes() == _PUBLISHED_BYTES
 
-    def test_missing_dataset_raises_key_error(
+    def test_missing_source_raises_key_error(
         self, tmp_path: Path, client: httpx.Client
     ) -> None:
         Config.set("os", {})

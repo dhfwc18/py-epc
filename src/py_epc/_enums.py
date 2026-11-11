@@ -27,14 +27,44 @@ class EPCSegment(StrEnum):
 
 
 class ONSProduct(StrEnum):
-    """Dataset published by the Office for National Statistics."""
+    """Source published by the Office for National Statistics."""
 
     POSTCODE_DIRECTORY = "postcode-directory"
     """The ONS Postcode Directory (ONSPD)."""
 
 
 class OSProduct(StrEnum):
-    """Dataset published by Ordnance Survey."""
+    """Source published by Ordnance Survey."""
 
     OPEN_UPRN = "open-uprn"
     """OS Open UPRN, the coordinates of every UPRN in Great Britain."""
+
+
+def parse_member[E: StrEnum](enum: type[E], value: E | str) -> E:
+    """
+    Return the member of `enum` for `value`.
+
+    Parameters
+    ----------
+    enum : type[StrEnum]
+        Enum to look the value up in, such as `EPCOrigin`.
+    value : StrEnum | str
+        A member, or its value, such as ``"scotland"``.
+
+    Returns
+    -------
+    StrEnum
+        The member of `enum`.
+
+    Raises
+    ------
+    ValueError
+        If `value` is not a member's value. The message names the choices.
+    """
+    try:
+        return enum(value)
+    except ValueError:
+        choices = ", ".join(repr(member.value) for member in enum)
+        raise ValueError(
+            f"unknown {enum.__name__} {value!r}; expected one of {choices}"
+        ) from None
