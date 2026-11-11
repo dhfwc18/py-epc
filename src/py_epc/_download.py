@@ -6,6 +6,7 @@ import os
 import shutil
 from collections.abc import Generator
 from datetime import UTC, datetime
+from enum import StrEnum
 from pathlib import Path, PurePosixPath
 from typing import Final, Literal
 
@@ -14,6 +15,7 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict
 
 from py_epc._config import Config
 from py_epc._dataset import Dataset
+from py_epc._enums import EPCOrigin, EPCSegment
 
 # Timeout of the client `download` creates when none is given.
 # Up to 30 s to connect, and up to 120 s for data to arrive.
@@ -81,7 +83,8 @@ def download(
     as ``raw/epc/scotland/domestic/20261110T093000Z/``. The folder appears only
     once both are complete, so a failed download leaves nothing behind.
 
-    Every call downloads the file again.
+    Every call downloads the file again. The first call writes
+    ``<root>/raw/.gitignore``, which makes Git ignore every download.
 
     Parameters
     ----------
@@ -124,11 +127,13 @@ def download(
     headers = {"Authorization": f"Bearer {token}"} if dataset.requires_token else {}
 
     retrieved_at = datetime.now(UTC).replace(microsecond=0)
-    dataset_folder = Path(root).expanduser().joinpath("raw", *key.split("."))
+    raw_folder = Path(root).expanduser() / "raw"
+    dataset_folder = raw_folder.joinpath(*key.split("."))
     download_folder = dataset_folder / retrieved_at.strftime("%Y%m%dT%H%M%SZ")
     partial_folder = dataset_folder / f".{download_folder.name}.part"
     partial_folder.mkdir(parents=True)
     try:
+        _ensure_gitignore(raw_folder)
         with (
             _client_or_new(client) as http,
             _stream(http, dataset, headers) as response,
@@ -153,6 +158,81 @@ def download(
     finally:
         shutil.rmtree(partial_folder, ignore_errors=True)
     return download_folder / file_name
+
+
+def download_epc(
+    origin: EPCOrigin | str,
+    segment: EPCSegment | str,
+    root: str | os.PathLike[str],
+    *,
+    token: str | None = None,
+    client: httpx.Client | None = None,
+) -> Path:
+    """
+    Download the EPC file published for an origin and segment, unchanged.
+
+    This is `download` for the dataset ``"epc.<origin>.<segment>"``, and
+    works the same way.
+
+    Parameters
+    ----------
+    origin : EPCOrigin | str
+        Register to download from, such as ``"scotland"``.
+    segment : EPCSegment | str
+        Type of certificate, such as ``"domestic"``.
+    root : str | os.PathLike[str]
+        Folder that holds the relevant data.
+    token : str, optional
+        Bearer token, needed for England and Wales. It is sent only to the
+        register's URL, never to a server it redirects to, and is never
+        stored.
+    client : httpx.Client, optional
+        HTTP client to use, as in `download`.
+
+    Returns
+    -------
+    Path
+        Path of the downloaded file.
+
+    Raises
+    ------
+    ValueError
+        If the origin or segment is unknown, or the register requires a
+        token and none is given.
+    KeyError
+        If the config has no dataset for the origin and segment, such as
+        Scotland's display certificates.
+    DownloadError
+        If the download fails, as in `download`.
+
+    Examples
+    --------
+    >>> import py_epc
+    >>> py_epc.download_epc("scotland", "domestic", "data")  # doctest: +SKIP
+    PosixPath('data/raw/epc/scotland/domestic/20261110T093000Z/...')
+    """
+    key = f"epc.{_member(EPCOrigin, origin)}.{_member(EPCSegment, segment)}"
+    return download(key, root, token=token, client=client)
+
+
+def _member[E: StrEnum](enum: type[E], value: E | str) -> E:
+    """Return the member of `enum` for `value`, naming the choices if none."""
+    try:
+        return enum(value)
+    except ValueError:
+        choices = ", ".join(repr(member.value) for member in enum)
+        raise ValueError(
+            f"unknown {enum.__name__} {value!r}; expected one of {choices}"
+        ) from None
+
+
+def _ensure_gitignore(folder: Path) -> None:
+    """Make Git ignore all of `folder`, unless it has a ``.gitignore``."""
+    with (
+        contextlib.suppress(FileExistsError),
+        (folder / ".gitignore").open("x", encoding="utf-8") as file,
+    ):
+        file.write("# Created by py-epc.\n*\n")
 
 
 def _client_or_new(

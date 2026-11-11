@@ -7,7 +7,15 @@ from pathlib import Path
 import httpx
 import pytest
 
-from py_epc import Config, DownloadError, DownloadManifest, download
+from py_epc import (
+    Config,
+    DownloadError,
+    DownloadManifest,
+    EPCOrigin,
+    EPCSegment,
+    download,
+    download_epc,
+)
 
 # Key of the dataset every test downloads.
 _DATASET_KEY = "epc.scotland.domestic"
@@ -110,7 +118,23 @@ class TestDownload:
         self, tmp_path: Path, client: httpx.Client
     ) -> None:
         path = download(_DATASET_KEY, tmp_path, client=client)
-        assert set(saved_files(tmp_path)) == {path, path.parent / "manifest.json"}
+        assert set(path.parent.iterdir()) == {path, path.parent / "manifest.json"}
+
+    def test_first_download_makes_git_ignore_raw_folder(
+        self, tmp_path: Path, client: httpx.Client
+    ) -> None:
+        download(_DATASET_KEY, tmp_path, client=client)
+        lines = (tmp_path / "raw" / ".gitignore").read_text(encoding="utf-8")
+        assert "*" in lines.splitlines()
+
+    def test_existing_gitignore_is_kept(
+        self, tmp_path: Path, client: httpx.Client
+    ) -> None:
+        gitignore = tmp_path / "raw" / ".gitignore"
+        gitignore.parent.mkdir()
+        gitignore.write_text("mine\n", encoding="utf-8")
+        download(_DATASET_KEY, tmp_path, client=client)
+        assert gitignore.read_text(encoding="utf-8") == "mine\n"
 
     def test_token_is_sent_to_dataset_url_only(
         self, tmp_path: Path, client: httpx.Client, publisher: FakePublisher
@@ -135,7 +159,7 @@ class TestDownload:
         publisher.signed_status = 403
         with pytest.raises(DownloadError, match="HTTP 403"):
             download(_DATASET_KEY, tmp_path, client=client)
-        assert saved_files(tmp_path) == []
+        assert saved_files(tmp_path / "raw" / "epc") == []
 
     @pytest.mark.parametrize(
         ("signed_status", "signed_error"),
@@ -172,7 +196,7 @@ class TestDownload:
         Config.set(f"{_DATASET_KEY}.expected_bytes", len(_PUBLISHED_BYTES) + 1)
         with pytest.raises(DownloadError, match="expected"):
             download(_DATASET_KEY, tmp_path, client=client)
-        assert saved_files(tmp_path) == []
+        assert saved_files(tmp_path / "raw" / "epc") == []
 
     def test_unknown_key_raises_key_error(
         self, tmp_path: Path, client: httpx.Client
@@ -191,3 +215,59 @@ class TestDownload:
     ) -> None:
         download(_DATASET_KEY, tmp_path, client=client)
         assert not client.is_closed
+
+
+class TestDownloadEpc:
+    """`download_epc` downloads the EPC dataset for an origin and segment."""
+
+    @pytest.mark.parametrize(
+        ("origin", "segment"),
+        [
+            pytest.param("scotland", "domestic", id="strings"),
+            pytest.param(EPCOrigin.SCOTLAND, EPCSegment.DOMESTIC, id="enum-members"),
+        ],
+    )
+    def test_origin_and_segment_download_their_dataset(
+        self,
+        tmp_path: Path,
+        client: httpx.Client,
+        origin: EPCOrigin | str,
+        segment: EPCSegment | str,
+    ) -> None:
+        path = download_epc(origin, segment, tmp_path, client=client)
+        manifest = DownloadManifest.model_validate_json(
+            (path.parent / "manifest.json").read_bytes()
+        )
+        assert manifest.dataset_key == _DATASET_KEY
+        assert path.read_bytes() == _PUBLISHED_BYTES
+
+    def test_token_is_passed_on_to_download(
+        self, tmp_path: Path, client: httpx.Client, publisher: FakePublisher
+    ) -> None:
+        Config.set(f"{_DATASET_KEY}.requires_token", True)
+        download_epc("scotland", "domestic", tmp_path, token="t", client=client)
+        assert publisher.requests[0].headers["Authorization"] == "Bearer t"
+
+    @pytest.mark.parametrize(
+        ("origin", "segment", "match"),
+        [
+            pytest.param("scottland", "domestic", "unknown EPCOrigin", id="origin"),
+            pytest.param("scotland", "homes", "unknown EPCSegment", id="segment"),
+        ],
+    )
+    def test_unknown_name_raises_value_error_naming_choices(
+        self,
+        tmp_path: Path,
+        client: httpx.Client,
+        origin: str,
+        segment: str,
+        match: str,
+    ) -> None:
+        with pytest.raises(ValueError, match=f"{match} .*; expected one of"):
+            download_epc(origin, segment, tmp_path, client=client)
+
+    def test_unpublished_pair_raises_key_error(
+        self, tmp_path: Path, client: httpx.Client
+    ) -> None:
+        with pytest.raises(KeyError, match=r"epc\.scotland\.display"):
+            download_epc("scotland", "display", tmp_path, client=client)

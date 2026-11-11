@@ -2,7 +2,12 @@
 
 from py_epc._config import Config
 from py_epc._dataset import Dataset
-from py_epc._download import DownloadError, DownloadManifest, download
+from py_epc._download import (
+    DownloadError,
+    DownloadManifest,
+    download,
+    download_epc,
+)
 from py_epc._enums import EPCOrigin, EPCSegment
 
 __all__ = [
@@ -13,4 +18,5 @@ __all__ = [
     "EPCOrigin",
     "EPCSegment",
     "download",
+    "download_epc",
 ]
