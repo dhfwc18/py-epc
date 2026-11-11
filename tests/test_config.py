@@ -104,7 +104,7 @@ class TestConfigGet:
     def test_field_key_returns_value(self) -> None:
         assert Config.get("epc.scotland.domestic.publisher") == "Scottish Government"
 
-    def test_dataset_key_returns_source(self) -> None:
+    def test_source_key_returns_source(self) -> None:
         assert isinstance(Config.get("epc.scotland.domestic"), Source)
 
     def test_key_built_from_enums_returns_same_value_as_string_key(self) -> None:
@@ -150,7 +150,7 @@ class TestConfigSet:
             pytest.param(_SOURCE, id="dict"),
         ],
     )
-    def test_new_dataset_key_adds_source(self, value: object) -> None:
+    def test_new_source_key_adds_source(self, value: object) -> None:
         Config.set("epc.scotland.display", value)
         assert Config.get("epc.scotland.display") == Source(**_SOURCE)
 
@@ -212,7 +212,7 @@ class TestConfigReset:
         Config.reset(_URL_KEY)
         assert Config.get(_URL_KEY) == default
 
-    def test_added_dataset_key_removes_source(self) -> None:
+    def test_added_source_key_removes_source(self) -> None:
         Config.set("epc.scotland.display", _SOURCE)
         Config.reset("epc.scotland.display")
         with pytest.raises(KeyError):

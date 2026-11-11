@@ -101,7 +101,7 @@ def download(
                 response, partial_folder / file_name, source
             )
         manifest = DownloadManifest(
-            dataset_key=key,
+            source_key=key,
             source_url=source.url,
             publisher=source.publisher,
             retrieved_at=retrieved_at,

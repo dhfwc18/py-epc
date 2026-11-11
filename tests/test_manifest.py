@@ -11,7 +11,7 @@ from py_epc._manifest import MANIFEST_NAME, read_manifest, write_manifest
 
 # A complete download manifest.
 _MANIFEST = DownloadManifest(
-    dataset_key="epc.scotland.domestic",
+    source_key="epc.scotland.domestic",
     source_url="https://publisher.invalid/resource/download",
     publisher="p",
     retrieved_at=datetime(2026, 11, 11, 9, 30, tzinfo=UTC),

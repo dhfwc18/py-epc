@@ -231,14 +231,14 @@ class Config(ContextDecorator):
         pydantic.ValidationError
             If the file does not match the config.
         """
-        source = Path(path)
+        config_file = Path(path)
         try:
-            saved = json.loads(source.read_bytes())
+            saved = json.loads(config_file.read_bytes())
             if not isinstance(saved, dict) or "version" not in saved:
                 raise ValueError('a saved config is a JSON object with "version"')
             config = _validate(_merge(_defaults().model_dump(mode="json"), saved))
         except ValueError as error:
-            error.add_note(f"while loading {source}")
+            error.add_note(f"while loading {config_file}")
             raise
         _replace(config)
 

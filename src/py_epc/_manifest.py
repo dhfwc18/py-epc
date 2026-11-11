@@ -23,7 +23,7 @@ class DownloadManifest(BaseModel):
     version: Literal[1] = 1
     """Version of the manifest format."""
 
-    dataset_key: str
+    source_key: str
     """Config key of the source, such as ``"epc.scotland.domestic"``."""
 
     source_url: str

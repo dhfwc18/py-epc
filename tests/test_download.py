@@ -246,7 +246,7 @@ class TestDownloadEpc:
         manifest = DownloadManifest.model_validate_json(
             (path.parent / "manifest.json").read_bytes()
         )
-        assert manifest.dataset_key == _SOURCE_KEY
+        assert manifest.source_key == _SOURCE_KEY
         assert path.read_bytes() == _PUBLISHED_BYTES
 
     def test_token_is_passed_on_to_download(
@@ -292,7 +292,7 @@ class TestDownloadOnsPostcodeDirectory:
         manifest = DownloadManifest.model_validate_json(
             (path.parent / "manifest.json").read_bytes()
         )
-        assert manifest.dataset_key == _ONS_POSTCODE_DIRECTORY_KEY
+        assert manifest.source_key == _ONS_POSTCODE_DIRECTORY_KEY
         assert path.parent.parent == tmp_path / "raw" / "ons" / "postcode-directory"
         assert path.read_bytes() == _PUBLISHED_BYTES
 
@@ -315,7 +315,7 @@ class TestDownloadOsOpenUprn:
         manifest = DownloadManifest.model_validate_json(
             (path.parent / "manifest.json").read_bytes()
         )
-        assert manifest.dataset_key == _OS_OPEN_UPRN_KEY
+        assert manifest.source_key == _OS_OPEN_UPRN_KEY
         assert path.parent.parent == tmp_path / "raw" / "os" / "open-uprn"
         assert path.read_bytes() == _PUBLISHED_BYTES
 
