@@ -74,3 +74,4 @@ jobs:
           uv venv "$RUNNER_TEMP/wheel-env"
           uv pip install --no-cache --python "$RUNNER_TEMP/wheel-env" dist/*.whl
           "$RUNNER_TEMP/wheel-env/bin/python" -c "import py_epc; print(py_epc.__file__)"
+          "$RUNNER_TEMP/wheel-env/bin/python" -c "from py_epc import Config; print(sorted(Config.state()['epc']))"

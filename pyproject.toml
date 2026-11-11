@@ -5,7 +5,10 @@ description = "Python package to collect and clean the Energy Performance of Bui
 readme = "README.md"
 requires-python = ">=3.14"
 authors = [{ name = "David Huang", email = "dh.fwc18@gmail.com" }]
-dependencies = []
+dependencies = [
+  "httpx>=0.28.1",
+  "pydantic>=2.14.3",
+]
 
 [dependency-groups]
 dev = [
@@ -31,6 +34,8 @@ reportDeprecated = "error"
 deprecateTypingAliases = true
 
 [tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
+strict = true
 filterwarnings = [
   "error::ResourceWarning",
   "error::pytest.PytestUnraisableExceptionWarning",
