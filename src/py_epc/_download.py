@@ -15,7 +15,7 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict
 
 from py_epc._config import Config
 from py_epc._dataset import Dataset
-from py_epc._enums import EPCOrigin, EPCSegment
+from py_epc._enums import EPCOrigin, EPCSegment, ONSProduct
 
 # Timeout of the client `download` creates when none is given.
 # Up to 30 s to connect, and up to 120 s for data to arrive.
@@ -213,6 +213,48 @@ def download_epc(
     """
     key = f"epc.{_member(EPCOrigin, origin)}.{_member(EPCSegment, segment)}"
     return download(key, root, token=token, client=client)
+
+
+def download_ons_postcode_directory(
+    root: str | os.PathLike[str],
+    *,
+    client: httpx.Client | None = None,
+) -> Path:
+    """
+    Download the ONS Postcode Directory, unchanged.
+
+    This is `download` for the dataset ``"ons.postcode-directory"``, and works
+    the same way. ONS publishes each quarterly release at a new URL, so the
+    config holds one release. To download another, use `Config.set` to
+    change ``"ons.postcode-directory.url"``.
+
+    Parameters
+    ----------
+    root : str | os.PathLike[str]
+        Folder that holds the relevant data.
+    client : httpx.Client, optional
+        HTTP client to use, as in `download`.
+
+    Returns
+    -------
+    Path
+        Path of the downloaded file.
+
+    Raises
+    ------
+    KeyError
+        If the config has no ONS Postcode Directory.
+    DownloadError
+        If the download fails, as in `download`.
+
+    Examples
+    --------
+    >>> import py_epc
+    >>> py_epc.download_ons_postcode_directory("data")  # doctest: +SKIP
+    PosixPath('data/raw/ons/postcode-directory/20261111T093000Z/...')
+    """
+    key = f"ons.{ONSProduct.POSTCODE_DIRECTORY}"
+    return download(key, root, client=client)
 
 
 def _member[E: StrEnum](enum: type[E], value: E | str) -> E:

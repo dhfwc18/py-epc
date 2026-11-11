@@ -12,7 +12,7 @@ from typing import Any, Final, Literal, Self
 from pydantic import BaseModel, ConfigDict, Field
 
 from py_epc._dataset import Dataset
-from py_epc._enums import EPCOrigin, EPCSegment
+from py_epc._enums import EPCOrigin, EPCSegment, ONSProduct
 
 _DEFAULT_CONFIG_PATH: Final[Traversable] = files("py_epc") / "defaults.json"
 
@@ -36,6 +36,9 @@ class _ConfigContent(BaseModel):
 
     epc: dict[EPCOrigin, dict[EPCSegment, Dataset]] = Field(default_factory=dict)
     """EPC datasets, keyed by origin, then by segment."""
+
+    ons: dict[ONSProduct, Dataset] = Field(default_factory=dict)
+    """Datasets of the Office for National Statistics, keyed by product."""
 
 
 _current_config: _ConfigContent | None = None

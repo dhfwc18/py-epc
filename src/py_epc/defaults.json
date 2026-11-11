@@ -35,5 +35,13 @@
         "requires_token": false
       }
     }
+  },
+  "ons": {
+    "postcode-directory": {
+      "name": "ons-postcode-directory",
+      "url": "https://www.arcgis.com/sharing/rest/content/items/9e5a92a3cfb14dc7ad43d6ea7a7b8c7f/data",
+      "publisher": "Office for National Statistics",
+      "requires_token": false
+    }
   }
 }

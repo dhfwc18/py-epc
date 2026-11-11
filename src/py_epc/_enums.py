@@ -1,4 +1,4 @@
-"""Names of the EPC registers and certificate types."""
+"""Names used in config keys: EPC registers and types, and ONS products."""
 
 from enum import StrEnum
 
@@ -24,3 +24,10 @@ class EPCSegment(StrEnum):
 
     DISPLAY = "display"
     """Display Energy Certificates for public buildings."""
+
+
+class ONSProduct(StrEnum):
+    """Dataset published by the Office for National Statistics."""
+
+    POSTCODE_DIRECTORY = "postcode-directory"
+    """The ONS Postcode Directory (ONSPD)."""

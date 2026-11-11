@@ -15,10 +15,14 @@ from py_epc import (
     EPCSegment,
     download,
     download_epc,
+    download_ons_postcode_directory,
 )
 
-# Key of the dataset every test downloads.
+# Key of the dataset most tests download.
 _DATASET_KEY = "epc.scotland.domestic"
+
+# Key of the ONS Postcode Directory.
+_ONS_POSTCODE_DIRECTORY_KEY = "ons.postcode-directory"
 
 # Stable URL of the dataset, as the config holds it.
 _STABLE_URL = "https://publisher.invalid/resource/download"
@@ -271,3 +275,26 @@ class TestDownloadEpc:
     ) -> None:
         with pytest.raises(KeyError, match=r"epc\.scotland\.display"):
             download_epc("scotland", "display", tmp_path, client=client)
+
+
+class TestDownloadOnsPostcodeDirectory:
+    """`download_ons_postcode_directory` downloads the postcode directory."""
+
+    def test_plain_call_saves_dataset_under_its_key(
+        self, tmp_path: Path, client: httpx.Client
+    ) -> None:
+        Config.set(f"{_ONS_POSTCODE_DIRECTORY_KEY}.url", _STABLE_URL)
+        path = download_ons_postcode_directory(tmp_path, client=client)
+        manifest = DownloadManifest.model_validate_json(
+            (path.parent / "manifest.json").read_bytes()
+        )
+        assert manifest.dataset_key == _ONS_POSTCODE_DIRECTORY_KEY
+        assert path.parent.parent == tmp_path / "raw" / "ons" / "postcode-directory"
+        assert path.read_bytes() == _PUBLISHED_BYTES
+
+    def test_missing_dataset_raises_key_error(
+        self, tmp_path: Path, client: httpx.Client
+    ) -> None:
+        Config.set("ons", {})
+        with pytest.raises(KeyError, match=r"ons\.postcode-directory"):
+            download_ons_postcode_directory(tmp_path, client=client)
