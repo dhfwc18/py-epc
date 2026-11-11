@@ -1,10 +1,10 @@
-"""Describe a source dataset to be downloaded."""
+"""Describe a published source and how to download it."""
 
 from pydantic import BaseModel, ConfigDict
 
 
-class Dataset(BaseModel):
-    """A published dataset and its metadata."""
+class Source(BaseModel):
+    """A published source and its metadata."""
 
     model_config = ConfigDict(
         frozen=True,
@@ -18,7 +18,7 @@ class Dataset(BaseModel):
     """Unique identifier, used as filename."""
 
     url: str
-    """Source url to download the file."""
+    """URL to download the file from."""
 
     publisher: str
     """Organisation that publishes the file."""

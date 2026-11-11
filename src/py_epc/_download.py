@@ -3,19 +3,18 @@
 import contextlib
 import hashlib
 import os
-import shutil
 from collections.abc import Generator
 from datetime import UTC, datetime
-from enum import StrEnum
 from pathlib import Path, PurePosixPath
-from typing import Final, Literal
+from typing import Final
 
 import httpx
-from pydantic import AwareDatetime, BaseModel, ConfigDict
 
 from py_epc._config import Config
-from py_epc._dataset import Dataset
-from py_epc._enums import EPCOrigin, EPCSegment, ONSProduct, OSProduct
+from py_epc._enums import EPCOrigin, EPCSegment, ONSProduct, OSProduct, parse_member
+from py_epc._files import atomic_folder, ensure_gitignore
+from py_epc._manifest import DownloadManifest, write_manifest
+from py_epc._source import Source
 
 # Timeout of the client `download` creates when none is given.
 # Up to 30 s to connect, and up to 120 s for data to arrive.
@@ -24,48 +23,9 @@ _DEFAULT_TIMEOUT: Final = httpx.Timeout(30.0, read=120.0)
 # Size of each chunk written, so a large file never sits in memory.
 _CHUNK_BYTES: Final = 1024 * 1024
 
-# Name of the manifest written beside each downloaded file.
-_MANIFEST_NAME: Final = "manifest.json"
-
 
 class DownloadError(Exception):
     """A published file could not be downloaded."""
-
-
-class DownloadManifest(BaseModel):
-    """The record of one download, written once the file is complete."""
-
-    model_config = ConfigDict(
-        frozen=True,
-        extra="forbid",
-        strict=True,
-        hide_input_in_errors=True,
-        use_attribute_docstrings=True,
-    )
-
-    version: Literal[1] = 1
-    """Version of the manifest format."""
-
-    dataset_key: str
-    """Config key of the dataset, such as ``"epc.scotland.domestic"``."""
-
-    source_url: str
-    """The dataset's stable URL. A pre-signed URL is never stored."""
-
-    publisher: str
-    """Organisation that publishes the file."""
-
-    retrieved_at: AwareDatetime
-    """When the download started, in UTC."""
-
-    file_name: str
-    """Name of the downloaded file, in the manifest's folder."""
-
-    size_bytes: int
-    """Size of the downloaded file, in bytes."""
-
-    sha256: str
-    """SHA-256 checksum of the downloaded file, as lowercase hex."""
 
 
 def download(
@@ -76,9 +36,9 @@ def download(
     client: httpx.Client | None = None,
 ) -> Path:
     """
-    Download a dataset's published file, unchanged.
+    Download a source's published file, unchanged.
 
-    The dataset's URL is read from `Config`. The file and its manifest are
+    The source's URL is read from `Config`. The file and its manifest are
     written to a new folder, ``<root>/raw/<key parts>/<retrieved at>/``, such
     as ``raw/epc/scotland/domestic/20261110T093000Z/``. The folder appears only
     once both are complete, so a failed download leaves nothing behind.
@@ -89,12 +49,12 @@ def download(
     Parameters
     ----------
     key : str
-        Config key of the dataset, such as ``"epc.scotland.domestic"``.
+        Config key of the source, such as ``"epc.scotland.domestic"``.
     root : str | os.PathLike[str]
         Folder that holds the relevant data.
     token : str, optional
-        Bearer token, for a dataset with `Dataset.requires_token` set to true.
-        It is sent only to the dataset's URL, never to a server it redirects
+        Bearer token, for a source with `Source.requires_token` set to true.
+        It is sent only to the source's URL, never to a server it redirects
         to, and is never stored.
     client : httpx.Client, optional
         HTTP client to use, for example to set a proxy or a timeout. It is
@@ -111,52 +71,45 @@ def download(
     KeyError
         If there is no config setting with that key.
     TypeError
-        If the setting is not a dataset.
+        If the setting is not a source.
     ValueError
-        If the dataset requires a token and none is given.
+        If the source requires a token and none is given.
     DownloadError
         If the server refuses the request, the connection fails, or the
         file is not the expected size. Errors never show a redirected URL,
         whose query is a credential.
     """
-    dataset = Config.get(key)
-    if not isinstance(dataset, Dataset):
-        raise TypeError(f"config setting {key!r} is not a dataset")
-    if dataset.requires_token and not token:
-        raise ValueError(f"dataset {key!r} requires a token; pass token=...")
-    headers = {"Authorization": f"Bearer {token}"} if dataset.requires_token else {}
+    source = Config.get(key)
+    if not isinstance(source, Source):
+        raise TypeError(f"config setting {key!r} is not a source")
+    if source.requires_token and not token:
+        raise ValueError(f"source {key!r} requires a token; pass token=...")
+    headers = {"Authorization": f"Bearer {token}"} if source.requires_token else {}
 
     retrieved_at = datetime.now(UTC).replace(microsecond=0)
     raw_folder = Path(root).expanduser() / "raw"
-    dataset_folder = raw_folder.joinpath(*key.split("."))
-    download_folder = dataset_folder / retrieved_at.strftime("%Y%m%dT%H%M%SZ")
-    partial_folder = dataset_folder / f".{download_folder.name}.part"
-    partial_folder.mkdir(parents=True)
-    try:
-        _ensure_gitignore(raw_folder)
+    source_folder = raw_folder.joinpath(*key.split("."))
+    download_folder = source_folder / retrieved_at.strftime("%Y%m%dT%H%M%SZ")
+    with atomic_folder(download_folder) as partial_folder:
+        ensure_gitignore(raw_folder)
         with (
             _client_or_new(client) as http,
-            _stream(http, dataset, headers) as response,
+            _stream(http, source, headers) as response,
         ):
-            file_name = dataset.name + PurePosixPath(response.url.path).suffix
+            file_name = source.name + PurePosixPath(response.url.path).suffix
             size_bytes, sha256 = _write_file(
-                response, partial_folder / file_name, dataset
+                response, partial_folder / file_name, source
             )
         manifest = DownloadManifest(
             dataset_key=key,
-            source_url=dataset.url,
-            publisher=dataset.publisher,
+            source_url=source.url,
+            publisher=source.publisher,
             retrieved_at=retrieved_at,
             file_name=file_name,
             size_bytes=size_bytes,
             sha256=sha256,
         )
-        (partial_folder / _MANIFEST_NAME).write_text(
-            manifest.model_dump_json(indent=2) + "\n", encoding="utf-8"
-        )
-        partial_folder.rename(download_folder)
-    finally:
-        shutil.rmtree(partial_folder, ignore_errors=True)
+        write_manifest(partial_folder, manifest)
     return download_folder / file_name
 
 
@@ -171,7 +124,7 @@ def download_epc(
     """
     Download the EPC file published for an origin and segment, unchanged.
 
-    This is `download` for the dataset ``"epc.<origin>.<segment>"``, and
+    This is `download` for the source ``"epc.<origin>.<segment>"``, and
     works the same way.
 
     Parameters
@@ -200,7 +153,7 @@ def download_epc(
         If the origin or segment is unknown, or the register requires a
         token and none is given.
     KeyError
-        If the config has no dataset for the origin and segment, such as
+        If the config has no source for the origin and segment, such as
         Scotland's display certificates.
     DownloadError
         If the download fails, as in `download`.
@@ -211,7 +164,9 @@ def download_epc(
     >>> py_epc.download_epc("scotland", "domestic", "data")  # doctest: +SKIP
     PosixPath('data/raw/epc/scotland/domestic/20261110T093000Z/...')
     """
-    key = f"epc.{_member(EPCOrigin, origin)}.{_member(EPCSegment, segment)}"
+    origin = parse_member(EPCOrigin, origin)
+    segment = parse_member(EPCSegment, segment)
+    key = f"epc.{origin}.{segment}"
     return download(key, root, token=token, client=client)
 
 
@@ -223,7 +178,7 @@ def download_ons_postcode_directory(
     """
     Download the ONS Postcode Directory, unchanged.
 
-    This is `download` for the dataset ``"ons.postcode-directory"``, and works
+    This is `download` for the source ``"ons.postcode-directory"``, and works
     the same way. ONS publishes each quarterly release at a new URL, so the
     config holds one release. To download another, use `Config.set` to
     change ``"ons.postcode-directory.url"``.
@@ -265,7 +220,7 @@ def download_os_open_uprn(
     """
     Download OS Open UPRN, unchanged.
 
-    This is `download` for the dataset ``"os.open-uprn"``, and works the same
+    This is `download` for the source ``"os.open-uprn"``, and works the same
     way. Its URL always serves the latest release, as a zipped CSV.
 
     Parameters
@@ -297,26 +252,6 @@ def download_os_open_uprn(
     return download(key, root, client=client)
 
 
-def _member[E: StrEnum](enum: type[E], value: E | str) -> E:
-    """Return the member of `enum` for `value`, naming the choices if none."""
-    try:
-        return enum(value)
-    except ValueError:
-        choices = ", ".join(repr(member.value) for member in enum)
-        raise ValueError(
-            f"unknown {enum.__name__} {value!r}; expected one of {choices}"
-        ) from None
-
-
-def _ensure_gitignore(folder: Path) -> None:
-    """Make Git ignore all of `folder`, unless it has a ``.gitignore``."""
-    with (
-        contextlib.suppress(FileExistsError),
-        (folder / ".gitignore").open("x", encoding="utf-8") as file,
-    ):
-        file.write("# Created by py-epc.\n*\n")
-
-
 def _client_or_new(
     client: httpx.Client | None,
 ) -> contextlib.AbstractContextManager[httpx.Client]:
@@ -328,25 +263,25 @@ def _client_or_new(
 
 @contextlib.contextmanager
 def _stream(
-    http: httpx.Client, dataset: Dataset, headers: dict[str, str]
+    http: httpx.Client, source: Source, headers: dict[str, str]
 ) -> Generator[httpx.Response]:
-    """Open the dataset's URL, following redirects, and check the status."""
+    """Open the source's URL, following redirects, and check the status."""
     try:
         with http.stream(
-            "GET", dataset.url, headers=headers, follow_redirects=True
+            "GET", source.url, headers=headers, follow_redirects=True
         ) as response:
             if response.is_error:
                 raise DownloadError(
-                    f"{dataset.url} answered HTTP {response.status_code}"
+                    f"{source.url} answered HTTP {response.status_code}"
                 )
             yield response
     except httpx.HTTPError as error:
         # The message may hold the redirected URL, so it is dropped.
-        raise DownloadError(f"{dataset.url} failed: {type(error).__name__}") from None
+        raise DownloadError(f"{source.url} failed: {type(error).__name__}") from None
 
 
 def _write_file(
-    response: httpx.Response, path: Path, dataset: Dataset
+    response: httpx.Response, path: Path, source: Source
 ) -> tuple[int, str]:
     """Write the response body to `path`, returning its size and SHA-256."""
     digest = hashlib.sha256()
@@ -356,8 +291,8 @@ def _write_file(
             file.write(chunk)
             digest.update(chunk)
             size += len(chunk)
-    if dataset.expected_bytes is not None and size != dataset.expected_bytes:
+    if source.expected_bytes is not None and size != source.expected_bytes:
         raise DownloadError(
-            f"{dataset.url} sent {size} bytes; expected {dataset.expected_bytes}"
+            f"{source.url} sent {size} bytes; expected {source.expected_bytes}"
         )
     return size, digest.hexdigest()
