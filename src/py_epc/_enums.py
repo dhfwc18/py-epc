@@ -1,4 +1,4 @@
-"""Names used in config keys: EPC registers and types, and ONS products."""
+"""Names used in config keys: EPC registers and types, ONS and OS products."""
 
 from enum import StrEnum
 
@@ -31,3 +31,10 @@ class ONSProduct(StrEnum):
 
     POSTCODE_DIRECTORY = "postcode-directory"
     """The ONS Postcode Directory (ONSPD)."""
+
+
+class OSProduct(StrEnum):
+    """Dataset published by Ordnance Survey."""
+
+    OPEN_UPRN = "open-uprn"
+    """OS Open UPRN, the coordinates of every UPRN in Great Britain."""

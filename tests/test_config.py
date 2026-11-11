@@ -8,7 +8,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from py_epc import Config, Dataset, EPCOrigin, EPCSegment, ONSProduct
+from py_epc import Config, Dataset, EPCOrigin, EPCSegment, ONSProduct, OSProduct
 
 # Fields of a minimal valid dataset.
 _DATASET: dict[str, Any] = {
@@ -90,6 +90,12 @@ class TestDefaultsJson:
 
     def test_ons_postcode_directory_needs_no_token(self) -> None:
         assert not Config.get("ons.postcode-directory.requires_token")
+
+    def test_os_datasets_cover_every_product(self) -> None:
+        assert set(Config.state()["os"]) == set(OSProduct)
+
+    def test_os_open_uprn_needs_no_token(self) -> None:
+        assert not Config.get("os.open-uprn.requires_token")
 
 
 class TestConfigGet:

@@ -15,7 +15,7 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict
 
 from py_epc._config import Config
 from py_epc._dataset import Dataset
-from py_epc._enums import EPCOrigin, EPCSegment, ONSProduct
+from py_epc._enums import EPCOrigin, EPCSegment, ONSProduct, OSProduct
 
 # Timeout of the client `download` creates when none is given.
 # Up to 30 s to connect, and up to 120 s for data to arrive.
@@ -254,6 +254,46 @@ def download_ons_postcode_directory(
     PosixPath('data/raw/ons/postcode-directory/20261111T093000Z/...')
     """
     key = f"ons.{ONSProduct.POSTCODE_DIRECTORY}"
+    return download(key, root, client=client)
+
+
+def download_os_open_uprn(
+    root: str | os.PathLike[str],
+    *,
+    client: httpx.Client | None = None,
+) -> Path:
+    """
+    Download OS Open UPRN, unchanged.
+
+    This is `download` for the dataset ``"os.open-uprn"``, and works the same
+    way. Its URL always serves the latest release, as a zipped CSV.
+
+    Parameters
+    ----------
+    root : str | os.PathLike[str]
+        Folder that holds the relevant data.
+    client : httpx.Client, optional
+        HTTP client to use, as in `download`.
+
+    Returns
+    -------
+    Path
+        Path of the downloaded file.
+
+    Raises
+    ------
+    KeyError
+        If the config has no OS Open UPRN.
+    DownloadError
+        If the download fails, as in `download`.
+
+    Examples
+    --------
+    >>> import py_epc
+    >>> py_epc.download_os_open_uprn("data")  # doctest: +SKIP
+    PosixPath('data/raw/os/open-uprn/20261111T093000Z/...')
+    """
+    key = f"os.{OSProduct.OPEN_UPRN}"
     return download(key, root, client=client)
 
 

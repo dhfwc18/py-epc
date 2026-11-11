@@ -43,5 +43,13 @@
       "publisher": "Office for National Statistics",
       "requires_token": false
     }
+  },
+  "os": {
+    "open-uprn": {
+      "name": "os-open-uprn",
+      "url": "https://api.os.uk/downloads/v1/products/OpenUPRN/downloads?area=GB&format=CSV&redirect",
+      "publisher": "Ordnance Survey",
+      "requires_token": false
+    }
   }
 }

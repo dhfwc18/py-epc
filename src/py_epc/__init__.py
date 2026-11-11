@@ -8,8 +8,9 @@ from py_epc._download import (
     download,
     download_epc,
     download_ons_postcode_directory,
+    download_os_open_uprn,
 )
-from py_epc._enums import EPCOrigin, EPCSegment, ONSProduct
+from py_epc._enums import EPCOrigin, EPCSegment, ONSProduct, OSProduct
 
 __all__ = [
     "Config",
@@ -19,7 +20,9 @@ __all__ = [
     "EPCOrigin",
     "EPCSegment",
     "ONSProduct",
+    "OSProduct",
     "download",
     "download_epc",
     "download_ons_postcode_directory",
+    "download_os_open_uprn",
 ]
