@@ -12,6 +12,9 @@ from py_epc._process._register import LatestRule
 # Name of the column added to every certificate.
 LATEST_COLUMN: Final = "is_latest"
 
+# Most rows sorted or grouped at once. Memory stays flat as data grow.
+_ROWS_PER_BUCKET: Final = 2_000_000
+
 # Working columns, never written.
 _YEAR_COLUMN: Final = "_year"
 _ROW_COLUMN: Final = "_row"
@@ -68,8 +71,10 @@ def mark_latest(certificates: Path, rule: LatestRule) -> LatestSummary:
     last one is the latest. A certificate without a property is its own
     property, and so is the latest.
 
-    The certificates are read twice: once, a few columns of every year, to
-    find the latest; then each yearly file is rewritten with the flag.
+    To find the latest, a few columns of every year are read once per
+    bucket of properties, about two million certificates each, so memory
+    stays flat however large the build. Each yearly file is then rewritten
+    with the flag.
 
     Parameters
     ----------
@@ -108,32 +113,53 @@ def _find_latest(files: dict[int, Path], rule: LatestRule) -> pl.DataFrame:
     """Return the year, row and `is_latest` of every certificate."""
     superseded = [rule.superseded_column] if rule.superseded_column else []
     rows = _rows(files, rule, *rule.order_columns, *superseded)
+    key = pl.col(_PROPERTY_KEY_COLUMN)
     order = [_PROPERTY_KEY_COLUMN, *rule.order_columns, _YEAR_COLUMN, _ROW_COLUMN]
-    return (
-        rows.sort(order, nulls_last=False)
-        .select(
-            _YEAR_COLUMN,
-            _ROW_COLUMN,
-            *superseded,
-            (
-                pl.col(_PROPERTY_KEY_COLUMN).is_null()
-                | pl.col(_PROPERTY_KEY_COLUMN).is_last_distinct()
-            ).alias(LATEST_COLUMN),
-        )
+    columns = [_YEAR_COLUMN, _ROW_COLUMN, *superseded]
+    buckets = _bucket_count(files)
+    parts = [
+        rows.filter(key.is_null())
+        .select(*columns, pl.lit(True).alias(LATEST_COLUMN))
         .collect(engine="streaming")
+    ]
+    # Every certificate of a property is in the same bucket, as the bucket
+    # comes from the property's key; properties are still told apart by
+    # their whole key within a bucket.
+    parts.extend(
+        rows.filter(key.is_not_null() & _in_bucket(key, bucket, buckets))
+        .sort(order, nulls_last=False)
+        .select(*columns, key.is_last_distinct().alias(LATEST_COLUMN))
+        .collect(engine="streaming")
+        for bucket in range(buckets)
     )
+    return pl.concat(parts)
+
+
+def _bucket_count(files: dict[int, Path]) -> int:
+    """Return how many buckets keep each one near `_ROWS_PER_BUCKET`."""
+    rows = sum(
+        pl.scan_parquet(path).select(pl.len()).collect().item()
+        for path in files.values()
+    )
+    return max(1, -(-rows // _ROWS_PER_BUCKET))
+
+
+def _in_bucket(values: pl.Expr, bucket: int, buckets: int) -> pl.Expr:
+    """Return whether each value's hash puts it in `bucket` of `buckets`."""
+    return values.hash() % buckets == bucket
 
 
 def _write_flag(path: Path, marked: pl.DataFrame) -> None:
     """Rewrite one yearly file with `is_latest` as its last column."""
-    flags = marked.lazy().select(_ROW_COLUMN, LATEST_COLUMN)
+    # Sorted by row, the flags line up with the file, so they are added side
+    # by side, without a join that would hold the whole year in memory.
+    flags = marked.sort(_ROW_COLUMN).select(LATEST_COLUMN)
+    rows = pl.scan_parquet(path).select(pl.len()).collect().item()
+    if flags.height != rows:
+        raise RuntimeError(f"{path} has {rows} rows but {flags.height} flags")
     temporary = path.with_name(f".{path.name}.part")
-    (
-        pl.scan_parquet(path)
-        .with_row_index(_ROW_COLUMN)
-        .join(flags, on=_ROW_COLUMN, how="left", maintain_order="left")
-        .drop(_ROW_COLUMN)
-        .sink_parquet(temporary, compression="zstd")
+    pl.concat([pl.scan_parquet(path), flags.lazy()], how="horizontal").sink_parquet(
+        temporary, compression="zstd"
     )
     os.replace(temporary, path)
 
@@ -142,32 +168,34 @@ def _summarise(
     files: dict[int, Path], marked: pl.DataFrame, rule: LatestRule
 ) -> LatestSummary:
     """Count properties, gaps and disagreements."""
+    latest = pl.col(LATEST_COLUMN)
     rows = _rows(files, rule, rule.certificate_column)
     counts = rows.select(
         pl.col(_PROPERTY_KEY_COLUMN).null_count().alias("without"),
-        pl.col(_PROPERTY_KEY_COLUMN).drop_nulls().n_unique().alias("keyed"),
         pl.col(rule.certificate_column).null_count().alias("blank"),
     ).collect(engine="streaming")
-    duplicates = (
-        rows.filter(pl.col(rule.certificate_column).is_not_null())
-        .group_by(rule.certificate_column)
+    number = pl.col(rule.certificate_column)
+    buckets = _bucket_count(files)
+    duplicates = sum(
+        rows.filter(number.is_not_null() & _in_bucket(number, bucket, buckets))
+        .group_by(number)
         .len()
         .filter(pl.col("len") > 1)
         .select(pl.len())
         .collect(engine="streaming")
         .item()
+        for bucket in range(buckets)
     )
     disagreements = None
     if rule.superseded_column:
         superseded = pl.col(rule.superseded_column)
-        latest = pl.col(LATEST_COLUMN)
         disagreements = marked.select(
             ((latest & superseded) | (latest.not_() & superseded.not_())).sum()
         ).item()
-    without = int(counts["without"][0])
     return LatestSummary(
-        properties=int(counts["keyed"][0]) + without,
-        without_property=without,
+        # Each property has exactly one latest certificate.
+        properties=marked.select(latest.sum()).item(),
+        without_property=int(counts["without"][0]),
         blank_certificate_numbers=int(counts["blank"][0]),
         duplicate_certificate_numbers=int(duplicates),
         superseded_disagreements=disagreements,

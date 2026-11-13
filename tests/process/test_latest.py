@@ -159,6 +159,33 @@ class TestMarkLatest:
         ]
 
 
+class TestMarkLatestBuckets:
+    """`mark_latest` gives the same result however many buckets it uses."""
+
+    def test_many_buckets_mark_same_certificates_as_one(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        rows = {
+            year: [
+                certificate(
+                    f"{year}-{n:03}",
+                    f"{year}-01-01T10:{n % 60:02}",
+                    uprn=n % 7 or None,
+                    building_reference_number=str(n % 5),
+                )
+                for n in range(40)
+            ]
+            for year in (2023, 2024)
+        }
+        write_build(tmp_path / "one", rows)
+        write_build(tmp_path / "many", rows)
+        one = mark_latest(tmp_path / "one", _RULE)
+        monkeypatch.setattr("py_epc._process._latest._ROWS_PER_BUCKET", 3)
+        many = mark_latest(tmp_path / "many", _RULE)
+        assert latest(tmp_path / "many") == latest(tmp_path / "one")
+        assert many == one
+
+
 class TestMarkLatestSummary:
     """`mark_latest` counts properties, gaps and disagreements."""
 
