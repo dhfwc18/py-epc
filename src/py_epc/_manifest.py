@@ -6,7 +6,7 @@ from typing import Final, Literal
 from pydantic import AwareDatetime, BaseModel, ConfigDict
 
 # Name of the manifest file in each folder.
-MANIFEST_NAME: Final = "manifest.json"
+MANIFEST_FILE: Final = "manifest.json"
 
 
 class DownloadManifest(BaseModel):
@@ -47,7 +47,7 @@ class DownloadManifest(BaseModel):
 
 def write_manifest(folder: Path, manifest: BaseModel) -> None:
     """Write `manifest` to the manifest file in `folder`, as JSON."""
-    (folder / MANIFEST_NAME).write_text(
+    (folder / MANIFEST_FILE).write_text(
         manifest.model_dump_json(indent=2) + "\n", encoding="utf-8"
     )
 
@@ -75,7 +75,7 @@ def read_manifest[M: BaseModel](folder: Path, model: type[M]) -> M:
     pydantic.ValidationError
         If the manifest does not match `model`.
     """
-    return model.model_validate_json((folder / MANIFEST_NAME).read_bytes())
+    return model.model_validate_json((folder / MANIFEST_FILE).read_bytes())
 
 
 def find_completed(folder: Path, name: str | None = None) -> Path:
@@ -107,7 +107,7 @@ def find_completed(folder: Path, name: str | None = None) -> Path:
         sorted(
             child.name
             for child in folder.iterdir()
-            if not child.name.startswith(".") and (child / MANIFEST_NAME).is_file()
+            if not child.name.startswith(".") and (child / MANIFEST_FILE).is_file()
         )
         if folder.is_dir()
         else []

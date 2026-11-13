@@ -51,5 +51,9 @@
       "publisher": "Ordnance Survey",
       "requires_token": false
     }
+  },
+  "geography": {
+    "fields": ["lad", "pcon", "itl1"],
+    "names": true
   }
 }

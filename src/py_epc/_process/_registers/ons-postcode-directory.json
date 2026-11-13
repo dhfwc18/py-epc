@@ -1,0 +1,157 @@
+{
+  "version": 1,
+  "source_key": "ons.postcode-directory",
+  "member_pattern": "Data/ONSPD_[A-Z]{3}_(\\d{4})_UK\\.csv",
+  "postcode_column": "pcds",
+  "excluded_prefixes": ["BT"],
+  "missing_pattern": "^([A-Z]99999999)?$",
+  "fields": {
+    "ctry": {
+      "description": "Country: England, Wales or Scotland.",
+      "column": "^ctry\\d{2}cd$",
+      "lookup": {
+        "file": "^CTRY ",
+        "code": "^CTRY\\d{2}CD$",
+        "name": "^CTRY\\d{2}NM$"
+      }
+    },
+    "itl1": {
+      "description": "ITL level 1 region: the 9 English regions, Wales and Scotland.",
+      "column": "^itl\\d{2}cd$",
+      "lookup": {
+        "file": "^ITL",
+        "code": "^ITL1\\d{2}CD$",
+        "name": "^ITL1\\d{2}NM$",
+        "key": "^LAU1\\d{2}CD$"
+      }
+    },
+    "itl2": {
+      "description": "ITL level 2 area, such as 'Tees Valley'.",
+      "column": "^itl\\d{2}cd$",
+      "lookup": {
+        "file": "^ITL",
+        "code": "^ITL2\\d{2}CD$",
+        "name": "^ITL2\\d{2}NM$",
+        "key": "^LAU1\\d{2}CD$"
+      }
+    },
+    "itl3": {
+      "description": "ITL level 3 area, a group of local authorities.",
+      "column": "^itl\\d{2}cd$",
+      "lookup": {
+        "file": "^ITL",
+        "code": "^ITL3\\d{2}CD$",
+        "name": "^ITL3\\d{2}NM$",
+        "key": "^LAU1\\d{2}CD$"
+      }
+    },
+    "rgn": {
+      "description": "English region. Blank for Wales and Scotland; use itl1 for all three.",
+      "column": "^rgn\\d{2}cd$",
+      "lookup": {
+        "file": "^RGN ",
+        "code": "^RGN\\d{2}CD$",
+        "name": "^RGN\\d{2}NM$"
+      }
+    },
+    "cty": {
+      "description": "English county. Blank where there is no county council.",
+      "column": "^cty\\d{2}cd$",
+      "lookup": {
+        "file": "^CTY ",
+        "code": "^CTY\\d{2}CD$",
+        "name": "^CTY\\d{2}NM$"
+      }
+    },
+    "lad": {
+      "description": "Local authority district, or council area in Scotland.",
+      "column": "^lad\\d{2}cd$",
+      "lookup": {
+        "file": "^LAD ",
+        "code": "^LAD\\d{2}CD$",
+        "name": "^LAD\\d{2}NM$"
+      }
+    },
+    "wd": {
+      "description": "Electoral ward.",
+      "column": "^wd\\d{2}cd$",
+      "lookup": {
+        "file": "^WD ",
+        "code": "^WD\\d{2}CD$",
+        "name": "^WD\\d{2}NM$"
+      }
+    },
+    "pcon": {
+      "description": "Westminster parliamentary constituency.",
+      "column": "^pcon\\d{2}cd$",
+      "lookup": {
+        "file": "^PCON ",
+        "code": "^PCON\\d{2}CD$",
+        "name": "^PCON\\d{2}NM$"
+      }
+    },
+    "lsoa21": {
+      "description": "2021 Census lower layer super output area, or data zone in Scotland.",
+      "column": "^lsoa21cd$",
+      "lookup": {
+        "file": "^LSOA \\(2021\\)",
+        "code": "^(LSOA21|DZ22|SDZ21)CD$",
+        "name": "^(LSOA21|DZ22|SDZ21)NM$"
+      }
+    },
+    "msoa21": {
+      "description": "2021 Census middle layer super output area, or intermediate zone in Scotland.",
+      "column": "^msoa21cd$",
+      "lookup": {
+        "file": "^MSOA \\(2021\\)",
+        "code": "^(MSOA21|IZ22)CD$",
+        "name": "^(MSOA21|IZ22)NM$"
+      }
+    },
+    "oa21": {
+      "description": "2021 Census output area. No names are published.",
+      "column": "^oa21cd$"
+    },
+    "ruc21": {
+      "description": "2021 rural-urban classification, in England and Wales or Scottish codes.",
+      "column": "^ruc21ind$",
+      "lookup": {
+        "file": "^RUC21 ",
+        "code": "^RUC21IND$",
+        "name": "^RUC21DESC$"
+      }
+    },
+    "imd25": {
+      "description": "2025 Index of Multiple Deprivation rank of the LSOA, in England or Wales. Blank in Scotland.",
+      "column": "^imd25ind$",
+      "type": "integer",
+      "missing_values": ["0"]
+    },
+    "lat": {
+      "description": "Latitude of the postcode's centre.",
+      "column": "^lat$",
+      "type": "number",
+      "missing_values": ["99.999999"]
+    },
+    "long": {
+      "description": "Longitude of the postcode's centre.",
+      "column": "^long$",
+      "type": "number",
+      "missing_values": ["0.000000"]
+    },
+    "gridind": {
+      "description": "Quality of the postcode's centre: 1 within a building, up to 9 for none.",
+      "column": "^gridind$"
+    },
+    "dointr": {
+      "description": "Month the postcode was introduced.",
+      "column": "^dointr$",
+      "type": "month"
+    },
+    "doterm": {
+      "description": "Month the postcode was terminated. Blank if still live.",
+      "column": "^doterm$",
+      "type": "month"
+    }
+  }
+}

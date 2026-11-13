@@ -20,6 +20,24 @@ _DEFAULT_CONFIG_PATH: Final[Traversable] = files("py_epc") / "defaults.json"
 _CONFIG_ENV_VAR: Final = "PY_EPC_CONFIG"
 
 
+class _Geography(BaseModel):
+    """Settings for the areas added to each postcode."""
+
+    model_config = ConfigDict(
+        frozen=True,
+        extra="forbid",
+        strict=True,
+        hide_input_in_errors=True,
+        use_attribute_docstrings=True,
+    )
+
+    fields: tuple[str, ...] = ()
+    """Fields of the ONS Postcode Directory to keep, such as ``"lad"``."""
+
+    names: bool = True
+    """Whether to add each field's names beside its codes."""
+
+
 class _ConfigContent(BaseModel):
     """The checked contents of the config."""
 
@@ -42,6 +60,9 @@ class _ConfigContent(BaseModel):
 
     os: dict[OSProduct, Source] = Field(default_factory=dict)
     """Sources of Ordnance Survey, keyed by product."""
+
+    geography: _Geography = Field(default_factory=_Geography)
+    """Areas added to each postcode from the ONS Postcode Directory."""
 
 
 _current_config: _ConfigContent | None = None

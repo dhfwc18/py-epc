@@ -23,7 +23,7 @@ from py_epc._process._values import is_invalid, parse
 _EXAMPLES: Final = 5
 
 # Folder in a build that holds the certificates, one folder per year.
-_CERTIFICATES: Final = "certificates"
+CERTIFICATES_FOLDER: Final = "certificates"
 
 # Settings shared by the manifest models, which are read-only.
 _MODEL_CONFIG = ConfigDict(
@@ -174,7 +174,7 @@ def process(
 
         for_each_member(raw, register.member_regex, handle, scratch=partial)
         latest = (
-            mark_latest(partial / _CERTIFICATES, register.latest)
+            mark_latest(partial / CERTIFICATES_FOLDER, register.latest)
             if register.latest is not None
             else None
         )
@@ -261,7 +261,7 @@ def _process_year(
         schema=dict.fromkeys(columns, pl.String),
         encoding="utf8-lossy",
     )
-    target = build / _CERTIFICATES / f"lodgement_year={year}" / "data.parquet"
+    target = build / CERTIFICATES_FOLDER / f"lodgement_year={year}" / "data.parquet"
     raw.select(
         parse(pl.col(source), column, register).alias(column.name)
         for source, column in columns.items()

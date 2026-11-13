@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from py_epc._manifest import MANIFEST_NAME
+from py_epc._manifest import MANIFEST_FILE
 from py_epc._process._archive import find_snapshot, for_each_member
 
 # Key of the source most tests use.
@@ -196,7 +196,7 @@ class TestForEachMember:
         other: str,
     ) -> None:
         snapshot = make_snapshot(key, {name.format(year=2025): "a\n"}, archive=archive)
-        (snapshot / MANIFEST_NAME).unlink()
+        (snapshot / MANIFEST_FILE).unlink()
         with pytest.raises(FileNotFoundError):
             for_each_member(snapshot, pattern, lambda *_: None, scratch=tmp_path)
 
@@ -211,7 +211,7 @@ class TestForEachMember:
         other: str,
     ) -> None:
         snapshot = make_snapshot(key, {name.format(year=2025): "a\n"}, archive=archive)
-        file = next(path for path in snapshot.iterdir() if path.name != MANIFEST_NAME)
+        file = next(path for path in snapshot.iterdir() if path.name != MANIFEST_FILE)
         file.write_bytes(file.read_bytes() + b"changed")
         with pytest.raises(ValueError, match="SHA-256"):
             for_each_member(snapshot, pattern, lambda *_: None, scratch=tmp_path)
