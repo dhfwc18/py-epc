@@ -6,6 +6,11 @@
   "missing_values": ["", "NO DATA!", "NODATA!", "INVALID!", "N/A"],
   "true_values": ["Y", "y"],
   "false_values": ["N", "n"],
+  "latest": {
+    "property_columns": ["uprn"],
+    "order_columns": ["lodgement_datetime", "certificate_number"],
+    "certificate_column": "certificate_number"
+  },
   "columns": [
     {
       "source": "certificate_number",

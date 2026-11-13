@@ -290,7 +290,8 @@ class TestProcessWithShippedRegister:
                 "total_floor_area": 72.5,
             }
         ]
-        assert frame.width == len(names) + 1
+        assert frame.width == len(names) + 2
+        assert frame["is_latest"].to_list() == [True]
 
     def test_england_and_wales_domestic_zip_is_parsed_with_every_column(
         self, tmp_path: Path, make_snapshot: Callable[..., Path]
@@ -327,7 +328,8 @@ class TestProcessWithShippedRegister:
                 "current_energy_rating": None,
             }
         ]
-        assert frame.width == len(names) + 1
+        assert frame.width == len(names) + 2
+        assert frame["is_latest"].to_list() == [True]
 
 
 class TestProcessEpc:

@@ -15,6 +15,7 @@ from py_epc._enums import EPCOrigin, EPCSegment, parse_member
 from py_epc._files import atomic_folder, ensure_gitignore
 from py_epc._manifest import DownloadManifest, read_manifest, write_manifest
 from py_epc._process._archive import find_snapshot, for_each_member
+from py_epc._process._latest import LatestSummary, mark_latest
 from py_epc._process._register import Column, Register, load_register
 from py_epc._process._values import is_invalid, parse
 
@@ -97,6 +98,9 @@ class ProcessManifest(BaseModel):
     years: tuple[YearSummary, ...]
     """Summary of each yearly file, in archive order."""
 
+    latest: LatestSummary | None
+    """What marking the latest certificates found, if the register says how."""
+
 
 def process(
     key: str,
@@ -117,8 +121,12 @@ def process(
     writes ``<root>/processed/.gitignore``, which makes Git ignore every
     build.
 
+    If the register says how to find each property's latest certificate,
+    every certificate gets an ``is_latest`` column, as its last column.
+
     Values that do not parse become null. They are counted in the manifest,
-    and a `ProcessWarning` names the years and columns that have them.
+    and a `ProcessWarning` names the years and columns that have them. A
+    certificate number given to more than one certificate is also warned.
 
     Parameters
     ----------
@@ -165,6 +173,11 @@ def process(
             years.append(_process_year(register, year, path, partial))
 
         for_each_member(raw, register.member_regex, handle, scratch=partial)
+        latest = (
+            mark_latest(partial / _CERTIFICATES, register.latest)
+            if register.latest is not None
+            else None
+        )
         manifest = ProcessManifest(
             source_key=key,
             snapshot=raw.name,
@@ -173,9 +186,10 @@ def process(
             package_version=version("py-epc"),
             processed_at=processed_at,
             years=tuple(years),
+            latest=latest,
         )
         write_manifest(partial, manifest)
-    _warn(key, years)
+    _warn(key, years, latest)
     return build
 
 
@@ -309,8 +323,8 @@ def _summarise(
     )
 
 
-def _warn(key: str, years: list[YearSummary]) -> None:
-    """Warn about any year with invalid values or year mismatches."""
+def _warn(key: str, years: list[YearSummary], latest: LatestSummary | None) -> None:
+    """Warn about invalid values, year mismatches and repeated numbers."""
     problems: list[str] = []
     for summary in sorted(years, key=lambda summary: summary.year):
         found = [f"{name} ({values.count})" for name, values in summary.invalid.items()]
@@ -322,6 +336,13 @@ def _warn(key: str, years: list[YearSummary]) -> None:
         warnings.warn(
             f"{key} has values that did not parse or are in the wrong year;"
             f" see the build manifest. {'; '.join(problems)}",
+            ProcessWarning,
+            stacklevel=3,
+        )
+    if latest is not None and latest.duplicate_certificate_numbers:
+        warnings.warn(
+            f"{key} gives {latest.duplicate_certificate_numbers} certificate"
+            " numbers to more than one certificate; see the build manifest.",
             ProcessWarning,
             stacklevel=3,
         )

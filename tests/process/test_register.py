@@ -45,6 +45,16 @@ def register_with(**changes: Any) -> dict[str, Any]:
     return {**_REGISTER, **changes}
 
 
+def latest_rule(**fields: Any) -> dict[str, Any]:
+    """Return the fields of a latest rule on the minimal register's columns."""
+    return {
+        "property_columns": ["a"],
+        "order_columns": ["b"],
+        "certificate_column": "a",
+        **fields,
+    }
+
+
 def column(**fields: Any) -> dict[str, Any]:
     """Return the fields of a text column, with some replaced."""
     return {"source": "C", "name": "c", "type": "text", "description": "d", **fields}
@@ -123,6 +133,21 @@ class TestRegister:
                 {"year_column": "missing"},
                 "not a date or datetime column",
                 id="year-column-unknown",
+            ),
+            pytest.param(
+                {"latest": latest_rule(property_columns=["missing"])},
+                r"latest names unknown columns \['missing'\]",
+                id="latest-unknown-column",
+            ),
+            pytest.param(
+                {"latest": latest_rule(superseded_column="a")},
+                "is not a flag column",
+                id="latest-superseded-not-flag",
+            ),
+            pytest.param(
+                {"latest": latest_rule(property_columns=[])},
+                "at least 1 item",
+                id="latest-without-property-columns",
             ),
             pytest.param(
                 {"label_rows": -1},

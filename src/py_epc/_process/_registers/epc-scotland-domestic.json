@@ -7,6 +7,12 @@
   "missing_values": ["", "N/A", "Data removed"],
   "true_values": ["Y", "y", "True", "true", "TRUE"],
   "false_values": ["N", "n", "False", "false", "FALSE"],
+  "latest": {
+    "property_columns": ["uprn", "building_reference_number"],
+    "order_columns": ["lodgement_datetime", "certificate_number"],
+    "certificate_column": "certificate_number",
+    "superseded_column": "historic"
+  },
   "columns": [
     {
       "source": "HISTORIC",

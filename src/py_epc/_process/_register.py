@@ -1,4 +1,4 @@
-"""Register definitions (how to read and name each register's columns)."""
+"""Register definitions: how to read, type and name a register's columns."""
 
 import re
 from collections import Counter
@@ -60,6 +60,24 @@ class Column(BaseModel):
         return self
 
 
+class LatestRule(BaseModel):
+    """How to find each property's latest certificate in a register."""
+
+    model_config = _MODEL_CONFIG
+
+    property_columns: tuple[str, ...] = Field(min_length=1)
+    """Columns that identify a property, in order of preference."""
+
+    order_columns: tuple[str, ...] = Field(min_length=1)
+    """Columns that order a property's certificates, oldest first."""
+
+    certificate_column: str
+    """Column holding the certificate number, checked to be unique."""
+
+    superseded_column: str | None = None
+    """Flag the publisher sets on replaced certificates, to compare with."""
+
+
 class Register(BaseModel):
     """The columns of one register's published files, and how to read them."""
 
@@ -88,6 +106,9 @@ class Register(BaseModel):
 
     year_column: str | None = None
     """Name of the date column whose year should match the member's year."""
+
+    latest: LatestRule | None = None
+    """How to find each property's latest certificate, if at all."""
 
     columns: tuple[Column, ...]
     """Every published column, in header order."""
@@ -126,7 +147,25 @@ class Register(BaseModel):
         flags = any(column.type == "flag" for column in self.columns)
         if flags and not (self.true_values and self.false_values):
             raise ValueError("flag columns need true_values and false_values")
+        if self.latest is not None:
+            self._check_latest(self.latest)
         return self
+
+    def _check_latest(self, latest: LatestRule) -> None:
+        types = {column.name: column.type for column in self.columns}
+        named = [
+            *latest.property_columns,
+            *latest.order_columns,
+            latest.certificate_column,
+            *([latest.superseded_column] if latest.superseded_column else []),
+        ]
+        unknown = [name for name in named if name not in types]
+        if unknown:
+            raise ValueError(f"latest names unknown columns {unknown}")
+        if latest.superseded_column and types[latest.superseded_column] != "flag":
+            raise ValueError(
+                f"superseded_column {latest.superseded_column!r} is not a flag column"
+            )
 
     def match_header(self, header: Sequence[str]) -> dict[str, Column]:
         """
