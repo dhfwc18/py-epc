@@ -12,6 +12,9 @@ from py_epc._process._register import Register, load_register
 # Header of each shipped register's files, as published.
 _HEADERS = Path(__file__).parent / "headers"
 
+# Keys of the sources that have a shipped register definition.
+_SHIPPED_KEYS = ["epc.scotland.domestic", "epc.england-and-wales.domestic"]
+
 # Fields of a minimal valid register, with one text and one date column.
 _REGISTER: dict[str, Any] = {
     "version": 1,
@@ -183,7 +186,7 @@ class TestRegisterMatchHeader:
 class TestLoadRegister:
     """`load_register` returns a shipped register definition."""
 
-    @pytest.mark.parametrize("key", [pytest.param("epc.scotland.domestic")])
+    @pytest.mark.parametrize("key", _SHIPPED_KEYS)
     def test_shipped_definition_matches_published_header(self, key: str) -> None:
         header = (
             (_HEADERS / f"{key.replace('.', '-')}.csv")
@@ -193,10 +196,9 @@ class TestLoadRegister:
         )
         assert list(load_register(key).match_header(header)) == header
 
-    def test_shipped_definition_names_its_source(self) -> None:
-        assert load_register("epc.scotland.domestic").source_key == (
-            "epc.scotland.domestic"
-        )
+    @pytest.mark.parametrize("key", _SHIPPED_KEYS)
+    def test_shipped_definition_names_its_source(self, key: str) -> None:
+        assert load_register(key).source_key == key
 
     def test_unknown_key_raises_key_error(self) -> None:
         with pytest.raises(KeyError, match="No register definition"):

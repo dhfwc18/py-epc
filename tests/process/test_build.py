@@ -4,7 +4,7 @@ import codecs
 import json
 import warnings
 from collections.abc import Callable
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 import polars as pl
@@ -288,6 +288,43 @@ class TestProcessWithShippedRegister:
                 "uprn": 906700000001,
                 "historic": False,
                 "total_floor_area": 72.5,
+            }
+        ]
+        assert frame.width == len(names) + 1
+
+    def test_england_and_wales_domestic_zip_is_parsed_with_every_column(
+        self, tmp_path: Path, make_snapshot: Callable[..., Path]
+    ) -> None:
+        key = "epc.england-and-wales.domestic"
+        header = (_HEADERS / "epc-england-and-wales-domestic.csv").read_text().strip()
+        names = header.split(",")
+        row = dict.fromkeys(names, "")
+        row |= {
+            "lodgement_date": "2025-03-26",
+            "lodgement_datetime": "2025-03-26 14:37:12",
+            "uprn": "100030317077",
+            "mains_gas_flag": "Y",
+            "current_energy_rating": "INVALID!",
+            "total_floor_area": "72.5",
+        }
+        lines = [header, ",".join(row[name] for name in names), ""]
+        make_snapshot(
+            key,
+            {
+                "certificates-2025.csv": "\n".join(lines),
+                "recommendations-2025.csv": "certificate_number,improvement\n",
+            },
+            archive="zip",
+        )
+        frame = certificates(process(key, tmp_path))
+        assert frame.select(
+            "lodgement_datetime", "uprn", "mains_gas_flag", "current_energy_rating"
+        ).to_dicts() == [
+            {
+                "lodgement_datetime": datetime(2025, 3, 26, 14, 37, 12),
+                "uprn": 100030317077,
+                "mains_gas_flag": True,
+                "current_energy_rating": None,
             }
         ]
         assert frame.width == len(names) + 1
