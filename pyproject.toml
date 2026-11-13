@@ -4,6 +4,8 @@ version = "0.1.0"
 description = "Python package to collect and clean the Energy Performance of Building data."
 readme = "README.md"
 requires-python = ">=3.14"
+license = "MPL-2.0"
+license-files = ["ATTRIBUTION.md", "LICENSE"]
 authors = [{ name = "David Huang", email = "dh.fwc18@gmail.com" }]
 dependencies = [
   "httpx>=0.28.1",
@@ -37,11 +39,11 @@ deprecateTypingAliases = true
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]
-strict = true
 filterwarnings = [
   "error::ResourceWarning",
   "error::pytest.PytestUnraisableExceptionWarning",
 ]
+strict = true
 testpaths = ["tests"]
 
 [tool.ruff]
