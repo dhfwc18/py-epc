@@ -16,6 +16,7 @@ from py_epc._process._build import (
     process,
     process_epc,
 )
+from py_epc._scan import scan, scan_epc
 from py_epc._source import Source
 
 __all__ = [
@@ -35,4 +36,6 @@ __all__ = [
     "download_os_open_uprn",
     "process",
     "process_epc",
+    "scan",
+    "scan_epc",
 ]
