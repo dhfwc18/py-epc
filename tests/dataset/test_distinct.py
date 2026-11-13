@@ -1,0 +1,85 @@
+"""Tests for converting a column one distinct value at a time."""
+
+import polars as pl
+import pytest
+
+from py_epc._dataset._distinct import join_distinct, map_distinct
+
+
+def upper(values: list[str]) -> list[str | None]:
+    """Return each value in capitals, with "skip" as None."""
+    return [None if value == "skip" else value.upper() for value in values]
+
+
+def lengths(values: list[str]) -> pl.DataFrame:
+    """Return the length of each value, as a frame of one column."""
+    return pl.DataFrame({"length": [len(value) for value in values]})
+
+
+class TestMapDistinct:
+    """`map_distinct` converts each distinct value of a column once."""
+
+    def test_values_are_converted_in_row_order(self) -> None:
+        frame = pl.LazyFrame({"word": ["b", "a", "b", None], "row": [1, 2, 3, 4]})
+        result = map_distinct(frame, "word", upper).collect()
+        assert result.to_dict(as_series=False) == {
+            "word": ["B", "A", "B", None],
+            "row": [1, 2, 3, 4],
+        }
+
+    def test_column_keeps_its_place(self) -> None:
+        frame = pl.LazyFrame({"row": [1], "word": ["a"], "other": [2]})
+        assert map_distinct(frame, "word", upper).collect().columns == [
+            "row",
+            "word",
+            "other",
+        ]
+
+    def test_converter_returning_none_gives_null(self) -> None:
+        frame = pl.LazyFrame({"word": ["skip", "a"]})
+        result = map_distinct(frame, "word", upper).collect()
+        assert result["word"].to_list() == [None, "A"]
+
+    def test_each_distinct_value_is_converted_once(self) -> None:
+        seen: list[list[str]] = []
+
+        def record(values: list[str]) -> list[str | None]:
+            seen.append(sorted(values))
+            return list(values)
+
+        frame = pl.LazyFrame({"word": ["a", "b", "a", "a", None]})
+        map_distinct(frame, "word", record).collect()
+        assert seen == [["a", "b"]]
+
+    def test_converter_of_wrong_length_raises_value_error(self) -> None:
+        frame = pl.LazyFrame({"word": ["a", "b"]})
+        with pytest.raises(ValueError, match="returned 1 values for 2"):
+            map_distinct(frame, "word", lambda values: values[:1])
+
+
+class TestJoinDistinct:
+    """`join_distinct` adds columns built from each distinct value once."""
+
+    def test_columns_are_added_in_row_order(self) -> None:
+        frame = pl.LazyFrame({"word": ["ccc", "a", "ccc"], "row": [1, 2, 3]})
+        result = join_distinct(frame, "word", lengths).collect()
+        assert result.to_dict(as_series=False) == {
+            "word": ["ccc", "a", "ccc"],
+            "row": [1, 2, 3],
+            "length": [3, 1, 3],
+        }
+
+    def test_null_value_gives_null_in_added_columns(self) -> None:
+        frame = pl.LazyFrame({"word": [None, "ab"]}, schema={"word": pl.String})
+        result = join_distinct(frame, "word", lengths).collect()
+        assert result["length"].to_list() == [None, 2]
+
+    def test_builder_of_wrong_height_raises_value_error(self) -> None:
+        frame = pl.LazyFrame({"word": ["a", "b"]})
+        with pytest.raises(ValueError, match="returned 1 rows for 2"):
+            join_distinct(frame, "word", lambda values: lengths(values[:1]))
+
+    def test_builder_returning_existing_column_raises_value_error(self) -> None:
+        frame = pl.LazyFrame({"word": ["a"], "length": [9]})
+        with pytest.raises(ValueError, match=r"columns the frame has: \['length'\]"):
+            join_distinct(frame, "word", lengths)
