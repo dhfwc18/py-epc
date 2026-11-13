@@ -3,6 +3,7 @@
   "source_key": "epc.scotland.domestic",
   "member_pattern": "(\\d{4})\\.csv",
   "label_rows": 1,
+  "year_column": "lodgement_date",
   "missing_values": ["", "N/A", "Data removed"],
   "true_values": ["Y", "y", "True", "true", "TRUE"],
   "false_values": ["N", "n", "False", "false", "FALSE"],

@@ -112,6 +112,16 @@ class TestRegister:
                 id="pattern-not-valid",
             ),
             pytest.param(
+                {"year_column": "a"},
+                "not a date or datetime column",
+                id="year-column-not-a-date",
+            ),
+            pytest.param(
+                {"year_column": "missing"},
+                "not a date or datetime column",
+                id="year-column-unknown",
+            ),
+            pytest.param(
                 {"label_rows": -1},
                 "greater than or equal to 0",
                 id="negative-label-rows",

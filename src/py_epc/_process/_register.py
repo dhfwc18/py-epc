@@ -86,6 +86,9 @@ class Register(BaseModel):
     false_values: tuple[str, ...] = ()
     """Values that mean false, in every flag column."""
 
+    year_column: str | None = None
+    """Name of the date column whose year should match the member's year."""
+
     columns: tuple[Column, ...]
     """Every published column, in header order."""
 
@@ -113,6 +116,13 @@ class Register(BaseModel):
                 for header in (column.source, *column.aliases)
             ),
         )
+        if self.year_column is not None and not any(
+            column.name == self.year_column and column.type in {"date", "datetime"}
+            for column in self.columns
+        ):
+            raise ValueError(
+                f"year_column {self.year_column!r} is not a date or datetime column"
+            )
         flags = any(column.type == "flag" for column in self.columns)
         if flags and not (self.true_values and self.false_values):
             raise ValueError("flag columns need true_values and false_values")

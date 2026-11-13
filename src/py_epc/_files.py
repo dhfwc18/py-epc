@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 @contextlib.contextmanager
-def atomic_folder(folder: Path) -> Generator[Path]:
+def atomic_folder(folder: Path, *, replace: bool = False) -> Generator[Path]:
     """
     Yield a hidden partial folder that becomes `folder` only on success.
 
@@ -18,7 +18,10 @@ def atomic_folder(folder: Path) -> Generator[Path]:
     Parameters
     ----------
     folder : Path
-        Folder to create. It must not exist yet.
+        Folder to create.
+    replace : bool, default False
+        Whether to replace `folder` if it exists. The old folder is kept
+        until the new one is complete, then deleted.
 
     Yields
     ------
@@ -30,13 +33,20 @@ def atomic_folder(folder: Path) -> Generator[Path]:
     FileExistsError
         If the partial folder already exists.
     OSError
-        If `folder` already exists and is not empty.
+        If `folder` already exists and is not empty, and `replace` is false.
     """
     partial = folder.with_name(f".{folder.name}.part")
     partial.mkdir(parents=True)
     try:
         yield partial
-        partial.rename(folder)
+        if replace and folder.exists():
+            old = folder.with_name(f".{folder.name}.old")
+            shutil.rmtree(old, ignore_errors=True)
+            folder.rename(old)
+            partial.rename(folder)
+            shutil.rmtree(old, ignore_errors=True)
+        else:
+            partial.rename(folder)
     finally:
         shutil.rmtree(partial, ignore_errors=True)
 
