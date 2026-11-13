@@ -13,7 +13,7 @@ from typing import BinaryIO, Final, Self
 import py7zr
 from py7zr.io import NullIO, Py7zIO, WriterFactory
 
-from py_epc._manifest import MANIFEST_NAME, DownloadManifest, read_manifest
+from py_epc._manifest import DownloadManifest, find_completed, read_manifest
 
 # Function that takes a member's year and the path of its temporary copy.
 # The copy is deleted once the function returns.
@@ -55,27 +55,7 @@ def find_snapshot(
         If there is no completed snapshot, or none with that name.
     """
     source_folder = Path(root).expanduser().joinpath("raw", *key.split("."))
-    completed = (
-        sorted(
-            folder.name
-            for folder in source_folder.iterdir()
-            if not folder.name.startswith(".") and (folder / MANIFEST_NAME).is_file()
-        )
-        if source_folder.is_dir()
-        else []
-    )
-    if snapshot is None:
-        if not completed:
-            raise FileNotFoundError(
-                f"no completed download of {key!r} in {source_folder}"
-            )
-        # Stamps such as 20261111T093000Z sort in time order.
-        return source_folder / completed[-1]
-    if snapshot not in completed:
-        raise FileNotFoundError(
-            f"no completed download {snapshot!r} of {key!r} in {source_folder}"
-        )
-    return source_folder / snapshot
+    return find_completed(source_folder, snapshot)
 
 
 def for_each_member(

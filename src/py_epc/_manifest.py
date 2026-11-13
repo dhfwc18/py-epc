@@ -76,3 +76,46 @@ def read_manifest[M: BaseModel](folder: Path, model: type[M]) -> M:
         If the manifest does not match `model`.
     """
     return model.model_validate_json((folder / MANIFEST_NAME).read_bytes())
+
+
+def find_completed(folder: Path, name: str | None = None) -> Path:
+    """
+    Return the newest completed subfolder of `folder`, or the named one.
+
+    A subfolder is complete when it holds a manifest, which is written last.
+    Hidden folders, such as ``.<stamp>.part``, are ignored. Names are stamps
+    such as ``"20261111T093000Z"``, which sort in time order.
+
+    Parameters
+    ----------
+    folder : Path
+        Folder holding one subfolder per download or build.
+    name : str, optional
+        Name of the subfolder to return. By default, the newest.
+
+    Returns
+    -------
+    Path
+        The completed subfolder.
+
+    Raises
+    ------
+    FileNotFoundError
+        If there is no completed subfolder, or none with that name.
+    """
+    completed = (
+        sorted(
+            child.name
+            for child in folder.iterdir()
+            if not child.name.startswith(".") and (child / MANIFEST_NAME).is_file()
+        )
+        if folder.is_dir()
+        else []
+    )
+    if name is None:
+        if not completed:
+            raise FileNotFoundError(f"nothing completed in {folder}")
+        return folder / completed[-1]
+    if name not in completed:
+        raise FileNotFoundError(f"no completed {name!r} in {folder}")
+    return folder / name
