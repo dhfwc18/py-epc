@@ -23,8 +23,8 @@ from py_epc._process._archive import find_snapshot, for_each_member
 _SOURCE_KEY: Final = "ons.postcode-directory"
 
 # Name of the processed file in a build, and of its postcode column.
-_POSTCODES_FILE: Final = "postcodes.parquet"
-_POSTCODE_COLUMN: Final = "postcode"
+POSTCODES_FILE: Final = "postcodes.parquet"
+POSTCODE_COLUMN: Final = "postcode"
 
 # Folder in the archive holding the lookups of codes to names.
 _DOCUMENTS_FOLDER: Final = "Documents"
@@ -302,7 +302,7 @@ def process_ons_postcode_directory(
 
         def handle(year: int, path: Path) -> None:
             rows, excluded, summaries = _write_postcodes(
-                directory, chosen, names, path, archive, partial / _POSTCODES_FILE
+                directory, chosen, names, path, archive, partial / POSTCODES_FILE
             )
             found.append(
                 PostcodeManifest(
@@ -375,13 +375,13 @@ def _write_postcodes(
     )
     excluded_rows = raw.filter(excluded).select(pl.len()).collect().item()
     frame = raw.filter(excluded.not_()).select(
-        postcode.alias(_POSTCODE_COLUMN),
+        postcode.alias(POSTCODE_COLUMN),
         *(
             _value(directory, directory.fields[name], columns[name]).alias(name)
             for name in chosen
         ),
     )
-    output = [_POSTCODE_COLUMN]
+    output = [POSTCODE_COLUMN]
     lookup_files: dict[str, tuple[str, ...]] = {}
     # Counts of postcodes whose value no lookup has, keyed by field.
     unmatched: dict[str, pl.Expr] = {}
@@ -409,7 +409,7 @@ def _write_postcodes(
         pl.len().alias("_rows"),
         *(count.alias(name) for name, count in unmatched.items()),
     ).collect(engine="streaming")
-    frame.select(output).sort(_POSTCODE_COLUMN).sink_parquet(target, compression="zstd")
+    frame.select(output).sort(POSTCODE_COLUMN).sink_parquet(target, compression="zstd")
     summaries = {
         name: FieldSummary(
             column=columns[name],
