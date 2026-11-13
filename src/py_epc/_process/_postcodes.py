@@ -29,6 +29,9 @@ _POSTCODE_COLUMN: Final = "postcode"
 # Folder in the archive holding the lookups of codes to names.
 _DOCUMENTS_FOLDER: Final = "Documents"
 
+# A UK postcode without spaces.
+_POSTCODE_PATTERN: Final = r"^([A-Z]{1,2}[0-9][A-Z0-9]?[0-9][A-Z]{2}|GIR0AA)$"
+
 # Settings shared by the models, which are read-only and reject unknown keys.
 _MODEL_CONFIG = ConfigDict(
     frozen=True,
@@ -175,6 +178,41 @@ class PostcodeManifest(BaseModel):
 
     fields: dict[str, FieldSummary]
     """Where each chosen field came from, keyed by field name."""
+
+
+def normalise_postcode(postcode: pl.Expr) -> pl.Expr:
+    """
+    Return postcodes in the ONS form, such as ``"AB10 1AA"``, or null.
+
+    Letters are made upper case and every space is removed, then one space
+    is put before the last three characters. A value that is not a valid
+    UK postcode, such as ``"N/A"`` or a partial postcode, becomes null, so
+    it can never match another.
+
+    Parameters
+    ----------
+    postcode : polars.Expr
+        Postcodes as text, in any case and spacing, such as ``"ab101aa"``.
+
+    Returns
+    -------
+    polars.Expr
+        Postcodes in the ONS form, or null where not valid.
+
+    Examples
+    --------
+    >>> import polars as pl
+    >>> postcodes = pl.Series(["ab101aa", " AB10  1AA ", "N/A"])
+    >>> pl.select(normalise_postcode(pl.lit(postcodes))).to_series().to_list()
+    ['AB10 1AA', 'AB10 1AA', None]
+    """
+    compact = postcode.str.to_uppercase().str.replace_all(r"\s+", "")
+    spaced = pl.concat_str(
+        compact.str.slice(0, compact.str.len_chars() - 3),
+        pl.lit(" "),
+        compact.str.slice(-3),
+    )
+    return pl.when(compact.str.contains(_POSTCODE_PATTERN)).then(spaced)
 
 
 def load_postcode_directory() -> PostcodeDirectory:
@@ -328,7 +366,7 @@ def _write_postcodes(
         name: _one_match(directory.fields[name].column, header, f"{name!r} column")
         for name in chosen
     }
-    postcode = pl.col(directory.postcode_column).str.strip_chars().str.to_uppercase()
+    postcode = normalise_postcode(pl.col(directory.postcode_column))
     excluded = pl.any_horizontal(
         postcode.str.starts_with(prefix) for prefix in directory.excluded_prefixes
     )

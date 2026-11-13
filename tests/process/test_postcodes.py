@@ -10,7 +10,7 @@ import pytest
 
 from py_epc import Config, PostcodeManifest, process_ons_postcode_directory
 from py_epc._manifest import read_manifest
-from py_epc._process._postcodes import load_postcode_directory
+from py_epc._process._postcodes import load_postcode_directory, normalise_postcode
 
 # Key of the source the tests process.
 _SOURCE_KEY = "ons.postcode-directory"
@@ -74,6 +74,48 @@ def directory(make_snapshot: Callable[..., Path]) -> Path:
 def postcodes(build: Path) -> pl.DataFrame:
     """Return the processed postcodes of a build."""
     return pl.read_parquet(build / "postcodes.parquet")
+
+
+def normalised(values: list[str | None]) -> list[str | None]:
+    """Return `values` normalised as postcodes."""
+    frame = pl.DataFrame({"postcode": values}, schema={"postcode": pl.String})
+    return frame.select(normalise_postcode(pl.col("postcode")))["postcode"].to_list()
+
+
+class TestNormalisePostcode:
+    """`normalise_postcode` puts postcodes in the ONS form, or nulls them."""
+
+    @pytest.mark.parametrize(
+        ("value", "expected"),
+        [
+            pytest.param("AB10 1AA", "AB10 1AA", id="already-normal"),
+            pytest.param("ab10 1aa", "AB10 1AA", id="lower-case"),
+            pytest.param("AB101AA", "AB10 1AA", id="no-space"),
+            pytest.param(" AB10  1AA ", "AB10 1AA", id="extra-spaces"),
+            pytest.param("AB10\t1AA", "AB10 1AA", id="tab"),
+            pytest.param("M1 1AA", "M1 1AA", id="shortest"),
+            pytest.param("EC1A 1BB", "EC1A 1BB", id="letter-in-outward"),
+            pytest.param("W1A 0AX", "W1A 0AX", id="one-letter-area-with-letter"),
+            pytest.param("gir0aa", "GIR 0AA", id="girobank"),
+        ],
+    )
+    def test_valid_postcode_returns_ons_form(self, value: str, expected: str) -> None:
+        assert normalised([value]) == [expected]
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            pytest.param("", id="empty"),
+            pytest.param("N/A", id="placeholder"),
+            pytest.param("AB10", id="outward-only"),
+            pytest.param("ABC 1AA", id="three-letter-area"),
+            pytest.param("AB10 1A", id="short-inward"),
+            pytest.param("AB10 11A", id="digit-in-inward-letters"),
+            pytest.param(None, id="null"),
+        ],
+    )
+    def test_invalid_postcode_returns_null(self, value: str | None) -> None:
+        assert normalised([value]) == [None]
 
 
 class TestLoadPostcodeDirectory:
