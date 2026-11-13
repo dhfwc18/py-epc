@@ -7,7 +7,7 @@ import polars as pl
 
 from py_epc._enums import EPCOrigin, EPCSegment, parse_member
 from py_epc._manifest import find_completed, read_manifest
-from py_epc._process._build import ProcessManifest
+from py_epc._process._build import CERTIFICATES_FOLDER, ProcessManifest
 from py_epc._process._latest import LATEST_COLUMN
 
 
@@ -57,7 +57,7 @@ def scan(
     builds = Path(root).expanduser().joinpath("processed", *key.split("."))
     folder = find_completed(builds, snapshot)
     manifest = read_manifest(folder, ProcessManifest)
-    frame = pl.scan_parquet(folder / "certificates", hive_partitioning=True)
+    frame = pl.scan_parquet(folder / CERTIFICATES_FOLDER, hive_partitioning=True)
     if not latest:
         return frame
     if manifest.latest is None:

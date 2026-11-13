@@ -7,7 +7,7 @@ import polars as pl
 import pytest
 
 from py_epc import EPCOrigin, EPCSegment, ProcessManifest, scan, scan_epc
-from py_epc._manifest import MANIFEST_NAME, write_manifest
+from py_epc._manifest import MANIFEST_FILE, write_manifest
 from py_epc._process._latest import LatestSummary
 
 # Key of the source the tests read.
@@ -102,7 +102,7 @@ class TestScan:
         newer = write_build(
             tmp_path, {2024: [("unfinished", True)]}, snapshot="20261111T093000Z"
         )
-        (newer / MANIFEST_NAME).unlink()
+        (newer / MANIFEST_FILE).unlink()
         assert numbers(scan(_SOURCE_KEY, tmp_path)) == ["done"]
 
     def test_root_starting_with_tilde_is_expanded_to_home(

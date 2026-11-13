@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from py_epc import DownloadManifest
 from py_epc._manifest import (
-    MANIFEST_NAME,
+    MANIFEST_FILE,
     find_completed,
     read_manifest,
     write_manifest,
@@ -31,7 +31,7 @@ class TestWriteManifest:
 
     def test_written_manifest_ends_with_newline(self, tmp_path: Path) -> None:
         write_manifest(tmp_path, _MANIFEST)
-        assert (tmp_path / MANIFEST_NAME).read_text(encoding="utf-8").endswith("}\n")
+        assert (tmp_path / MANIFEST_FILE).read_text(encoding="utf-8").endswith("}\n")
 
 
 class TestReadManifest:
@@ -46,7 +46,7 @@ class TestReadManifest:
             read_manifest(tmp_path, DownloadManifest)
 
     def test_invalid_manifest_raises_validation_error(self, tmp_path: Path) -> None:
-        (tmp_path / MANIFEST_NAME).write_text('{"version": 1}', encoding="utf-8")
+        (tmp_path / MANIFEST_FILE).write_text('{"version": 1}', encoding="utf-8")
         with pytest.raises(ValidationError):
             read_manifest(tmp_path, DownloadManifest)
 

@@ -16,6 +16,10 @@ from py_epc._process._build import (
     process,
     process_epc,
 )
+from py_epc._process._postcodes import (
+    PostcodeManifest,
+    process_ons_postcode_directory,
+)
 from py_epc._scan import scan, scan_epc
 from py_epc._source import Source
 
@@ -27,6 +31,7 @@ __all__ = [
     "EPCSegment",
     "ONSProduct",
     "OSProduct",
+    "PostcodeManifest",
     "ProcessManifest",
     "ProcessWarning",
     "Source",
@@ -36,6 +41,7 @@ __all__ = [
     "download_os_open_uprn",
     "process",
     "process_epc",
+    "process_ons_postcode_directory",
     "scan",
     "scan_epc",
 ]
