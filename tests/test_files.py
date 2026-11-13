@@ -40,6 +40,41 @@ class TestAtomicFolder:
         with pytest.raises(FileExistsError), atomic_folder(tmp_path / "result"):
             pass
 
+    def test_existing_folder_with_replace_is_replaced_on_success(
+        self, tmp_path: Path
+    ) -> None:
+        folder = tmp_path / "result"
+        folder.mkdir()
+        (folder / "old.txt").write_text("old", encoding="utf-8")
+        with atomic_folder(folder, replace=True) as partial:
+            (partial / "new.txt").write_text("new", encoding="utf-8")
+        assert [path.name for path in folder.iterdir()] == ["new.txt"]
+        assert list(tmp_path.iterdir()) == [folder]
+
+    def test_existing_folder_with_replace_is_kept_on_failure(
+        self, tmp_path: Path
+    ) -> None:
+        folder = tmp_path / "result"
+        folder.mkdir()
+        (folder / "old.txt").write_text("old", encoding="utf-8")
+        with (
+            pytest.raises(RuntimeError, match="failed"),
+            atomic_folder(folder, replace=True),
+        ):
+            raise RuntimeError("failed")
+        assert [path.name for path in folder.iterdir()] == ["old.txt"]
+        assert list(tmp_path.iterdir()) == [folder]
+
+    def test_existing_folder_without_replace_raises_os_error(
+        self, tmp_path: Path
+    ) -> None:
+        folder = tmp_path / "result"
+        folder.mkdir()
+        (folder / "old.txt").write_text("old", encoding="utf-8")
+        with pytest.raises(OSError), atomic_folder(folder):
+            pass
+        assert [path.name for path in folder.iterdir()] == ["old.txt"]
+
 
 class TestEnsureGitignore:
     """`ensure_gitignore` makes Git ignore a folder, keeping any own file."""

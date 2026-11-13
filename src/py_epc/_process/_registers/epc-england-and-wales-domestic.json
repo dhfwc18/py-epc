@@ -1,0 +1,600 @@
+{
+  "version": 1,
+  "source_key": "epc.england-and-wales.domestic",
+  "member_pattern": "certificates-(\\d{4})\\.csv",
+  "year_column": "lodgement_date",
+  "missing_values": ["", "NO DATA!", "NODATA!", "INVALID!", "N/A"],
+  "true_values": ["Y", "y"],
+  "false_values": ["N", "n"],
+  "latest": {
+    "property_columns": ["uprn"],
+    "order_columns": ["lodgement_datetime", "certificate_number"],
+    "certificate_column": "certificate_number"
+  },
+  "columns": [
+    {
+      "source": "certificate_number",
+      "name": "certificate_number",
+      "type": "text",
+      "description": "Certificate number, such as '0123-4567-8901-2345-6789'. Replaced LMK_KEY in March 2026; the two cannot be linked."
+    },
+    {
+      "source": "address1",
+      "name": "address1",
+      "type": "text",
+      "description": "First line of the address, usually the number or name and street.",
+      "restricted": true
+    },
+    {
+      "source": "address2",
+      "name": "address2",
+      "type": "text",
+      "description": "Second line of the address, usually the village, town or city.",
+      "restricted": true
+    },
+    {
+      "source": "address3",
+      "name": "address3",
+      "type": "text",
+      "description": "Third line of the address, usually the county. Often blank.",
+      "restricted": true
+    },
+    {
+      "source": "postcode",
+      "name": "postcode",
+      "type": "text",
+      "description": "Postcode.",
+      "restricted": true
+    },
+    {
+      "source": "posttown",
+      "name": "posttown",
+      "type": "text",
+      "description": "Post town."
+    },
+    {
+      "source": "address",
+      "name": "address",
+      "type": "text",
+      "description": "address1 to address3 joined, without the postcode.",
+      "restricted": true
+    },
+    {
+      "source": "constituency",
+      "name": "constituency",
+      "type": "text",
+      "description": "ONS code of the parliamentary constituency, on current boundaries."
+    },
+    {
+      "source": "constituency_label",
+      "name": "constituency_label",
+      "type": "text",
+      "description": "Name of the parliamentary constituency."
+    },
+    {
+      "source": "local_authority",
+      "name": "local_authority",
+      "type": "text",
+      "description": "ONS code of the local authority, on current boundaries. Blank when the address was not matched."
+    },
+    {
+      "source": "local_authority_label",
+      "name": "local_authority_label",
+      "type": "text",
+      "description": "Name of the local authority."
+    },
+    {
+      "source": "built_form",
+      "name": "built_form",
+      "type": "text",
+      "description": "How the property joins other buildings, such as 'Detached' or 'Mid-Terrace'."
+    },
+    {
+      "source": "co2_emiss_curr_per_floor_area",
+      "name": "co2_emiss_curr_per_floor_area",
+      "type": "number",
+      "description": "Current CO2 emissions per square metre of floor area.",
+      "unit": "kg CO2/m2/year"
+    },
+    {
+      "source": "co2_emissions_current",
+      "name": "co2_emissions_current",
+      "type": "number",
+      "description": "Current CO2 emissions.",
+      "unit": "t CO2/year"
+    },
+    {
+      "source": "co2_emissions_potential",
+      "name": "co2_emissions_potential",
+      "type": "number",
+      "description": "CO2 emissions after the recommended improvements.",
+      "unit": "t CO2/year"
+    },
+    {
+      "source": "construction_age_band",
+      "name": "construction_age_band",
+      "type": "text",
+      "description": "Construction age band of the building, in England and Wales bands."
+    },
+    {
+      "source": "current_energy_efficiency",
+      "name": "current_energy_efficiency",
+      "type": "integer",
+      "description": "Current energy efficiency rating (SAP rating), about 1 to 100."
+    },
+    {
+      "source": "current_energy_rating",
+      "name": "current_energy_rating",
+      "type": "text",
+      "description": "Current energy efficiency band, A to G."
+    },
+    {
+      "source": "energy_consumption_current",
+      "name": "energy_consumption_current",
+      "type": "number",
+      "description": "Primary energy use per square metre of floor area.",
+      "unit": "kWh/m2/year"
+    },
+    {
+      "source": "energy_consumption_potential",
+      "name": "energy_consumption_potential",
+      "type": "number",
+      "description": "Primary energy use per square metre after the recommended improvements.",
+      "unit": "kWh/m2/year"
+    },
+    {
+      "source": "energy_tariff",
+      "name": "energy_tariff",
+      "type": "text",
+      "description": "Electricity tariff type, such as 'Single' or 'dual'."
+    },
+    {
+      "source": "environment_impact_current",
+      "name": "environment_impact_current",
+      "type": "integer",
+      "description": "Current environmental impact rating. Higher means lower emissions."
+    },
+    {
+      "source": "environment_impact_potential",
+      "name": "environment_impact_potential",
+      "type": "integer",
+      "description": "Environmental impact rating after the recommended improvements."
+    },
+    {
+      "source": "extension_count",
+      "name": "extension_count",
+      "type": "integer",
+      "description": "Number of extensions, up to 4."
+    },
+    {
+      "source": "fixed_lighting_outlets_count",
+      "name": "fixed_lighting_outlets_count",
+      "type": "integer",
+      "description": "Number of fixed lighting outlets."
+    },
+    {
+      "source": "flat_storey_count",
+      "name": "flat_storey_count",
+      "type": "integer",
+      "description": "Number of storeys in the block of flats, including ground and basement."
+    },
+    {
+      "source": "flat_top_storey",
+      "name": "flat_top_storey",
+      "type": "flag",
+      "description": "Whether the flat is on the top storey."
+    },
+    {
+      "source": "floor_description",
+      "name": "floor_description",
+      "type": "text",
+      "description": "Description of the lowest floor. Blank when there is heated space below. First building part only."
+    },
+    {
+      "source": "floor_energy_eff",
+      "name": "floor_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the floor, from Very Poor to Very Good."
+    },
+    {
+      "source": "floor_height",
+      "name": "floor_height",
+      "type": "number",
+      "description": "Average storey height.",
+      "unit": "m"
+    },
+    {
+      "source": "floor_level",
+      "name": "floor_level",
+      "type": "text",
+      "description": "Floor of a flat or maisonette, such as 'Ground', '1st' or 'mid floor'."
+    },
+    {
+      "source": "glazed_area",
+      "name": "glazed_area",
+      "type": "text",
+      "description": "Glazed area compared with a typical property, such as 'Normal' or 'More Than Typical'."
+    },
+    {
+      "source": "glazed_type",
+      "name": "glazed_type",
+      "type": "text",
+      "description": "Type of glazing."
+    },
+    {
+      "source": "heat_loss_corridor",
+      "name": "heat_loss_corridor",
+      "type": "text",
+      "description": "Corridor a flat loses heat to: no corridor, heated, unheated or stairwell."
+    },
+    {
+      "source": "heating_cost_current",
+      "name": "heating_cost_current",
+      "type": "number",
+      "description": "Current heating cost per year.",
+      "unit": "GBP/year"
+    },
+    {
+      "source": "heating_cost_potential",
+      "name": "heating_cost_potential",
+      "type": "number",
+      "description": "Heating cost per year after the recommended improvements.",
+      "unit": "GBP/year"
+    },
+    {
+      "source": "hot_water_cost_current",
+      "name": "hot_water_cost_current",
+      "type": "number",
+      "description": "Current hot water cost per year.",
+      "unit": "GBP/year"
+    },
+    {
+      "source": "hot_water_cost_potential",
+      "name": "hot_water_cost_potential",
+      "type": "number",
+      "description": "Hot water cost per year after the recommended improvements.",
+      "unit": "GBP/year"
+    },
+    {
+      "source": "hot_water_energy_eff",
+      "name": "hot_water_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the hot water, from Very Poor to Very Good."
+    },
+    {
+      "source": "hot_water_env_eff",
+      "name": "hot_water_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the hot water, from Very Poor to Very Good."
+    },
+    {
+      "source": "hotwater_description",
+      "name": "hotwater_description",
+      "type": "text",
+      "description": "Description of the hot water system."
+    },
+    {
+      "source": "inspection_date",
+      "name": "inspection_date",
+      "type": "date",
+      "description": "Date of the assessment.",
+      "formats": ["%Y-%m-%d"]
+    },
+    {
+      "source": "lighting_cost_current",
+      "name": "lighting_cost_current",
+      "type": "number",
+      "description": "Current lighting cost per year.",
+      "unit": "GBP/year"
+    },
+    {
+      "source": "lighting_cost_potential",
+      "name": "lighting_cost_potential",
+      "type": "number",
+      "description": "Lighting cost per year after the recommended improvements.",
+      "unit": "GBP/year"
+    },
+    {
+      "source": "lighting_description",
+      "name": "lighting_description",
+      "type": "text",
+      "description": "Description of the fixed lighting, such as 'low energy lighting in 50% of fixed outlets'."
+    },
+    {
+      "source": "lighting_energy_eff",
+      "name": "lighting_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the lighting, from Very Poor to Very Good."
+    },
+    {
+      "source": "lighting_env_eff",
+      "name": "lighting_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the lighting, from Very Poor to Very Good."
+    },
+    {
+      "source": "lodgement_date",
+      "name": "lodgement_date",
+      "type": "date",
+      "description": "Date the certificate was lodged on the register. Decides the yearly file it is in.",
+      "formats": ["%Y-%m-%d"]
+    },
+    {
+      "source": "lodgement_datetime",
+      "name": "lodgement_datetime",
+      "type": "datetime",
+      "description": "Date and time the certificate was lodged on the register, when it becomes valid.",
+      "formats": ["%Y-%m-%d %H:%M:%S"]
+    },
+    {
+      "source": "low_energy_lighting",
+      "name": "low_energy_lighting",
+      "type": "number",
+      "description": "Share of fixed lighting outlets that are low energy.",
+      "unit": "%"
+    },
+    {
+      "source": "low_energy_fixed_lighting_outlets_count",
+      "name": "low_energy_fixed_lighting_outlets_count",
+      "type": "integer",
+      "description": "Number of low energy fixed lighting outlets.",
+      "aliases": ["low_energy_fixed_light_count"]
+    },
+    {
+      "source": "main_fuel",
+      "name": "main_fuel",
+      "type": "text",
+      "description": "Fuel of the main heating."
+    },
+    {
+      "source": "mainheat_description",
+      "name": "mainheat_description",
+      "type": "text",
+      "description": "Description of the main heating, covering both systems where there are two."
+    },
+    {
+      "source": "mainheat_energy_eff",
+      "name": "mainheat_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the main heating, from Very Poor to Very Good."
+    },
+    {
+      "source": "mainheat_env_eff",
+      "name": "mainheat_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the main heating, from Very Poor to Very Good."
+    },
+    {
+      "source": "mainheatc_energy_eff",
+      "name": "mainheatc_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the main heating controls, from Very Poor to Very Good."
+    },
+    {
+      "source": "mainheatc_env_eff",
+      "name": "mainheatc_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the main heating controls, from Very Poor to Very Good."
+    },
+    {
+      "source": "mainheatcont_description",
+      "name": "mainheatcont_description",
+      "type": "text",
+      "description": "Description of the main heating controls."
+    },
+    {
+      "source": "main_heating_controls",
+      "name": "main_heating_controls",
+      "type": "text",
+      "description": "Main heating controls, such as 'Programmer, room thermostat and TRVs'. Older files held SAP codes."
+    },
+    {
+      "source": "mains_gas_flag",
+      "name": "mains_gas_flag",
+      "type": "flag",
+      "description": "Whether mains gas is used: a meter supplies at least one gas appliance."
+    },
+    {
+      "source": "mechanical_ventilation",
+      "name": "mechanical_ventilation",
+      "type": "text",
+      "description": "Ventilation, such as 'natural' or 'mechanical, extract only'."
+    },
+    {
+      "source": "multi_glaze_proportion",
+      "name": "multi_glaze_proportion",
+      "type": "number",
+      "description": "Share of window area that is double or triple glazed.",
+      "unit": "%"
+    },
+    {
+      "source": "number_habitable_rooms",
+      "name": "number_habitable_rooms",
+      "type": "integer",
+      "description": "Number of habitable rooms."
+    },
+    {
+      "source": "number_heated_rooms",
+      "name": "number_heated_rooms",
+      "type": "integer",
+      "description": "Number of habitable rooms with a fixed heater."
+    },
+    {
+      "source": "number_open_fireplaces",
+      "name": "number_open_fireplaces",
+      "type": "integer",
+      "description": "Number of open fireplaces."
+    },
+    {
+      "source": "photo_supply",
+      "name": "photo_supply",
+      "type": "number",
+      "description": "Share of roof area covered by photovoltaic panels. 0 means none.",
+      "unit": "%"
+    },
+    {
+      "source": "potential_energy_efficiency",
+      "name": "potential_energy_efficiency",
+      "type": "integer",
+      "description": "Energy efficiency rating after the recommended improvements."
+    },
+    {
+      "source": "potential_energy_rating",
+      "name": "potential_energy_rating",
+      "type": "text",
+      "description": "Energy efficiency band after the recommended improvements, A to G."
+    },
+    {
+      "source": "property_type",
+      "name": "property_type",
+      "type": "text",
+      "description": "Property type, such as House, Flat, Bungalow, Maisonette or Park home."
+    },
+    {
+      "source": "report_type",
+      "name": "report_type",
+      "type": "integer",
+      "description": "Assessment type: 2 for RdSAP (existing homes), 3 for SAP (new homes and conversions)."
+    },
+    {
+      "source": "roof_description",
+      "name": "roof_description",
+      "type": "text",
+      "description": "Description of the roof. First building part only."
+    },
+    {
+      "source": "roof_energy_eff",
+      "name": "roof_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the roof, from Very Poor to Very Good."
+    },
+    {
+      "source": "roof_env_eff",
+      "name": "roof_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the roof, from Very Poor to Very Good."
+    },
+    {
+      "source": "secondheat_description",
+      "name": "secondheat_description",
+      "type": "text",
+      "description": "Description of the secondary heating."
+    },
+    {
+      "source": "sheating_energy_eff",
+      "name": "sheating_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the secondary heating, from Very Poor to Very Good."
+    },
+    {
+      "source": "sheating_env_eff",
+      "name": "sheating_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the secondary heating, from Very Poor to Very Good."
+    },
+    {
+      "source": "solar_water_heating_flag",
+      "name": "solar_water_heating_flag",
+      "type": "flag",
+      "description": "Whether the property has solar water heating."
+    },
+    {
+      "source": "tenure",
+      "name": "tenure",
+      "type": "text",
+      "description": "Tenure, such as 'Owner-occupied' or 'Rented (social)'. Not used in the rating."
+    },
+    {
+      "source": "total_floor_area",
+      "name": "total_floor_area",
+      "type": "number",
+      "description": "Total floor area, to the inside of the external walls.",
+      "unit": "m2"
+    },
+    {
+      "source": "transaction_type",
+      "name": "transaction_type",
+      "type": "text",
+      "description": "Reason the certificate was made, such as a sale or a rental."
+    },
+    {
+      "source": "unheated_corridor_length",
+      "name": "unheated_corridor_length",
+      "type": "number",
+      "description": "Length of the wall to an unheated corridor.",
+      "unit": "m"
+    },
+    {
+      "source": "walls_description",
+      "name": "walls_description",
+      "type": "text",
+      "description": "Description of the walls. First building part only."
+    },
+    {
+      "source": "walls_energy_eff",
+      "name": "walls_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the walls, from Very Poor to Very Good."
+    },
+    {
+      "source": "walls_env_eff",
+      "name": "walls_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the walls, from Very Poor to Very Good."
+    },
+    {
+      "source": "wind_turbine_count",
+      "name": "wind_turbine_count",
+      "type": "integer",
+      "description": "Number of wind turbines."
+    },
+    {
+      "source": "windows_description",
+      "name": "windows_description",
+      "type": "text",
+      "description": "Description of the windows."
+    },
+    {
+      "source": "windows_energy_eff",
+      "name": "windows_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the windows, from Very Poor to Very Good."
+    },
+    {
+      "source": "windows_env_eff",
+      "name": "windows_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the windows, from Very Poor to Very Good."
+    },
+    {
+      "source": "floor_env_eff",
+      "name": "floor_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the floor, from Very Poor to Very Good."
+    },
+    {
+      "source": "region",
+      "name": "region",
+      "type": "text",
+      "description": "ONS code of the English region, such as 'E12000007' for London."
+    },
+    {
+      "source": "country",
+      "name": "country",
+      "type": "text",
+      "description": "Country: England or Wales. A few older certificates say 'England and Wales'."
+    },
+    {
+      "source": "uprn",
+      "name": "uprn",
+      "type": "integer",
+      "description": "Unique Property Reference Number. Blank when not known."
+    },
+    {
+      "source": "uprn_source",
+      "name": "uprn_source",
+      "type": "text",
+      "description": "How the UPRN was found: 'Energy Assessor' or 'Address Matched'. Blank when there is no UPRN."
+    }
+  ]
+}

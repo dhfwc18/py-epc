@@ -1,0 +1,690 @@
+{
+  "version": 1,
+  "source_key": "epc.scotland.domestic",
+  "member_pattern": "(\\d{4})\\.csv",
+  "label_rows": 1,
+  "year_column": "lodgement_datetime",
+  "missing_values": ["", "N/A", "Data removed"],
+  "true_values": ["Y", "y", "True", "true", "TRUE"],
+  "false_values": ["N", "n", "False", "false", "FALSE"],
+  "latest": {
+    "property_columns": ["uprn", "building_reference_number"],
+    "order_columns": ["lodgement_datetime", "certificate_number"],
+    "certificate_column": "certificate_number",
+    "superseded_column": "historic"
+  },
+  "columns": [
+    {
+      "source": "HISTORIC",
+      "name": "historic",
+      "type": "flag",
+      "description": "Whether a later certificate has replaced this one for the property. False means the latest, which may have expired."
+    },
+    {
+      "source": "BUILDING_REFERENCE_NUMBER",
+      "name": "building_reference_number",
+      "type": "text",
+      "description": "Property identifier made by the Scottish EPC register. Present even when no UPRN matches. Not a UPRN."
+    },
+    {
+      "source": "OSG_REFERENCE_NUMBER",
+      "name": "uprn",
+      "type": "integer",
+      "description": "Unique Property Reference Number, from the One Scotland Gazetteer. Blank when not matched."
+    },
+    {
+      "source": "ADDRESS1",
+      "name": "address1",
+      "type": "text",
+      "description": "First line of the address.",
+      "restricted": true
+    },
+    {
+      "source": "ADDRESS2",
+      "name": "address2",
+      "type": "text",
+      "description": "Second line of the address. Often blank.",
+      "restricted": true
+    },
+    {
+      "source": "ADDRESS3",
+      "name": "posttown",
+      "type": "text",
+      "description": "Post town.",
+      "restricted": true
+    },
+    {
+      "source": "POSTCODE",
+      "name": "postcode",
+      "type": "text",
+      "description": "Postcode.",
+      "restricted": true
+    },
+    {
+      "source": "INSPECTION_DATE",
+      "name": "inspection_date",
+      "type": "date",
+      "description": "Date of the assessment.",
+      "formats": ["%Y-%m-%d"]
+    },
+    {
+      "source": "TYPE_OF_ASSESSMENT",
+      "name": "type_of_assessment",
+      "type": "text",
+      "description": "Method of the assessment, such as RdSAP for an existing dwelling or SAP for a new one."
+    },
+    {
+      "source": "LODGEMENT_DATE",
+      "name": "lodgement_date",
+      "type": "date",
+      "description": "Date of the certificate. Usually the day it was lodged, but for a few certificates before 2022 it is earlier.",
+      "formats": ["%Y-%m-%d"]
+    },
+    {
+      "source": "ENERGY_CONSUMPTION_CURRENT",
+      "name": "energy_consumption_current",
+      "type": "number",
+      "description": "Primary energy use per square metre of floor area.",
+      "unit": "kWh/m2/year"
+    },
+    {
+      "source": "TOTAL_FLOOR_AREA",
+      "name": "total_floor_area",
+      "type": "number",
+      "description": "Total floor area. The publisher leaves out areas under 15 or over 1500.",
+      "unit": "m2"
+    },
+    {
+      "source": "3_YR_ENERGY_COST_CURRENT",
+      "name": "energy_cost_current_3yr",
+      "type": "number",
+      "description": "Total current energy costs over 3 years.",
+      "unit": "GBP"
+    },
+    {
+      "source": "3_YR_ENERGY_SAVINGS_POTENTIAL",
+      "name": "energy_savings_potential_3yr",
+      "type": "number",
+      "description": "Potential energy savings over 3 years.",
+      "unit": "GBP"
+    },
+    {
+      "source": "CURRENT_ENERGY_EFFICIENCY",
+      "name": "current_energy_efficiency",
+      "type": "integer",
+      "description": "Current energy efficiency rating (SAP rating)."
+    },
+    {
+      "source": "CURRENT_ENERGY_RATING",
+      "name": "current_energy_rating",
+      "type": "text",
+      "description": "Current energy efficiency band, A to G."
+    },
+    {
+      "source": "POTENTIAL_ENERGY_EFFICIENCY",
+      "name": "potential_energy_efficiency",
+      "type": "integer",
+      "description": "Potential energy efficiency rating, after the recommended improvements."
+    },
+    {
+      "source": "POTENTIAL_ENERGY_RATING",
+      "name": "potential_energy_rating",
+      "type": "text",
+      "description": "Potential energy efficiency band, A to G."
+    },
+    {
+      "source": "ENVIRONMENT_IMPACT_CURRENT",
+      "name": "environment_impact_current",
+      "type": "integer",
+      "description": "Current environmental impact rating."
+    },
+    {
+      "source": "CURRENT_ENVIRONMENTAL_RATING",
+      "name": "current_environmental_rating",
+      "type": "text",
+      "description": "Current environmental impact band, A to G."
+    },
+    {
+      "source": "ENVIRONMENT_IMPACT_POTENTIAL",
+      "name": "environment_impact_potential",
+      "type": "integer",
+      "description": "Potential environmental impact rating."
+    },
+    {
+      "source": "POTENTIAL_ENVIRONMENTAL_RATING",
+      "name": "potential_environmental_rating",
+      "type": "text",
+      "description": "Potential environmental impact band, A to G."
+    },
+    {
+      "source": "CO2_EMISS_CURR_PER_FLOOR_AREA",
+      "name": "co2_emiss_curr_per_floor_area",
+      "type": "number",
+      "description": "Current CO2 emissions per square metre of floor area.",
+      "unit": "kg CO2/m2/year"
+    },
+    {
+      "source": "IMPROVEMENTS",
+      "name": "improvements",
+      "type": "text",
+      "description": "Recommended improvements, as text."
+    },
+    {
+      "source": "WALL_DESCRIPTION",
+      "name": "walls_description",
+      "type": "text",
+      "description": "Description of the walls. Several parts are separated by ' | '."
+    },
+    {
+      "source": "WALL_ENERGY_EFF",
+      "name": "walls_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the walls, from Very Poor to Very Good."
+    },
+    {
+      "source": "WALL_ENV_EFF",
+      "name": "walls_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the walls, from Very Poor to Very Good."
+    },
+    {
+      "source": "ROOF_DESCRIPTION",
+      "name": "roof_description",
+      "type": "text",
+      "description": "Description of the roof. Several parts are separated by ' | '."
+    },
+    {
+      "source": "ROOF_ENERGY_EFF",
+      "name": "roof_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the roof, from Very Poor to Very Good."
+    },
+    {
+      "source": "ROOF_ENV_EFF",
+      "name": "roof_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the roof, from Very Poor to Very Good."
+    },
+    {
+      "source": "FLOOR_DESCRIPTION",
+      "name": "floor_description",
+      "type": "text",
+      "description": "Description of the floor. Several parts are separated by ' | '."
+    },
+    {
+      "source": "FLOOR_ENERGY_EFF",
+      "name": "floor_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the floor, from Very Poor to Very Good."
+    },
+    {
+      "source": "FLOOR_ENV_EFF",
+      "name": "floor_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the floor, from Very Poor to Very Good."
+    },
+    {
+      "source": "WINDOWS_DESCRIPTION",
+      "name": "windows_description",
+      "type": "text",
+      "description": "Description of the windows. Several parts are separated by ' | '."
+    },
+    {
+      "source": "WINDOWS_ENERGY_EFF",
+      "name": "windows_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the windows, from Very Poor to Very Good."
+    },
+    {
+      "source": "WINDOWS_ENV_EFF",
+      "name": "windows_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the windows, from Very Poor to Very Good."
+    },
+    {
+      "source": "MAINHEAT_DESCRIPTION",
+      "name": "mainheat_description",
+      "type": "text",
+      "description": "Description of the main heating. Several parts are separated by ' | '."
+    },
+    {
+      "source": "MAINHEAT_ENERGY_EFF",
+      "name": "mainheat_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the main heating, from Very Poor to Very Good."
+    },
+    {
+      "source": "MAINHEAT_ENV_EFF",
+      "name": "mainheat_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the main heating, from Very Poor to Very Good."
+    },
+    {
+      "source": "MAINHEATCONT_DESCRIPTION",
+      "name": "mainheatcont_description",
+      "type": "text",
+      "description": "Description of the main heating controls. Several parts are separated by ' | '."
+    },
+    {
+      "source": "MAINHEATC_ENERGY_EFF",
+      "name": "mainheatc_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the main heating controls, from Very Poor to Very Good."
+    },
+    {
+      "source": "MAINHEATC_ENV_EFF",
+      "name": "mainheatc_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the main heating controls, from Very Poor to Very Good."
+    },
+    {
+      "source": "SECONDHEAT_DESCRIPTION",
+      "name": "secondheat_description",
+      "type": "text",
+      "description": "Description of the secondary heating. Several parts are separated by ' | '."
+    },
+    {
+      "source": "SHEATING_ENERGY_EFF",
+      "name": "sheating_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the secondary heating, from Very Poor to Very Good."
+    },
+    {
+      "source": "SHEATING_ENV_EFF",
+      "name": "sheating_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the secondary heating, from Very Poor to Very Good."
+    },
+    {
+      "source": "HOTWATER_DESCRIPTION",
+      "name": "hotwater_description",
+      "type": "text",
+      "description": "Description of the hot water. Several parts are separated by ' | '."
+    },
+    {
+      "source": "HOT_WATER_ENERGY_EFF",
+      "name": "hot_water_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the hot water, from Very Poor to Very Good."
+    },
+    {
+      "source": "HOT_WATER_ENV_EFF",
+      "name": "hot_water_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the hot water, from Very Poor to Very Good."
+    },
+    {
+      "source": "LIGHTING_DESCRIPTION",
+      "name": "lighting_description",
+      "type": "text",
+      "description": "Description of the lighting. Several parts are separated by ' | '."
+    },
+    {
+      "source": "LIGHTING_ENERGY_EFF",
+      "name": "lighting_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the lighting, from Very Poor to Very Good."
+    },
+    {
+      "source": "LIGHTING_ENV_EFF",
+      "name": "lighting_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the lighting, from Very Poor to Very Good."
+    },
+    {
+      "source": "AIR_TIGHTNESS_DESCRIPTION",
+      "name": "air_tightness_description",
+      "type": "text",
+      "description": "Description of the air tightness. Several parts are separated by ' | '. New dwellings (SAP) only."
+    },
+    {
+      "source": "AIR_TIGHTNESS_ENERGY_EFF",
+      "name": "air_tightness_energy_eff",
+      "type": "text",
+      "description": "Energy efficiency of the air tightness, from Very Poor to Very Good. New dwellings (SAP) only."
+    },
+    {
+      "source": "AIR_TIGHTNESS_ENV_EFF",
+      "name": "air_tightness_env_eff",
+      "type": "text",
+      "description": "Environmental efficiency of the air tightness, from Very Poor to Very Good. New dwellings (SAP) only."
+    },
+    {
+      "source": "CO2_EMISSIONS_CURRENT",
+      "name": "co2_emissions_current",
+      "type": "number",
+      "description": "Current CO2 emissions.",
+      "unit": "t CO2/year"
+    },
+    {
+      "source": "CO2_EMISSIONS_POTENTIAL",
+      "name": "co2_emissions_potential",
+      "type": "number",
+      "description": "Potential CO2 emissions. The file's label says 'Potential Reduction in Emissions', so check before use.",
+      "unit": "t CO2/year"
+    },
+    {
+      "source": "HEATING_COST_CURRENT",
+      "name": "heating_cost_current_3yr",
+      "type": "number",
+      "description": "Current heating costs over 3 years.",
+      "unit": "GBP"
+    },
+    {
+      "source": "HEATING_COST_POTENTIAL",
+      "name": "heating_cost_potential_3yr",
+      "type": "number",
+      "description": "Potential heating costs over 3 years.",
+      "unit": "GBP"
+    },
+    {
+      "source": "HOT_WATER_COST_CURRENT",
+      "name": "hot_water_cost_current_3yr",
+      "type": "number",
+      "description": "Current hot water costs over 3 years.",
+      "unit": "GBP"
+    },
+    {
+      "source": "HOT_WATER_COST_POTENTIAL",
+      "name": "hot_water_cost_potential_3yr",
+      "type": "number",
+      "description": "Potential hot water costs over 3 years.",
+      "unit": "GBP"
+    },
+    {
+      "source": "LIGHTING_COST_CURRENT",
+      "name": "lighting_cost_current_3yr",
+      "type": "number",
+      "description": "Current lighting costs over 3 years.",
+      "unit": "GBP"
+    },
+    {
+      "source": "LIGHTING_COST_POTENTIAL",
+      "name": "lighting_cost_potential_3yr",
+      "type": "number",
+      "description": "Potential lighting costs over 3 years.",
+      "unit": "GBP"
+    },
+    {
+      "source": "ALTERNATIVE_IMPROVEMENTS",
+      "name": "alternative_improvements",
+      "type": "text",
+      "description": "Further improvement measures, as text."
+    },
+    {
+      "source": "LZC_ENERGY_SOURCES",
+      "name": "lzc_energy_sources",
+      "type": "text",
+      "description": "Low and zero carbon energy sources, as text."
+    },
+    {
+      "source": "SPACE_HEATING_DEMAND",
+      "name": "space_heating_demand",
+      "type": "number",
+      "description": "Space heating demand.",
+      "unit": "kWh/year"
+    },
+    {
+      "source": "WATER_HEATING_DEMAND",
+      "name": "water_heating_demand",
+      "type": "number",
+      "description": "Water heating demand.",
+      "unit": "kWh/year"
+    },
+    {
+      "source": "IMPACT_LOFT_INSULATION",
+      "name": "impact_loft_insulation",
+      "type": "number",
+      "description": "Change in energy use from loft insulation. Negative is a reduction.",
+      "unit": "kWh/year"
+    },
+    {
+      "source": "IMPACT_CAVITY_WALL_INSULATION",
+      "name": "impact_cavity_wall_insulation",
+      "type": "number",
+      "description": "Change in energy use from cavity wall insulation. Negative is a reduction.",
+      "unit": "kWh/year"
+    },
+    {
+      "source": "IMPACT_SOLID_WALL_INSULATION",
+      "name": "impact_solid_wall_insulation",
+      "type": "number",
+      "description": "Change in energy use from solid wall insulation. Negative is a reduction.",
+      "unit": "kWh/year"
+    },
+    {
+      "source": "ADDENDUM_TEXT",
+      "name": "addendum_text",
+      "type": "text",
+      "description": "Addenda from the assessor."
+    },
+    {
+      "source": "CONSTRUCTION_AGE_BAND",
+      "name": "construction_age_band",
+      "type": "text",
+      "description": "Construction age band of the main building, in Scottish bands."
+    },
+    {
+      "source": "FLOOR_HEIGHT",
+      "name": "floor_height",
+      "type": "number",
+      "description": "Room height of the lowest storey.",
+      "unit": "m"
+    },
+    {
+      "source": "DATA_ZONE",
+      "name": "data_zone",
+      "type": "text",
+      "description": "Data Zone (2001) code and name, such as 'S01005227 (Johnstone North West)'."
+    },
+    {
+      "source": "ENERGY_CONSUMPTION_POTENTIAL",
+      "name": "energy_consumption_potential",
+      "type": "number",
+      "description": "Potential primary energy use per square metre of floor area.",
+      "unit": "kWh/m2/year"
+    },
+    {
+      "source": "EXTENSION_COUNT",
+      "name": "extension_count",
+      "type": "integer",
+      "description": "Number of extensions."
+    },
+    {
+      "source": "FIXED_LIGHTING_OUTLETS_COUNT",
+      "name": "fixed_lighting_outlets_count",
+      "type": "integer",
+      "description": "Number of fixed lighting outlets."
+    },
+    {
+      "source": "LOW_ENERGY_FIXED_LIGHT_COUNT",
+      "name": "low_energy_fixed_lighting_outlets_count",
+      "type": "integer",
+      "description": "Number of low energy fixed lighting outlets."
+    },
+    {
+      "source": "LOW_ENERGY_LIGHTING",
+      "name": "low_energy_lighting",
+      "type": "number",
+      "description": "Share of fixed lighting outlets that are low energy.",
+      "unit": "%"
+    },
+    {
+      "source": "FLOOR_LEVEL",
+      "name": "floor_level",
+      "type": "text",
+      "description": "Floor of a flat, such as 'ground floor' or 'top floor'."
+    },
+    {
+      "source": "FLAT_TOP_STOREY",
+      "name": "flat_top_storey_number",
+      "type": "text",
+      "description": "Storey number given for a flat, as published, such as '00', '-1' or '20+' for 20 or more. The publisher calls it the number of storeys in the block, but values such as -1 suggest a floor number."
+    },
+    {
+      "source": "GLAZED_AREA",
+      "name": "glazed_area",
+      "type": "integer",
+      "description": "Glazed area code: 0 new dwelling, 1 typical, 2 more, 3 less, 4 much more, 5 much less than typical."
+    },
+    {
+      "source": "NUMBER_HABITABLE_ROOMS",
+      "name": "number_habitable_rooms",
+      "type": "integer",
+      "description": "Number of habitable rooms."
+    },
+    {
+      "source": "HEAT_LOSS_CORRIDOOR",
+      "name": "heat_loss_corridor",
+      "type": "text",
+      "description": "Corridor a flat loses heat to: no corridor, heated or unheated."
+    },
+    {
+      "source": "NUMBER_HEATED_ROOMS",
+      "name": "number_heated_rooms",
+      "type": "integer",
+      "description": "Number of heated rooms."
+    },
+    {
+      "source": "LOCAL_AUTHORITY_LABEL",
+      "name": "local_authority_label",
+      "type": "text",
+      "description": "Name of the council, such as 'Edinburgh City'. No code is published."
+    },
+    {
+      "source": "MAINS_GAS_FLAG",
+      "name": "mains_gas_flag",
+      "type": "flag",
+      "description": "Whether the property has a mains gas connection. Blank in recent releases."
+    },
+    {
+      "source": "MAIN_HEATING_CATEGORY",
+      "name": "main_heating_category",
+      "type": "text",
+      "description": "Category of the main heating, such as 'boiler with radiators or underfloor heating'."
+    },
+    {
+      "source": "MAIN_FUEL",
+      "name": "main_fuel",
+      "type": "text",
+      "description": "Fuel of the main heating."
+    },
+    {
+      "source": "MAIN_HEATING_CONTROLS",
+      "name": "main_heating_controls",
+      "type": "text",
+      "description": "SAP code of the main heating controls, such as '2102'."
+    },
+    {
+      "source": "MECHANICAL_VENTILATION",
+      "name": "mechanical_ventilation",
+      "type": "text",
+      "description": "Ventilation, such as 'natural' or 'mechanical, extract only'."
+    },
+    {
+      "source": "ENERGY_TARIFF",
+      "name": "energy_tariff",
+      "type": "text",
+      "description": "Electricity meter type, such as 'Single' or 'dual'."
+    },
+    {
+      "source": "MULTI_GLAZE_PROPORTION",
+      "name": "multi_glaze_proportion",
+      "type": "number",
+      "description": "Share of windows that are multiple glazed.",
+      "unit": "%"
+    },
+    {
+      "source": "GLAZED_TYPE",
+      "name": "glazed_type",
+      "type": "text",
+      "description": "Type of multiple glazing."
+    },
+    {
+      "source": "NUMBER_OPEN_FIREPLACES",
+      "name": "number_open_fireplaces",
+      "type": "integer",
+      "description": "Number of open fireplaces."
+    },
+    {
+      "source": "PHOTO_SUPPLY",
+      "name": "photo_supply_description",
+      "type": "text",
+      "description": "Photovoltaic arrays, as text. In England and Wales the same header is a percentage of roof area."
+    },
+    {
+      "source": "SOLAR_WATER_HEATING_FLAG",
+      "name": "solar_water_heating_flag",
+      "type": "flag",
+      "description": "Whether the property has solar water heating."
+    },
+    {
+      "source": "TENURE",
+      "name": "tenure",
+      "type": "text",
+      "description": "Tenure, such as 'owner-occupied' or 'rented (social)'."
+    },
+    {
+      "source": "TRANSACTION_TYPE",
+      "name": "transaction_type",
+      "type": "text",
+      "description": "Reason the certificate was made, such as a sale or a rental."
+    },
+    {
+      "source": "UNHEATED_CORRIDOR_LENGTH",
+      "name": "unheated_corridor_length",
+      "type": "number",
+      "description": "Length of the wall to an unheated corridor.",
+      "unit": "m"
+    },
+    {
+      "source": "CONSTITUENCY",
+      "name": "ward",
+      "type": "text",
+      "description": "Council ward code, such as '00RCMH'. Not a constituency, despite the header."
+    },
+    {
+      "source": "CONSTITUENCY_LABEL",
+      "name": "ward_label",
+      "type": "text",
+      "description": "Council ward name."
+    },
+    {
+      "source": "WIND_TURBINE_COUNT",
+      "name": "wind_turbine_count",
+      "type": "integer",
+      "description": "Number of wind turbines."
+    },
+    {
+      "source": "BUILT_FORM",
+      "name": "built_form",
+      "type": "text",
+      "description": "Built form, such as 'Detached' or 'Mid-Terrace'."
+    },
+    {
+      "source": "PROPERTY_TYPE",
+      "name": "property_type",
+      "type": "text",
+      "description": "Property type: House, Flat, Bungalow or Maisonette."
+    },
+    {
+      "source": "DATA_ZONE_2011",
+      "name": "data_zone_2011",
+      "type": "text",
+      "description": "Data Zone (2011) code and name, such as 'S01012045 (Johnstone North West - 03)'."
+    },
+    {
+      "source": "CREATED_AT",
+      "name": "lodgement_datetime",
+      "type": "datetime",
+      "description": "Date and time the certificate was lodged on the register. Decides the yearly file it is in.",
+      "formats": ["%d/%m/%Y %H:%M:%S"]
+    },
+    {
+      "source": "REPORT_REFERENCE_NUMBER",
+      "name": "certificate_number",
+      "type": "text",
+      "description": "Certificate number, such as '0123-4567-8901-2345-6789'. Blank for some certificates."
+    }
+  ]
+}
