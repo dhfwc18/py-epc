@@ -12,6 +12,7 @@
       }
     },
     "Markdown": {
+      "tab_size": 2,
       "preferred_line_length": 120,
       "wrap_guides": [120],
       "format_on_save": "on",
