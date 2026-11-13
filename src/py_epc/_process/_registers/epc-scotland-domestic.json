@@ -3,7 +3,7 @@
   "source_key": "epc.scotland.domestic",
   "member_pattern": "(\\d{4})\\.csv",
   "label_rows": 1,
-  "year_column": "lodgement_date",
+  "year_column": "lodgement_datetime",
   "missing_values": ["", "N/A", "Data removed"],
   "true_values": ["Y", "y", "True", "true", "TRUE"],
   "false_values": ["N", "n", "False", "false", "FALSE"],
@@ -71,7 +71,7 @@
       "source": "LODGEMENT_DATE",
       "name": "lodgement_date",
       "type": "date",
-      "description": "Date the certificate was lodged on the register. Decides the yearly file it is in.",
+      "description": "Date of the certificate. Usually the day it was lodged, but for a few certificates before 2022 it is earlier.",
       "formats": ["%Y-%m-%d"]
     },
     {
@@ -512,8 +512,8 @@
     {
       "source": "FLAT_TOP_STOREY",
       "name": "flat_top_storey_number",
-      "type": "integer",
-      "description": "Storey number given for a flat. The publisher calls it the number of storeys in the block, but values such as -1 suggest a floor number."
+      "type": "text",
+      "description": "Storey number given for a flat, as published, such as '00', '-1' or '20+' for 20 or more. The publisher calls it the number of storeys in the block, but values such as -1 suggest a floor number."
     },
     {
       "source": "GLAZED_AREA",
@@ -671,7 +671,7 @@
       "source": "CREATED_AT",
       "name": "lodgement_datetime",
       "type": "datetime",
-      "description": "Date and time the certificate was lodged. Same day as lodgement_date.",
+      "description": "Date and time the certificate was lodged on the register. Decides the yearly file it is in.",
       "formats": ["%d/%m/%Y %H:%M:%S"]
     },
     {
