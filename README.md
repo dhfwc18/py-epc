@@ -43,6 +43,15 @@ homes.group_by("ons_itl1_name").agg(pl.col("current_energy_efficiency").mean()).
 - **Geography**: the ONS Postcode Directory is processed into the chosen areas of each postcode, with codes and names.
   `scan(..., geography=True)` adds them to each certificate with the prefix `ons_`.
 
+## Text and place names
+
+The dataset stage cleans text into ASCII, with `£` the only exception. Part of the text normalisation process removed
+accents in place names, such as the circumflex in the Welsh name for Anglesey and the grave accents in many Gaelic place
+names. This is a practical choice, so that values work in every tool, and not a judgement on the accents, which are
+integral parts of how Welsh and Scottish Gaelic are written and of the heritage of the places they name. The processed
+builds keep every value exactly as published, and ONS codes identify each place exactly, so use them wherever the
+published spelling matters.
+
 ## Settings
 
 Settings are read from `py_epc.Config`, and can be changed, saved and loaded:

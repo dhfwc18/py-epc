@@ -48,7 +48,8 @@ A source's columns, types and names belong in its JSON definition, not in code. 
 - **Types**: every function is typed, and pyright must pass in standard mode.
 - **Text**: files are ASCII, except for `£`. In Markdown, write `&copy;` for the copyright sign. Spelling is British,
   with "licence" as the noun.
-- **Constants**: say what a name holds, with a suffix such as `_COLUMN`, `_FILE` or `_FOLDER`.
+- **Constants**: say what a name holds, with a suffix such as `_COLUMN`, `_FILE` or `_FOLDER`. A compiled regular
+  expression ends in `_PATTERN`.
 - **Memory**: work one year at a time, stream with `sink_parquet`, and join with small tables rather than using
   `replace`. Measure peak memory on the real files before relying on a new step.
 
