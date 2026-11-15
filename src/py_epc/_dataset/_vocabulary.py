@@ -48,7 +48,8 @@ class Vocabulary(BaseModel):
     column, such as a floor's construction published as a window's."""
 
     not_a_description: tuple[str, ...] = ()
-    """Phrases that describe nothing, such as placeholders."""
+    """Phrases, or their first parts before a comma, that describe nothing,
+    such as placeholders."""
 
     _misplaced_folded: frozenset[str] = PrivateAttr()
     _not_a_description_folded: frozenset[str] = PrivateAttr()
@@ -59,11 +60,21 @@ class Vocabulary(BaseModel):
             p.casefold() for p in self.not_a_description
         )
 
+    def is_misplaced(self, part: str) -> bool:
+        """Return whether `part` is listed as misplaced, in any case."""
+        return part.casefold() in self._misplaced_folded
+
+    def is_not_a_description(self, part: str) -> bool:
+        """Return whether `part` is listed as no description, in any case."""
+        return part.casefold() in self._not_a_description_folded
+
     def undescribed_kind(
         self, phrase: str
     ) -> Literal["misplaced", "not_a_description"] | None:
         """
         Return the kind of a phrase this vocabulary describes none of.
+
+        The whole phrase is matched, then its first part before a comma.
 
         Parameters
         ----------
@@ -76,11 +87,10 @@ class Vocabulary(BaseModel):
             ``"not_a_description"`` or ``"misplaced"``, matched in any case,
             or None if the phrase is neither.
         """
-        folded = phrase.casefold()
-        if folded in self._not_a_description_folded:
+        parts = (phrase, phrase.partition(",")[0].strip())
+        if any(self.is_not_a_description(part) for part in parts):
             return "not_a_description"
-        first_part = folded.partition(",")[0].strip()
-        if self._misplaced_folded & {folded, first_part}:
+        if any(self.is_misplaced(part) for part in parts):
             return "misplaced"
         return None
 

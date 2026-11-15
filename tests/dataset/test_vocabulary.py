@@ -36,6 +36,9 @@ class TestVocabulary:
         [
             pytest.param("SAP05:Windows", "not_a_description", id="placeholder"),
             pytest.param("sap05:WINDOWS", "not_a_description", id="any-case"),
+            pytest.param(
+                "SAP05:Windows, fully", "not_a_description", id="placeholder-first-part"
+            ),
             pytest.param("Solid", "misplaced", id="misplaced"),
             pytest.param("Solid, no insulation", "misplaced", id="first-part"),
             pytest.param("Solid brick", None, id="first-part-must-be-whole"),
