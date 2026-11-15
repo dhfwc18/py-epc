@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "format": "phrase",
+  "column": "mechanical_ventilation",
+  "output_column": "mechanical_ventilation",
+  "categories": {
+    "natural": {
+      "label": "Natural",
+      "phrases": ["natural"]
+    },
+    "extract": {
+      "label": "Mechanical extract, type not stated",
+      "phrases": ["mechanical, extract only"]
+    },
+    "extract_centralised": {
+      "label": "Mechanical extract, centralised (MEV c)",
+      "phrases": ["mechanical extract, centralised (MEV c)"]
+    },
+    "extract_decentralised": {
+      "label": "Mechanical extract, decentralised (MEV dc)",
+      "phrases": ["mechanical extract, decentralised (MEV dc)"]
+    },
+    "supply_and_extract": {
+      "label": "Mechanical supply and extract, type not stated",
+      "phrases": ["mechanical, supply and extract"]
+    },
+    "with_heat_recovery": {
+      "label": "Mechanical ventilation with heat recovery (MVHR)",
+      "phrases": ["mechanical ventilation with heat recovery (MVHR)"]
+    },
+    "without_heat_recovery": {
+      "label": "Mechanical ventilation without heat recovery (MV)",
+      "phrases": ["mechanical ventilation without heat recovery (MV)"]
+    },
+    "positive_input_loft": {
+      "label": "Positive input from the loft",
+      "phrases": ["positive input from loft"]
+    },
+    "positive_input_outside": {
+      "label": "Positive input from outside",
+      "phrases": ["positive input from outside"]
+    }
+  }
+}

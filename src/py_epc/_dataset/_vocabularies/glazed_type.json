@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "format": "phrase",
+  "column": "glazed_type",
+  "output_column": "glazed_type",
+  "not_a_description": ["not defined"],
+  "categories": {
+    "single": {
+      "label": "Single glazing",
+      "phrases": ["single glazing"]
+    },
+    "double_before_2002": {
+      "label": "Double glazing installed before 2002",
+      "phrases": ["double glazing installed before 2002"]
+    },
+    "double_from_2002": {
+      "label": "Double glazing installed during or after 2002",
+      "phrases": ["double glazing installed during or after 2002"]
+    },
+    "double_unknown_date": {
+      "label": "Double glazing, installation date unknown",
+      "phrases": ["double glazing, unknown install date"]
+    },
+    "double_known_data": {
+      "label": "Double glazing, with known data",
+      "phrases": ["double, known data"]
+    },
+    "triple": {
+      "label": "Triple glazing",
+      "phrases": ["triple glazing"]
+    },
+    "triple_known_data": {
+      "label": "Triple glazing, with known data",
+      "phrases": ["triple, known data"]
+    },
+    "secondary": {
+      "label": "Secondary glazing",
+      "phrases": ["secondary glazing"]
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "format": "phrase",
+  "column": "glazed_area",
+  "output_column": "glazed_area",
+  "not_a_description": ["Not Defined", "0"],
+  "categories": {
+    "normal": {
+      "label": "Normal",
+      "phrases": ["Normal", "1"]
+    },
+    "more_than_typical": {
+      "label": "More than typical",
+      "phrases": ["More Than Typical", "2"]
+    },
+    "less_than_typical": {
+      "label": "Less than typical",
+      "phrases": ["Less Than Typical", "3"]
+    },
+    "much_more_than_typical": {
+      "label": "Much more than typical",
+      "phrases": ["Much More Than Typical", "4"]
+    },
+    "much_less_than_typical": {
+      "label": "Much less than typical",
+      "phrases": ["Much Less Than Typical", "5"]
+    }
+  }
+}

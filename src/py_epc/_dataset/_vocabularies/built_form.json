@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "format": "phrase",
+  "column": "built_form",
+  "output_column": "built_form",
+  "not_a_description": ["Not Recorded"],
+  "categories": {
+    "detached": {
+      "label": "Detached",
+      "phrases": ["Detached"]
+    },
+    "semi_detached": {
+      "label": "Semi-detached",
+      "phrases": ["Semi-Detached"]
+    },
+    "end_terrace": {
+      "label": "End-terrace",
+      "phrases": ["End-Terrace"]
+    },
+    "mid_terrace": {
+      "label": "Mid-terrace",
+      "phrases": ["Mid-Terrace"]
+    },
+    "enclosed_end_terrace": {
+      "label": "Enclosed end-terrace",
+      "phrases": ["Enclosed End-Terrace"]
+    },
+    "enclosed_mid_terrace": {
+      "label": "Enclosed mid-terrace",
+      "phrases": ["Enclosed Mid-Terrace"]
+    }
+  }
+}

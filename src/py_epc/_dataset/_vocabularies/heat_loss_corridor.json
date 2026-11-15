@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "format": "phrase",
+  "column": "heat_loss_corridor",
+  "output_column": "heat_loss_corridor",
+  "categories": {
+    "no_corridor": {
+      "label": "No corridor",
+      "phrases": ["no corridor"]
+    },
+    "heated": {
+      "label": "Heated corridor",
+      "phrases": ["heated corridor"]
+    },
+    "unheated": {
+      "label": "Unheated corridor",
+      "phrases": ["unheated corridor"]
+    },
+    "stairwell": {
+      "label": "Stairwell",
+      "phrases": ["stairwell"]
+    }
+  }
+}

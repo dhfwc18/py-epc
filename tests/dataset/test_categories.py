@@ -46,7 +46,24 @@ _TENURE_VOCABULARY: dict[str, Any] = {
 }
 
 # Shipped phrase vocabularies, and the column each describes.
-_SHIPPED_COLUMNS: dict[str, str] = {"windows": "windows_description"}
+_SHIPPED_COLUMNS: dict[str, str] = {
+    "windows": "windows_description",
+    **{
+        name: name
+        for name in (
+            "built_form",
+            "energy_tariff",
+            "glazed_area",
+            "glazed_type",
+            "heat_loss_corridor",
+            "main_heating_category",
+            "mechanical_ventilation",
+            "property_type",
+            "tenure",
+            "transaction_type",
+        )
+    },
+}
 
 
 def windows_vocabulary(**changes: Any) -> PhraseVocabulary:
@@ -141,6 +158,11 @@ class TestCategoryParser:
             "windows_description": ["Single glazed", None, "SAP05:Windows"],
             "windows_glazing": ["single", None, None],
         }
+
+    def test_category_type_is_enum_of_keys_in_vocabulary_order(self) -> None:
+        frame = pl.LazyFrame({"windows_description": ["Single glazed"]})
+        result = parse_column(frame, category_parser(windows_vocabulary())).collect()
+        assert result.schema["windows_glazing"] == pl.Enum(["fully_double", "single"])
 
     def test_column_of_codes_is_replaced_in_place(self) -> None:
         vocabulary = PhraseVocabulary.model_validate_json(

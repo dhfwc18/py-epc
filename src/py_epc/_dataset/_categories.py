@@ -99,7 +99,8 @@ def category_parser(vocabulary: PhraseVocabulary) -> ColumnParser[ParsedCategory
     Return a parser giving the category of each phrase of a column.
 
     The category is given as `PhraseVocabulary.output_column`, which
-    replaces the column in place if it has the column's name.
+    replaces the column in place if it has the column's name. Categories
+    are a `polars.Enum`, listed in the vocabulary's order.
 
     Parameters
     ----------
@@ -120,7 +121,9 @@ def category_parser(vocabulary: PhraseVocabulary) -> ColumnParser[ParsedCategory
         parse_phrase=parse_phrase,
         outputs=(
             OutputColumn(
-                vocabulary.output_column, lambda parsed: parsed.category, pl.String()
+                vocabulary.output_column,
+                lambda parsed: parsed.category,
+                pl.Enum(list(vocabulary.categories)),
             ),
         ),
         replaces_column=vocabulary.output_column == vocabulary.column,

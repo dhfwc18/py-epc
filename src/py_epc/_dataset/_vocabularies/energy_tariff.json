@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "format": "phrase",
+  "column": "energy_tariff",
+  "output_column": "energy_tariff",
+  "not_a_description": ["Unknown"],
+  "categories": {
+    "single_rate": {
+      "label": "Single rate",
+      "phrases": ["Single", "standard tariff"]
+    },
+    "dual_rate": {
+      "label": "Dual rate, hours not stated",
+      "phrases": ["dual"]
+    },
+    "off_peak_7_hour": {
+      "label": "Off-peak, 7 hours",
+      "phrases": ["off-peak 7 hour"]
+    },
+    "off_peak_10_hour": {
+      "label": "Off-peak, 10 hours",
+      "phrases": ["off-peak 10 hour"]
+    },
+    "off_peak_18_hour": {
+      "label": "Off-peak, 18 hours",
+      "phrases": ["off-peak 18 hour"]
+    },
+    "twenty_four_hour": {
+      "label": "24 hour",
+      "phrases": ["24 hour", "dual (24 hour)"]
+    }
+  }
+}

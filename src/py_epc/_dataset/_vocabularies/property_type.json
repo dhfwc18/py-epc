@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "format": "phrase",
+  "column": "property_type",
+  "output_column": "property_type",
+  "categories": {
+    "house": {
+      "label": "House",
+      "phrases": ["House"]
+    },
+    "bungalow": {
+      "label": "Bungalow",
+      "phrases": ["Bungalow"]
+    },
+    "flat": {
+      "label": "Flat",
+      "phrases": ["Flat"]
+    },
+    "maisonette": {
+      "label": "Maisonette",
+      "phrases": ["Maisonette"]
+    },
+    "park_home": {
+      "label": "Park home",
+      "phrases": ["Park home"]
+    }
+  }
+}
