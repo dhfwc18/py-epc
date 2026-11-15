@@ -1,5 +1,6 @@
 """Split Scotland's values into the parts of a building."""
 
+from dataclasses import dataclass
 from typing import Final
 
 import polars as pl
@@ -17,10 +18,9 @@ _PARTS_SUFFIX: Final = "_parts"
 _PART_COUNT_SUFFIX: Final = "_part_count"
 
 
-class BuildingElement(BaseModel):
+@dataclass(frozen=True)
+class BuildingElement:
     """One element of a building, with its description and two ratings."""
-
-    model_config = MODEL_CONFIG
 
     name: str
     """Name of the element, such as ``"walls"``, for the columns added."""
