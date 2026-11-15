@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "format": "phrase",
+  "column": "windows_description",
+  "output_column": "windows_glazing",
+  "misplaced": ["Solid", "Suspended", "(other premises below)"],
+  "not_a_description": ["SAP05:Windows", "Unknown complex glazing regime", "Fully", "Mostly", "Some"],
+  "categories": {
+    "fully_double": {
+      "label": "Fully double glazed",
+      "phrases": [
+        "Fully double glazed",
+        "Fully double glazing",
+        "Gwydrau dwbl llawn",
+        "Fully double glazeddouble glazing"
+      ]
+    },
+    "mostly_double": {
+      "label": "Mostly double glazed",
+      "phrases": ["Mostly double glazing", "Gwydrau dwbl gan mwyaf"]
+    },
+    "partial_double": {
+      "label": "Partly double glazed",
+      "phrases": [
+        "Partial double glazing",
+        "Partial double glazed",
+        "Gwydrau dwbl rhannol",
+        "Partial double glazingdouble glazing"
+      ]
+    },
+    "some_double": {
+      "label": "Some double glazing",
+      "phrases": ["Some double glazing", "Rhai gwydrau dwbl"]
+    },
+    "double": {
+      "label": "Double glazed, extent not stated",
+      "phrases": ["double glazing"]
+    },
+    "fully_triple": {
+      "label": "Fully triple glazed",
+      "phrases": [
+        "Fully triple glazed",
+        "Fully triple glazing",
+        "Full triple glazing",
+        "Full triple glazed",
+        "Gwydrau triphlyg llawn"
+      ]
+    },
+    "mostly_triple": {
+      "label": "Mostly triple glazed",
+      "phrases": ["Mostly triple glazing", "Gwydrau triphlyg gan mwyaf"]
+    },
+    "partial_triple": {
+      "label": "Partly triple glazed",
+      "phrases": ["Partial triple glazing"]
+    },
+    "some_triple": {
+      "label": "Some triple glazing",
+      "phrases": ["Some triple glazing"]
+    },
+    "fully_secondary": {
+      "label": "Full secondary glazing",
+      "phrases": [
+        "Full secondary glazing",
+        "Fully secondary glazing",
+        "Fully secondary glazed",
+        "Gwydrau eilaidd llawn"
+      ]
+    },
+    "mostly_secondary": {
+      "label": "Mostly secondary glazing",
+      "phrases": ["Mostly secondary glazing"]
+    },
+    "partial_secondary": {
+      "label": "Partial secondary glazing",
+      "phrases": ["Partial secondary glazing"]
+    },
+    "some_secondary": {
+      "label": "Some secondary glazing",
+      "phrases": ["Some secondary glazing"]
+    },
+    "secondary": {
+      "label": "Secondary glazing, extent not stated",
+      "phrases": ["Secondary glazing"]
+    },
+    "fully_multiple": {
+      "label": "Multiple glazing throughout",
+      "phrases": [
+        "Multiple glazing throughout",
+        "Multiple glazing throught",
+        "Gwydrau lluosog ym mhobman",
+        "Multiple glazing throughout double glazing",
+        "Multiple glazing throughout triple glazing"
+      ]
+    },
+    "mostly_multiple": {
+      "label": "Mostly multiple glazing",
+      "phrases": ["Mostly multiple glazing"]
+    },
+    "partial_multiple": {
+      "label": "Partial multiple glazing",
+      "phrases": ["Partial multiple glazing", "Partial multiple glazingdouble glazing"]
+    },
+    "some_multiple": {
+      "label": "Some multiple glazing",
+      "phrases": [
+        "Some multiple glazing",
+        "Some multiple glazingsecondary glazing",
+        "Some multiple glazingdouble glazing"
+      ]
+    },
+    "high_performance": {
+      "label": "High performance glazing",
+      "phrases": ["High performance glazing", "Ffenestri perfformiad uchel"]
+    },
+    "single": {
+      "label": "Single glazed",
+      "phrases": ["Single glazed", "Gwydrau sengl", "Single glazedSingle glazing"]
+    },
+    "single_and_multiple": {
+      "label": "Single and multiple glazing",
+      "phrases": [
+        "Single and multiple glazing",
+        "Single glazeddouble glazing",
+        "Single glazedsecondary glazing",
+        "Single glazedtriple glazing",
+        "Partial Single glazing",
+        "Some Single glazing"
+      ]
+    }
+  }
+}
