@@ -14,6 +14,10 @@ dependencies = [
   "pydantic>=2.14.3",
 ]
 
+[project.urls]
+Issues = "https://github.com/dhfwc18/py-epc/issues"
+Repository = "https://github.com/dhfwc18/py-epc"
+
 [dependency-groups]
 dev = [
   "black>=26.10.1",

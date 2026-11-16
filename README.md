@@ -10,7 +10,8 @@ published behaviour informed the design of some modules, but none of its code is
 
 ## Quick start
 
-Py-EPC is not yet on PyPI. Install it from a clone with `uv sync`.
+Py-EPC is published on [PyPI](https://pypi.org/project/py-epc-uk/) as `py-epc-uk`, and imported as `py_epc`. Install it
+with `pip install py-epc-uk`, or `uv add py-epc-uk`.
 
 ```python
 import polars as pl
@@ -41,7 +42,7 @@ gb.group_by("origin", "assessment_method").agg(pl.col("heating_cost_current").me
 
 ## In one call
 
-`run_epc_pipeline` covered every step outlined above for an origin and segment, then reads the result. It reuses the
+`run_epc_pipeline` covers every step outlined above for an origin and segment, then reads the result. It reuses the
 newest download, build and dataset already made, and only makes what is missing, so running it again is quick.
 
 ```python
@@ -111,7 +112,7 @@ with a warning. The dataset's manifest counts each column's rows by kind, for ev
 registers have with the same name and type, after an `origin` column of `scotland` or `england-and-wales`. Columns only
 one register publishes, such as Scotland's building parts or England and Wales's `constituency`, stay in that register's
 own build and dataset. `latest=True` keeps each register's latest certificates, and the ONS areas are added by default,
-so every certificate has the same areas regardless of register it is from.
+so every certificate has the same areas whichever register it is from.
 
 Each register's dataset reconciles the columns that differ, so they can be compared. The table shows how.
 
@@ -168,6 +169,7 @@ covers the 9 English regions, Wales and Scotland. Changing them needs the postco
 
 ## Licences
 
-Py-EPC's code is licensed under the [Mozilla Public License 2.0](LICENSE). Py-EPC does not publish any data. The user
-downloads the data and becomes responsible for its use. [ATTRIBUTION.md](ATTRIBUTION.md) lists every source, its
-licence, the attributions it needs, and the restrictions on address data and personal data.
+Py-EPC's code is licensed under the [Mozilla Public License 2.0](https://github.com/dhfwc18/py-epc/blob/main/LICENSE).
+Py-EPC does not publish any data. The user downloads the data and becomes responsible for its use.
+[ATTRIBUTION.md](https://github.com/dhfwc18/py-epc/blob/main/ATTRIBUTION.md) lists every source, its licence, the
+attributions it needs, and the restrictions on address data and personal data.
