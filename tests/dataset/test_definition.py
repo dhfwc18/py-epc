@@ -124,6 +124,12 @@ class TestDatasetDefinition:
                 "new column name",
                 id="new-column-name",
             ),
+            pytest.param(
+                "per_year_costs",
+                {"a_3yr": "same", "b_3yr": "same"},
+                "new column name",
+                id="per-year-cost-name",
+            ),
         ],
     )
     def test_repeated_name_raises_validation_error_naming_it(
@@ -246,3 +252,16 @@ class TestShippedDatasetDefinitions:
         renamed = load_dataset_definition(key).renamed_columns
         assert set(renamed) <= columns
         assert set(renamed.values()) & columns == set()
+
+    @pytest.mark.parametrize("key", _SHIPPED_KEYS)
+    def test_per_year_costs_are_named_as_in_other_register(self, key: str) -> None:
+        types = {column.name: column.type for column in load_register(key).columns}
+        others = {
+            column.name: column.type
+            for other in _SHIPPED_KEYS
+            if other != key
+            for column in load_register(other).columns
+        }
+        costs = load_dataset_definition(key).per_year_costs
+        assert {types[column] for column in costs} <= {"number"}
+        assert {others.get(name) for name in costs.values()} <= {"number"}

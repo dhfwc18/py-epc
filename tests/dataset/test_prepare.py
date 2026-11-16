@@ -135,6 +135,18 @@ class TestPrepareCertificates:
         ).row(0) == (25.0, _HALF, 50.0)
         assert "photo_supply" not in prepared.columns
 
+    def test_cost_over_3_years_is_added_per_year(self) -> None:
+        frame = certificates([_HALF], heating_cost_current_3yr=[300.0])
+        prepared = prepare_certificates(
+            frame,
+            definition(
+                per_year_costs={"heating_cost_current_3yr": "heating_cost_current"}
+            ),
+        ).collect()
+        assert prepared.select("heating_cost_current_3yr", "heating_cost_current").row(
+            0
+        ) == (300.0, 100.0)
+
     def test_rows_keep_their_order(self) -> None:
         frame = certificates([_ALL, _HALF, _ALL, None], row=[1, 2, 3, 4])
         result = prepare_certificates(frame, definition()).collect()
