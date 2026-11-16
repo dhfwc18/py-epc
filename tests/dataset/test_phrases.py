@@ -6,6 +6,7 @@ import polars as pl
 import pytest
 
 from py_epc._dataset._phrases import (
+    PHRASE_KIND_DTYPE,
     ColumnParser,
     OutputColumn,
     ParsedPhrase,
@@ -144,6 +145,37 @@ class TestParseColumn:
         frame = pl.LazyFrame({"count": [phrase]})
         result = parse_column(frame, number_parser()).collect()
         assert result.row(0) == (phrase, None, None)
+
+    def test_kind_column_gives_each_rows_kind(self) -> None:
+        frame = pl.LazyFrame({"count": ["two", "none", "window", "lots", None]})
+        result = parse_column(frame, number_parser(), kind_column="count_kind")
+        assert result.collect_schema()["count_kind"] == PHRASE_KIND_DTYPE
+        assert result.collect()["count_kind"].to_list() == [
+            "described",
+            "not_a_description",
+            "misplaced",
+            "invalid",
+            None,
+        ]
+
+    def test_kind_column_follows_outputs_when_replacing(self) -> None:
+        frame = pl.LazyFrame({"count": ["one"], "row": [1]})
+        parser = number_parser(replaces_column=True)
+        result = parse_column(frame, parser, kind_column="count_kind").collect()
+        assert result.columns == ["count", "row", "count_is_even", "count_kind"]
+
+    def test_kind_column_named_as_output_raises_value_error(self) -> None:
+        frame = pl.LazyFrame({"count": ["one"]})
+        with pytest.raises(ValueError, match="'count_value' is an output"):
+            parse_column(frame, number_parser(), kind_column="count_value")
+
+    def test_unknown_phrase_without_strict_has_unknown_kind(self) -> None:
+        frame = pl.LazyFrame({"count": ["many"]})
+        with pytest.warns(UserWarning, match="given null"):
+            result = parse_column(
+                frame, number_parser(), strict=False, kind_column="count_kind"
+            )
+        assert result.collect()["count_kind"].to_list() == ["unknown"]
 
     def test_replacing_puts_first_output_in_place_of_column(self) -> None:
         frame = pl.LazyFrame({"row": [1, 2], "count": ["one", "two"], "last": [0, 0]})

@@ -4,7 +4,7 @@ import re
 import warnings
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Final, Literal
+from typing import Final, Literal, get_args
 
 import polars as pl
 
@@ -14,6 +14,9 @@ from py_epc._dataset._distinct import join_distinct
 type PhraseKind = Literal[
     "described", "not_a_description", "misplaced", "invalid", "unknown"
 ]
+
+# Type of a column of kinds, listed in the order of `PhraseKind`.
+PHRASE_KIND_DTYPE: Final = pl.Enum(list(get_args(PhraseKind.__value__)))
 
 # A prefix some Scottish values start with, which says nothing.
 _DESCRIPTION_PREFIX_PATTERN: Final = re.compile(r"^description:\s*", re.IGNORECASE)
@@ -113,7 +116,11 @@ def prepare_phrase(text: str | None) -> str | None:
 
 
 def parse_column[P: ParsedPhrase](
-    frame: pl.LazyFrame, parser: ColumnParser[P], *, strict: bool = True
+    frame: pl.LazyFrame,
+    parser: ColumnParser[P],
+    *,
+    strict: bool = True,
+    kind_column: str | None = None,
 ) -> pl.LazyFrame:
     """
     Return `frame` with the columns `parser` gives for each phrase.
@@ -133,6 +140,10 @@ def parse_column[P: ParsedPhrase](
     strict : bool, default True
         Whether an unknown phrase raises an error. If false, it gives null,
         with a warning listing it.
+    kind_column : str, optional
+        If given, a column of this name is added after the outputs, giving
+        each row's `PhraseKind`, or null if its phrase is null. Its type is
+        `PHRASE_KIND_DTYPE`.
 
     Returns
     -------
@@ -144,9 +155,11 @@ def parse_column[P: ParsedPhrase](
     Raises
     ------
     ValueError
-        If `strict` is true and a phrase is unknown. The message lists them.
+        If `strict` is true and a phrase is unknown.
     """
     names = [output.name for output in parser.outputs]
+    if kind_column in names:
+        raise ValueError(f"kind column {kind_column!r} is an output of the parser")
     if parser.replaces_column:
         names[0] = _REPLACEMENT_COLUMN
     unknown: list[str] = []
@@ -158,23 +171,21 @@ def parse_column[P: ParsedPhrase](
             for value, phrase in zip(values, parsed, strict=True)
             if phrase.kind == "unknown"
         )
-        return pl.DataFrame(
-            [
-                pl.Series(
-                    name,
-                    [
-                        (
-                            output.read_value(phrase)
-                            if phrase.kind == "described"
-                            else None
-                        )
-                        for phrase in parsed
-                    ],
-                    output.dtype,
-                )
-                for name, output in zip(names, parser.outputs, strict=True)
-            ]
-        )
+        columns = [
+            pl.Series(
+                name,
+                [
+                    output.read_value(phrase) if phrase.kind == "described" else None
+                    for phrase in parsed
+                ],
+                output.dtype,
+            )
+            for name, output in zip(names, parser.outputs, strict=True)
+        ]
+        if kind_column is not None:
+            kinds = [phrase.kind for phrase in parsed]
+            columns.append(pl.Series(kind_column, kinds, PHRASE_KIND_DTYPE))
+        return pl.DataFrame(columns)
 
     frame = frame.with_columns(pl.col(parser.column).cast(pl.String))
     frame = join_distinct(frame, parser.column, build)
