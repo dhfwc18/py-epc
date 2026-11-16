@@ -23,8 +23,8 @@ from py_epc._dataset._vocabulary import (
 class PhraseVocabulary(Vocabulary):
     """The categories of one column, each matched by whole phrases."""
 
-    format: Literal["phrase"]
-    """Kind of vocabulary: one category for each whole phrase."""
+    format: Literal["phrase", "phrase_list"]
+    """The format of vocabulary."""
 
     output_column: str
     """
@@ -111,7 +111,13 @@ def category_parser(vocabulary: PhraseVocabulary) -> ColumnParser[ParsedCategory
     -------
     ColumnParser
         A parser for `parse_column`.
+
+    Raises
+    ------
+    ValueError
+        If the vocabulary is not of format ``"phrase"``.
     """
+    _check_format(vocabulary, "phrase")
 
     def parse_phrase(text: str | None) -> ParsedCategory:
         return parse_category(text, vocabulary)
@@ -128,3 +134,104 @@ def category_parser(vocabulary: PhraseVocabulary) -> ColumnParser[ParsedCategory
         ),
         replaces_column=vocabulary.output_column == vocabulary.column,
     )
+
+
+@dataclass(frozen=True)
+class ParsedCategoryList(ParsedPhrase):
+    """The categories of one list of phrases."""
+
+    categories: tuple[str, ...] = ()
+    """Keys of the items' categories, in published order, each once."""
+
+
+def parse_category_list(
+    text: str | None, vocabulary: PhraseVocabulary
+) -> ParsedCategoryList:
+    """
+    Return the categories of a cleaned list of phrases.
+
+    Items are separated by ``"|"``, and each is matched as a whole phrase
+    by `parse_category`. An item that is not a description is skipped, and
+    a misplaced or unknown item makes the whole list so.
+
+    Parameters
+    ----------
+    text : str or None
+        A list of phrases, already cleaned by `clean_text`, such as
+        ``"Description: Air source heat pump | Description: Wind turbine |"``.
+    vocabulary : PhraseVocabulary
+        Categories of the column's items.
+
+    Returns
+    -------
+    ParsedCategoryList
+        The items' categories. Its kind is ``"unknown"`` if an item is in no
+        list of the vocabulary.
+    """
+    if text is None:
+        return ParsedCategoryList("not_a_description")
+    categories: list[str] = []
+    for item in text.split("|"):
+        parsed = parse_category(item, vocabulary)
+        if parsed.kind == "not_a_description":
+            continue
+        if parsed.kind != "described" or parsed.category is None:
+            return ParsedCategoryList(parsed.kind)
+        if parsed.category not in categories:
+            categories.append(parsed.category)
+    if not categories:
+        return ParsedCategoryList("not_a_description")
+    return ParsedCategoryList("described", tuple(categories))
+
+
+def category_list_parser(
+    vocabulary: PhraseVocabulary,
+) -> ColumnParser[ParsedCategoryList]:
+    """
+    Return a parser giving the categories of each list of phrases.
+
+    The categories are given as `PhraseVocabulary.output_column`, a list
+    of a `polars.Enum`, which replaces the column in place if it has the
+    column's name.
+
+    Parameters
+    ----------
+    vocabulary : PhraseVocabulary
+        Categories of the column's items, of format ``"phrase_list"``.
+
+    Returns
+    -------
+    ColumnParser
+        A parser for `parse_column`.
+
+    Raises
+    ------
+    ValueError
+        If the vocabulary is not of format ``"phrase_list"``.
+    """
+    _check_format(vocabulary, "phrase_list")
+
+    def parse_phrase(text: str | None) -> ParsedCategoryList:
+        return parse_category_list(text, vocabulary)
+
+    return ColumnParser(
+        column=vocabulary.column,
+        parse_phrase=parse_phrase,
+        outputs=(
+            OutputColumn(
+                vocabulary.output_column,
+                lambda parsed: list(parsed.categories),
+                pl.List(pl.Enum(list(vocabulary.categories))),
+            ),
+        ),
+        replaces_column=vocabulary.output_column == vocabulary.column,
+    )
+
+
+def _check_format(vocabulary: PhraseVocabulary, expected: str) -> None:
+    """Raise if `vocabulary` is not of the format its parser reads."""
+    if vocabulary.format != expected:
+        raise ValueError(
+            f"vocabulary of {vocabulary.column!r} is of format"
+            f" {vocabulary.format!r}, not {expected!r}"
+        )

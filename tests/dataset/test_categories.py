@@ -9,9 +9,12 @@ from pydantic import ValidationError
 
 from py_epc._dataset._categories import (
     ParsedCategory,
+    ParsedCategoryList,
     PhraseVocabulary,
+    category_list_parser,
     category_parser,
     parse_category,
+    parse_category_list,
 )
 from py_epc._dataset._phrases import parse_column
 from py_epc._dataset._vocabulary import load_vocabulary
@@ -45,6 +48,23 @@ _TENURE_VOCABULARY: dict[str, Any] = {
     },
 }
 
+# A small vocabulary of a column of lists, replaced in place.
+_LZC_VOCABULARY: dict[str, Any] = {
+    "version": 1,
+    "format": "phrase_list",
+    "column": "lzc_energy_sources",
+    "output_column": "lzc_energy_sources",
+    "misplaced": ["Single glazed"],
+    "not_a_description": ["SAP05:LZC"],
+    "categories": {
+        "solar_photovoltaics": {
+            "label": "Solar photovoltaics",
+            "phrases": ["Solar photovoltaics"],
+        },
+        "wind_turbine": {"label": "Wind turbine", "phrases": ["Wind turbine"]},
+    },
+}
+
 # Shipped phrase vocabularies, and the column each describes.
 _SHIPPED_COLUMNS: dict[str, str] = {
     "windows": "windows_description",
@@ -63,6 +83,8 @@ _SHIPPED_COLUMNS: dict[str, str] = {
             "property_type",
             "tenure",
             "transaction_type",
+            "lzc_energy_sources",
+            "alternative_improvements",
         )
     },
 }
@@ -73,6 +95,11 @@ def windows_vocabulary(**changes: Any) -> PhraseVocabulary:
     return PhraseVocabulary.model_validate_json(
         json.dumps({**_WINDOWS_VOCABULARY, **changes})
     )
+
+
+def lzc_vocabulary() -> PhraseVocabulary:
+    """Return the small vocabulary of a column of lists."""
+    return PhraseVocabulary.model_validate_json(json.dumps(_LZC_VOCABULARY))
 
 
 class TestPhraseVocabulary:
@@ -181,3 +208,92 @@ class TestCategoryParser:
         frame = pl.LazyFrame({"windows_description": ["Stained glass"]})
         with pytest.raises(ValueError, match=r"1 unknown phrases.*'Stained glass'"):
             parse_column(frame, category_parser(windows_vocabulary()))
+
+    def test_list_vocabulary_raises_value_error(self) -> None:
+        with pytest.raises(ValueError, match="of format 'phrase_list', not 'phrase'"):
+            category_parser(lzc_vocabulary())
+
+
+class TestParseCategoryList:
+    """`parse_category_list` gives the categories of a list of phrases."""
+
+    @pytest.mark.parametrize(
+        ("text", "expected"),
+        [
+            pytest.param(
+                "Description: Solar photovoltaics |",
+                ParsedCategoryList("described", ("solar_photovoltaics",)),
+                id="one-item",
+            ),
+            pytest.param(
+                "Description: Wind turbine | Description: Solar photovoltaics |",
+                ParsedCategoryList(
+                    "described", ("wind_turbine", "solar_photovoltaics")
+                ),
+                id="published-order",
+            ),
+            pytest.param(
+                "Wind turbine | wind TURBINE",
+                ParsedCategoryList("described", ("wind_turbine",)),
+                id="repeated-once",
+            ),
+            pytest.param(
+                "SAP05:LZC | Wind turbine |",
+                ParsedCategoryList("described", ("wind_turbine",)),
+                id="item-not-a-description-skipped",
+            ),
+            pytest.param(
+                "Wind turbine | Single glazed",
+                ParsedCategoryList("misplaced"),
+                id="misplaced-item",
+            ),
+            pytest.param(
+                "SAP05:LZC |", ParsedCategoryList("not_a_description"), id="no-items"
+            ),
+            pytest.param(None, ParsedCategoryList("not_a_description"), id="none"),
+            pytest.param(
+                "Wind turbine | Tidal", ParsedCategoryList("unknown"), id="unknown"
+            ),
+        ],
+    )
+    def test_list_returns_categories(
+        self, text: str | None, expected: ParsedCategoryList
+    ) -> None:
+        assert parse_category_list(text, lzc_vocabulary()) == expected
+
+
+class TestCategoryListParser:
+    """`category_list_parser` gives lists of categories via `parse_column`."""
+
+    def test_column_is_replaced_by_list_of_categories(self) -> None:
+        frame = pl.LazyFrame(
+            {
+                "lzc_energy_sources": [
+                    "Description: Wind turbine | Description: Solar photovoltaics |",
+                    None,
+                    "SAP05:LZC |",
+                ]
+            }
+        )
+        result = parse_column(frame, category_list_parser(lzc_vocabulary()))
+        assert result.collect_schema() == pl.Schema(
+            {
+                "lzc_energy_sources": pl.List(
+                    pl.Enum(["solar_photovoltaics", "wind_turbine"])
+                )
+            }
+        )
+        assert result.collect()["lzc_energy_sources"].to_list() == [
+            ["wind_turbine", "solar_photovoltaics"],
+            None,
+            None,
+        ]
+
+    def test_phrase_vocabulary_raises_value_error(self) -> None:
+        with pytest.raises(ValueError, match="of format 'phrase', not 'phrase_list'"):
+            category_list_parser(windows_vocabulary())
+
+    def test_unknown_item_raises_value_error_listing_the_list(self) -> None:
+        frame = pl.LazyFrame({"lzc_energy_sources": ["Wind turbine | Tidal"]})
+        with pytest.raises(ValueError, match=r"1 unknown phrases.*'Wind turbine"):
+            parse_column(frame, category_list_parser(lzc_vocabulary()))

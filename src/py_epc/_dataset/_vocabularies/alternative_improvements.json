@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "format": "phrase_list",
+  "column": "alternative_improvements",
+  "output_column": "alternative_improvements",
+  "categories": {
+    "external_and_cavity_wall_insulation": {
+      "label": "External insulation with cavity wall insulation",
+      "phrases": ["External insulation with cavity wall insulation"]
+    },
+    "wall_insulation": {
+      "label": "Cavity, internal or external wall insulation",
+      "phrases": ["Cavity, internal or external wall insulation"]
+    },
+    "heat_pump": {
+      "label": "Air or ground source heat pump",
+      "phrases": ["Air or ground source heat pump"]
+    },
+    "heat_pump_with_underfloor_heating": {
+      "label": "Air or ground source heat pump with underfloor heating",
+      "phrases": ["Air or ground source heat pump with underfloor heating"]
+    },
+    "biomass_boiler": {
+      "label": "Biomass boiler (Exempted Appliance if in Smoke Control Area)",
+      "phrases": ["Biomass boiler (Exempted Appliance if in Smoke Control Area)"]
+    },
+    "micro_chp": {
+      "label": "Micro CHP",
+      "phrases": ["Micro CHP"]
+    }
+  }
+}
