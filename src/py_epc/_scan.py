@@ -9,7 +9,7 @@ import polars as pl
 from pydantic import BaseModel
 
 from py_epc._dataset._build import DATASETS_FOLDER, DatasetManifest
-from py_epc._enums import EPCOrigin, EPCSegment, parse_member
+from py_epc._enums import EPC_REGISTERS, EPCOrigin, EPCSegment, parse_member
 from py_epc._manifest import find_completed, read_manifest
 from py_epc._process._build import CERTIFICATES_FOLDER, ProcessManifest
 from py_epc._process._latest import LATEST_COLUMN
@@ -43,6 +43,12 @@ _STAGE_RESULTS: Final[dict[str, _StageResults]] = {
     "processed": _StageResults("processed", ProcessManifest, "build"),
     "dataset": _StageResults(DATASETS_FOLDER, DatasetManifest, "dataset"),
 }
+
+# Column naming each certificate's register, when both are read.
+ORIGIN_COLUMN: Final = "origin"
+
+# Type of the origin column, listing the registers.
+_ORIGIN_DTYPE: Final = pl.Enum([origin.value for origin in EPC_REGISTERS])
 
 # Prefix of the columns added from the ONS Postcode Directory.
 _GEOGRAPHY_PREFIX: Final = "ons_"
@@ -162,7 +168,7 @@ def scan_epc(
     snapshot: str | None = None,
     stage: Stage = "processed",
     latest: bool = False,
-    geography: bool = False,
+    geography: bool | None = None,
 ) -> pl.LazyFrame:
     """
     Return the certificates of a processed EPC build or dataset, lazily.
@@ -170,23 +176,34 @@ def scan_epc(
     This is `scan` for the source ``"epc.<origin>.<segment>"``, and works the
     same way.
 
+    The origin ``"gb"`` reads both registers, for Great Britain. Each is
+    read as `scan` reads it, then the columns both have, with the same name
+    and type, are kept, in Scotland's order, after an ``origin`` column
+    naming each certificate's register. A dataset's reconciled columns,
+    such as ``assessment_method`` and the costs per year, are among them. A
+    processed build leaves out a column the registers publish in different
+    types, such as ``glazed_area``, which only a dataset reconciles.
+
     Parameters
     ----------
     origin : EPCOrigin | str
-        Register the certificates are from, such as ``"scotland"``.
+        Register the certificates are from, such as ``"scotland"``, or
+        ``"gb"`` for both.
     segment : EPCSegment | str
         Type of certificate, such as ``"domestic"``.
     root : str | os.PathLike[str]
         Folder that holds the relevant data, as given to `process_epc`.
     snapshot : str, optional
         Name of the raw snapshot whose build to read. By default, the newest
-        build.
+        build. Not allowed for ``"gb"``, which reads the newest of each.
     stage : {"processed", "dataset"}, default "processed"
         Whether to read the processed build or its dataset, as in `scan`.
     latest : bool, default False
         Whether to keep only each property's latest certificate.
-    geography : bool, default False
+    geography : bool, optional
         Whether to add the areas of each certificate's postcode, as in `scan`.
+        By default, true for ``"gb"``, so every certificate has the same
+        areas whichever register it is from, and false otherwise.
 
     Returns
     -------
@@ -196,8 +213,9 @@ def scan_epc(
     Raises
     ------
     ValueError
-        If the origin, segment or stage is unknown, or `latest` is true but
-        the build or dataset has no ``is_latest`` column.
+        If the origin, segment or stage is unknown, `latest` is true but the
+        build or dataset has no ``is_latest`` column, or `snapshot` is given
+        for ``"gb"``.
     FileNotFoundError
         If there is no completed build, or no postcode directory for
         `geography`, as in `scan`.
@@ -206,23 +224,63 @@ def scan_epc(
     --------
     >>> import py_epc
     >>> homes = py_epc.scan_epc(  # doctest: +SKIP
-    ...     "scotland",
-    ...     "domestic",
-    ...     "data",
-    ...     stage="dataset",
-    ...     latest=True,
-    ...     geography=True,
+    ...     "gb", "domestic", "data", stage="dataset", latest=True
     ... )
-    >>> homes.group_by("ons_itl1_name").len()  # doctest: +SKIP
+    >>> homes.group_by("origin", "ons_itl1_name").len()  # doctest: +SKIP
     """
     origin = parse_member(EPCOrigin, origin)
     segment = parse_member(EPCSegment, segment)
-    key = f"epc.{origin}.{segment}"
+    if origin is EPCOrigin.GB:
+        if snapshot is not None:
+            raise ValueError(
+                f"{origin.value!r} reads the newest build of each register,"
+                " so a snapshot cannot be given"
+            )
+        return _scan_gb(
+            segment,
+            root,
+            stage=stage,
+            latest=latest,
+            geography=True if geography is None else geography,
+        )
     return scan(
-        key,
+        f"epc.{origin}.{segment}",
         root,
         snapshot=snapshot,
         stage=stage,
         latest=latest,
-        geography=geography,
+        geography=bool(geography),
+    )
+
+
+def _scan_gb(
+    segment: EPCSegment,
+    root: str | os.PathLike[str],
+    *,
+    stage: Stage,
+    latest: bool,
+    geography: bool,
+) -> pl.LazyFrame:
+    """Return both registers' certificates, in the columns both have."""
+    frames = {
+        origin: scan(
+            f"epc.{origin}.{segment}",
+            root,
+            stage=stage,
+            latest=latest,
+            geography=geography,
+        )
+        for origin in EPC_REGISTERS
+    }
+    schemas = [frame.collect_schema() for frame in frames.values()]
+    shared = [
+        name
+        for name, dtype in schemas[0].items()
+        if all(schema.get(name) == dtype for schema in schemas[1:])
+    ]
+    return pl.concat(
+        frame.select(
+            pl.lit(origin.value, dtype=_ORIGIN_DTYPE).alias(ORIGIN_COLUMN), *shared
+        )
+        for origin, frame in frames.items()
     )

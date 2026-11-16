@@ -234,3 +234,7 @@ class TestBuildEpcDataset:
     def test_unknown_origin_raises_value_error(self, tmp_path: Path) -> None:
         with pytest.raises(ValueError):
             build_epc_dataset("mars", "domestic", tmp_path)
+
+    def test_gb_origin_raises_value_error(self, tmp_path: Path) -> None:
+        with pytest.raises(ValueError, match="'gb' combines both registers"):
+            build_epc_dataset(EPCOrigin.GB, "domestic", tmp_path)

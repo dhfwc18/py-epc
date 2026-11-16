@@ -24,6 +24,9 @@ from py_epc._scan import Stage
 # Key of the source the tests read.
 _SOURCE_KEY = "epc.scotland.domestic"
 
+# Key of England and Wales's register, read with Scotland's for Great Britain.
+_ENGLAND_AND_WALES_KEY = "epc.england-and-wales.domestic"
+
 # Latest counts of a build, whose values the tests do not read.
 _LATEST = LatestSummary(
     properties=1,
@@ -41,15 +44,18 @@ def write_build(
     snapshot: str = "20261111T093000Z",
     with_latest: bool = True,
     stage: Stage = "processed",
+    key: str = _SOURCE_KEY,
+    columns: dict[str, Any] | None = None,
 ) -> Path:
     """
     Write a build, or with ``stage="dataset"`` a dataset, of certificates.
 
     Each certificate is a certificate number, whether it is the latest, and
-    optionally its postcode, which is ``"AB10 1AA"`` if not given.
+    optionally its postcode, which is ``"AB10 1AA"`` if not given. Each of
+    `columns` is added to every row, with its value.
     """
     stage_folder = "datasets" if stage == "dataset" else "processed"
-    folder = root.joinpath(stage_folder, *_SOURCE_KEY.split("."), snapshot)
+    folder = root.joinpath(stage_folder, *key.split("."), snapshot)
     for year, rows in years.items():
         target = folder / "certificates" / f"lodgement_year={year}"
         target.mkdir(parents=True)
@@ -62,10 +68,13 @@ def write_build(
         )
         if not with_latest:
             frame = frame.drop("is_latest")
+        frame = frame.with_columns(
+            pl.lit(value).alias(name) for name, value in (columns or {}).items()
+        )
         frame.write_parquet(target / "data.parquet")
     manifest = (
         DatasetManifest(
-            source_key=_SOURCE_KEY,
+            source_key=key,
             snapshot=snapshot,
             raw_sha256="0" * 64,
             definition_version=1,
@@ -75,7 +84,7 @@ def write_build(
         )
         if stage == "dataset"
         else ProcessManifest(
-            source_key=_SOURCE_KEY,
+            source_key=key,
             snapshot=snapshot,
             raw_sha256="0" * 64,
             register_version=1,
@@ -316,3 +325,75 @@ class TestScanEpc:
     def test_unknown_segment_raises_value_error(self, tmp_path: Path) -> None:
         with pytest.raises(ValueError, match="unknown EPCSegment"):
             scan_epc("scotland", "homes", tmp_path)
+
+
+class TestScanEpcGb:
+    """`scan_epc` reads both registers for the origin ``"gb"``."""
+
+    def write_both(self, root: Path, **options: Any) -> None:
+        """Write a certificate "s" of Scotland and "e" of England and Wales."""
+        write_build(root, {2024: [("s", True)]}, **options)
+        write_build(root, {2024: [("e", True)]}, key=_ENGLAND_AND_WALES_KEY, **options)
+
+    def test_both_registers_are_read_with_their_origin(self, tmp_path: Path) -> None:
+        self.write_both(tmp_path)
+        frame = scan_epc("gb", "domestic", tmp_path, geography=False)
+        assert frame.collect().select("origin", "certificate_number").rows() == [
+            ("scotland", "s"),
+            ("england-and-wales", "e"),
+        ]
+
+    def test_only_columns_both_have_are_kept(self, tmp_path: Path) -> None:
+        write_build(tmp_path, {2024: [("s", True)]}, columns={"ward": "w1"})
+        write_build(
+            tmp_path,
+            {2024: [("e", True)]},
+            key=_ENGLAND_AND_WALES_KEY,
+            columns={"constituency": "c1"},
+        )
+        frame = scan_epc("gb", "domestic", tmp_path, geography=False)
+        assert frame.collect_schema().names() == [
+            "origin",
+            "certificate_number",
+            "postcode",
+            "is_latest",
+            "lodgement_year",
+        ]
+
+    def test_latest_keeps_latest_of_each_register(self, tmp_path: Path) -> None:
+        write_build(tmp_path, {2024: [("s1", False), ("s2", True)]})
+        write_build(
+            tmp_path, {2024: [("e1", True), ("e2", False)]}, key=_ENGLAND_AND_WALES_KEY
+        )
+        frame = scan_epc("gb", "domestic", tmp_path, latest=True, geography=False)
+        assert numbers(frame) == ["e1", "s2"]
+
+    def test_geography_is_added_by_default(self, tmp_path: Path) -> None:
+        self.write_both(tmp_path)
+        write_postcodes(tmp_path, {"AB10 1AA": ("S12000033", "Aberdeen City")})
+        frame = scan_epc("gb", "domestic", tmp_path).collect()
+        assert frame["ons_lad_name"].to_list() == ["Aberdeen City"] * 2
+
+    def test_dataset_stage_reads_both_datasets(self, tmp_path: Path) -> None:
+        self.write_both(tmp_path, stage="dataset")
+        frame = scan_epc(
+            EPCOrigin.GB, "domestic", tmp_path, stage="dataset", geography=False
+        )
+        assert numbers(frame) == ["e", "s"]
+
+    def test_snapshot_raises_value_error(self, tmp_path: Path) -> None:
+        with pytest.raises(ValueError, match="snapshot cannot be given"):
+            scan_epc("gb", "domestic", tmp_path, snapshot="20261111T093000Z")
+
+    def test_column_of_other_type_in_each_register_is_left_out(
+        self, tmp_path: Path
+    ) -> None:
+        write_build(tmp_path, {2024: [("s", True)]}, columns={"rooms": 3})
+        write_build(
+            tmp_path,
+            {2024: [("e", True)]},
+            key=_ENGLAND_AND_WALES_KEY,
+            columns={"rooms": "three"},
+        )
+        frame = scan_epc("gb", "domestic", tmp_path, geography=False)
+        assert "rooms" not in frame.collect_schema()

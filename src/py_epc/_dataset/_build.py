@@ -14,7 +14,7 @@ from py_epc._dataset._models import MODEL_CONFIG
 from py_epc._dataset._parts import misaligned_parts
 from py_epc._dataset._prepare import prepare_certificates
 from py_epc._dataset._summary import DatasetYearSummary, count_kinds, summarise_year
-from py_epc._enums import EPCOrigin, EPCSegment, parse_member
+from py_epc._enums import EPCOrigin, EPCSegment, parse_member, parse_register
 from py_epc._files import atomic_folder, ensure_gitignore
 from py_epc._manifest import find_completed, read_manifest, write_manifest
 from py_epc._process._build import CERTIFICATES_FOLDER, ProcessManifest
@@ -170,8 +170,8 @@ def build_epc_dataset(
     Raises
     ------
     ValueError
-        If the origin or segment is unknown, or a value cannot be read, as in
-        `build_dataset`.
+        If the origin or segment is unknown, the origin is ``"gb"``, or a
+        value cannot be read, as in `build_dataset`.
     KeyError
         If no dataset definition is shipped for the origin and segment.
     FileNotFoundError
@@ -185,7 +185,7 @@ def build_epc_dataset(
     >>> build_epc_dataset("scotland", "domestic", "data")  # doctest: +SKIP
     PosixPath('data/datasets/epc/scotland/domestic/20261111T093000Z')
     """
-    origin = parse_member(EPCOrigin, origin)
+    origin = parse_register(origin)
     segment = parse_member(EPCSegment, segment)
     key = f"epc.{origin}.{segment}"
     return build_dataset(

@@ -9,6 +9,7 @@ import pytest
 from pydantic import ValidationError
 
 from py_epc import Config, EPCOrigin, EPCSegment, ONSProduct, OSProduct, Source
+from py_epc._enums import EPC_REGISTERS
 
 # Fields of a minimal valid source.
 _SOURCE: dict[str, Any] = {
@@ -68,7 +69,7 @@ class TestDefaultsJson:
         }
         # Every origin-segment pair except Scotland display should be covered.
         expected = {
-            (origin, segment) for origin in EPCOrigin for segment in EPCSegment
+            (origin, segment) for origin in EPC_REGISTERS for segment in EPCSegment
         } - {(EPCOrigin.SCOTLAND, EPCSegment.DISPLAY)}
         assert pairs == expected
 
