@@ -16,7 +16,7 @@ from py_epc._dataset._models import MODEL_CONFIG
 from py_epc._download import download, download_ons_postcode_directory
 from py_epc._enums import EPC_REGISTERS, EPCOrigin, EPCSegment, parse_member
 from py_epc._files import ensure_gitignore
-from py_epc._manifest import find_completed, read_manifest
+from py_epc._manifest import DownloadManifest, find_completed, read_manifest
 from py_epc._output import OutputType, write_output
 from py_epc._process._build import ProcessManifest, process
 from py_epc._process._postcodes import (
@@ -153,10 +153,12 @@ def run_epc_pipeline(
 
     For each register of the origin, both for ``"gb"``, the newest completed
     download is used, or the register is downloaded if it has none or
-    `update` is true. Its snapshot is processed if it has no build, and with
-    ``stage="dataset"`` built into a dataset if it has none. A step already
-    done is never done again. If `geography` is on, the ONS Postcode
-    Directory is downloaded and processed too, if it has not been.
+    `update` is true. A new download identical to the newest one is deleted, so
+    an unchanged register is not processed or built again. The snapshot is
+    processed if it has no build, and with ``stage="dataset"`` built into a
+    dataset if it has none. A step already done is never done again. If
+    `geography` is on, the ONS Postcode Directory is downloaded and processed
+    too, if it has not been.
 
     Without `output_type`, the certificates are returned as a lazy frame.
     With it, they are written to one file, by default
@@ -189,8 +191,7 @@ def run_epc_pipeline(
         Whether to add the areas of each certificate's postcode, as in
         `scan_epc`. By default, true for ``"gb"`` and false otherwise.
     update : bool, default False
-        Whether to download each register again, even if it has a download,
-        and make its build and dataset from the new one.
+        Whether to download each register again, even if it has a download.
     token : str, optional
         Bearer token, needed to download England and Wales.
     strict : bool, default True
@@ -348,9 +349,14 @@ def _prepare_register(
 ) -> Path:
     """Make a register's missing steps, returning its processed build."""
     parts = key.split(".")
-    raw = None if update else _completed(root.joinpath("raw", *parts))
-    if raw is None:
+    previous = _completed(root.joinpath("raw", *parts))
+    if previous is not None and not update:
+        raw = previous
+    else:
         raw = download(key, root, token=token).parent
+        if previous is not None and _same_download(previous, raw):
+            shutil.rmtree(raw)
+            raw = previous
     if _completed(root.joinpath("processed", *parts), raw.name) is None:
         process(key, root, snapshot=raw.name)
     if stage == "dataset" and (
@@ -370,6 +376,14 @@ def _prepare_postcode_directory(root: Path) -> Path:
     if raw is None:
         raw = download_ons_postcode_directory(root).parent
     return process_ons_postcode_directory(root, snapshot=raw.name)
+
+
+def _same_download(kept: Path, new: Path) -> bool:
+    """Return whether two raw snapshots downloaded the same file."""
+    return (
+        read_manifest(kept, DownloadManifest).sha256
+        == read_manifest(new, DownloadManifest).sha256
+    )
 
 
 def _output_source(

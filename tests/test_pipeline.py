@@ -10,7 +10,7 @@ import pytest
 from pydantic import BaseModel
 
 from py_epc import PostcodeManifest, ProcessManifest, _pipeline, run_epc_pipeline
-from py_epc._manifest import MANIFEST_FILE, write_manifest
+from py_epc._manifest import MANIFEST_FILE, DownloadManifest, write_manifest
 from py_epc._pipeline import OutputManifest, output_manifest_path
 from py_epc._process._postcodes import FieldSummary
 
@@ -45,6 +45,20 @@ def raw_sha256(stamp: str) -> str:
     return stamp[:8].ljust(64, "0")
 
 
+def downloaded(root: Path, key: str, stamp: str, sha256: str | None = None) -> Path:
+    """Write a completed raw snapshot, with the manifest `download` writes."""
+    manifest = DownloadManifest(
+        source_key=key,
+        source_url="https://example.org/file.zip",
+        publisher="p",
+        retrieved_at=_WHEN,
+        file_name="file.zip",
+        size_bytes=1,
+        sha256=raw_sha256(stamp) if sha256 is None else sha256,
+    )
+    return complete(root, "raw", key, stamp, manifest)
+
+
 class Steps:
     """Fakes of every step, recording each call and writing its folder."""
 
@@ -52,12 +66,14 @@ class Steps:
         self.calls: list[tuple[str, str, str | None]] = []
         self.scanned: dict[str, Any] = {}
         self.downloads = 0
+        self.sha256: str | None = None
+        """Checksum of every download, if not one for each snapshot."""
 
     def download(self, key: str, root: Path, *, token: str | None) -> Path:
         self.downloads += 1
         stamp = f"2026010{self.downloads}T000000Z"
         self.calls.append(("download", key, token))
-        return complete(root, "raw", key, stamp) / "file.zip"
+        return downloaded(root, key, stamp, self.sha256) / "file.zip"
 
     def process(self, key: str, root: Path, *, snapshot: str) -> Path:
         self.calls.append(("process", key, snapshot))
@@ -155,7 +171,7 @@ class TestRunEpcPipeline:
     def test_download_without_build_is_processed_and_built(
         self, tmp_path: Path, steps: Steps
     ) -> None:
-        complete(tmp_path, "raw", _SCOTLAND_KEY, "20251201T000000Z")
+        downloaded(tmp_path, _SCOTLAND_KEY, "20251201T000000Z")
         run_epc_pipeline("scotland", "domestic", tmp_path)
         assert steps.calls == [
             ("process", _SCOTLAND_KEY, "20251201T000000Z"),
@@ -172,7 +188,8 @@ class TestRunEpcPipeline:
     def test_update_downloads_again_and_builds_from_new_snapshot(
         self, tmp_path: Path, steps: Steps
     ) -> None:
-        for stage in ("raw", "processed", "datasets"):
+        downloaded(tmp_path, _SCOTLAND_KEY, "20251201T000000Z")
+        for stage in ("processed", "datasets"):
             complete(tmp_path, stage, _SCOTLAND_KEY, "20251201T000000Z")
         run_epc_pipeline("scotland", "domestic", tmp_path, update=True)
         assert steps.calls == [
@@ -181,6 +198,19 @@ class TestRunEpcPipeline:
             ("build_dataset", _SCOTLAND_KEY, "20260101T000000Z"),
         ]
         assert steps.scanned["snapshot"] == "20260101T000000Z"
+
+    def test_update_with_same_download_deletes_it_and_reuses_build(
+        self, tmp_path: Path, steps: Steps
+    ) -> None:
+        downloaded(tmp_path, _SCOTLAND_KEY, "20251201T000000Z", "a" * 64)
+        for stage in ("processed", "datasets"):
+            complete(tmp_path, stage, _SCOTLAND_KEY, "20251201T000000Z")
+        steps.sha256 = "a" * 64
+        run_epc_pipeline("scotland", "domestic", tmp_path, update=True)
+        assert steps.calls == [("download", _SCOTLAND_KEY, None)]
+        assert steps.scanned["snapshot"] == "20251201T000000Z"
+        raws = tmp_path.joinpath("raw", *_SCOTLAND_KEY.split("."))
+        assert [folder.name for folder in raws.iterdir()] == ["20251201T000000Z"]
 
     def test_token_is_given_to_download(self, tmp_path: Path, steps: Steps) -> None:
         run_epc_pipeline("england-and-wales", "domestic", tmp_path, token="t")
@@ -338,7 +368,7 @@ class TestRunEpcPipelineCleanUp:
     def test_clean_up_keeps_postcodes_and_other_snapshots(
         self, tmp_path: Path, steps: Steps
     ) -> None:
-        older = complete(tmp_path, "raw", _SCOTLAND_KEY, "20250101T000000Z")
+        older = downloaded(tmp_path, _SCOTLAND_KEY, "20250101T000000Z")
         run_epc_pipeline(
             "gb",
             "domestic",
