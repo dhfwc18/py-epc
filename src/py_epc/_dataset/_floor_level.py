@@ -13,7 +13,8 @@ from py_epc._dataset._phrases import (
     prepare_phrase,
 )
 
-# A numbered floor, such as "1st", or "21st or above", which gives 21.
+# A numbered floor, such as "1st". The highest published, "21st or above",
+# gives 21, as no floor is published as "21st" alone.
 _FLOOR_ORDINAL_PATTERN: Final = re.compile(
     r"(?P<number>[0-9]+)(?:st|nd|rd|th)(?:\s+or above)?", re.IGNORECASE
 )
@@ -36,7 +37,10 @@ class ParsedFloorLevel(ParsedPhrase):
     """The floor one published floor level gives."""
 
     number: int | None = None
-    """Number of the floor, with the ground floor 0 and a basement -1."""
+    """
+    Number of the floor, with the ground floor 0 and a basement -1. 21
+    means the 21st floor or above.
+    """
 
     position: str | None = None
     """Position of the floor in its building, such as ``"top"``."""
@@ -47,9 +51,9 @@ def parse_floor_level(text: str | None) -> ParsedFloorLevel:
     Return the floor a cleaned floor level gives.
 
     A numbered floor gives its number only, as it may be a middle or top
-    floor. ``"21st or above"`` gives 21. A floor named by its position,
-    such as ``"Ground"``, gives the position, and the number where the name
-    gives it.
+    floor. ``"21st or above"`` gives 21, so 21 means the 21st floor or
+    above. A floor named by its position, such as ``"Ground"``, gives the
+    position, and the number where the name gives it.
 
     Parameters
     ----------

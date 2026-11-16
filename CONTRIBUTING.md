@@ -55,7 +55,7 @@ Modules are private, with a leading underscore. The public API is what `src/py_e
 | `_dataset/_construction_age.py` | The years a dwelling was built, checked against its lodgement date                     |
 | `_dataset/_floor_level.py`      | The floor a flat or maisonette is on                                                   |
 | `_dataset/_photo_supply.py`     | Scotland's photovoltaic arrays, as totals for each dwelling                            |
-| `_dataset/_definition.py`       | Dataset definitions: the steps and parsers that build a source's dataset               |
+| `_dataset/_definition.py`       | The definition of each source's dataset, and the parsers it names                      |
 | `_dataset/_definitions/`        | The shipped definitions, one JSON file per source                                      |
 | `_dataset/_prepare.py`          | `prepare_certificates`, which runs a definition's steps on one year of a build         |
 | `_dataset/_summary.py`          | `count_kinds` and `summarise_year`, which count each parsed column's rows by kind      |

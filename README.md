@@ -64,7 +64,7 @@ Each parsed description gives columns named after it. The table lists the main o
 | `hotwater_description`          | `hotwater_system`, `hotwater_cylinder_thermostat`, `hotwater_solar` and others     |
 | `lighting_description`          | `lighting_low_energy_percent`, or `lighting_efficiency`                            |
 | `construction_age_band`         | `construction_age_from`, `construction_age_to`                                     |
-| `floor_level`                   | `floor_level_number`, `floor_level_position`                                       |
+| `floor_level`                   | `floor_level_number`, where 21 means 21 or above, and `floor_level_position`       |
 | `main_fuel`                     | `main_fuel` as a category, and `main_fuel_community`                               |
 | `air_tightness_description`     | `air_tightness_m3_per_h_m2`, `air_tightness_basis`, `air_tightness_test`, Scotland |
 | `photo_supply_description`      | `photo_supply_peak_kw` and the other totals of each dwelling's panels, Scotland    |

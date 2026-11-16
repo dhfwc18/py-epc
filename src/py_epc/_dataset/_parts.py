@@ -7,11 +7,6 @@ from pydantic import BaseModel
 
 from py_epc._dataset._models import MODEL_CONFIG
 
-# Separator between the parts of a building in Scotland's values, published
-# as " | ". Each part is trimmed, so a first part left empty, published as
-# "| ..." once the value is trimmed, is still found.
-_PART_SEPARATOR: Final = "|"
-
 # Suffixes of the columns added for each element's parts.
 _PARTS_SUFFIX: Final = "_parts"
 _PART_COUNT_SUFFIX: Final = "_part_count"
@@ -121,7 +116,7 @@ def misaligned_parts(frame: pl.LazyFrame, element: BuildingElement) -> Misaligne
 
 def _parts(column: pl.Expr) -> pl.Expr:
     """Return a column's parts, trimmed, with empty parts as null."""
-    return column.str.split(_PART_SEPARATOR).list.eval(
+    return column.str.split("|").list.eval(
         pl.when(pl.element().str.strip_chars() != "").then(
             pl.element().str.strip_chars()
         )
