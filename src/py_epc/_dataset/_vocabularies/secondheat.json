@@ -1,0 +1,291 @@
+{
+  "version": 1,
+  "format": "system",
+  "column": "secondheat_description",
+  "prefix": "secondheat",
+  "not_a_description": ["SAP05:Secondary-Heating", "(null)", "13", "with fan-assisted flue"],
+  "fields": ["system", "fuel"],
+  "labels": {
+    "system": {
+      "none": "No secondary heating",
+      "room_heaters": "Room heaters",
+      "portable_electric_heaters": "Portable electric heaters",
+      "electric_underfloor": "Electric underfloor heating",
+      "electric_ceiling": "Electric ceiling heating",
+      "boiler": "Boiler",
+      "hot_water_only": "Hot water only",
+      "community": "Community scheme",
+      "community_chp": "Community scheme with CHP",
+      "other": "Other"
+    },
+    "fuel": {
+      "mains_gas": "Mains gas",
+      "gas": "Gas, type not stated",
+      "electricity": "Electricity",
+      "dual_fuel": "Dual fuel (mineral and wood)",
+      "wood_logs": "Wood logs",
+      "coal": "Coal",
+      "smokeless_fuel": "Smokeless fuel",
+      "anthracite": "Anthracite",
+      "lpg": "LPG",
+      "bottled_lpg": "Bottled LPG",
+      "oil": "Oil",
+      "wood_pellets": "Wood pellets",
+      "wood_chips": "Wood chips",
+      "bioethanol": "Bioethanol",
+      "liquid_biofuel": "Liquid biofuel",
+      "b30k": "B30K",
+      "lng": "LNG",
+      "biomass": "Biomass",
+      "biogas": "Biogas",
+      "waste_combustion": "Waste combustion",
+      "community_heat": "Community heat"
+    }
+  },
+  "parts": [
+    {
+      "phrases": ["None", "Dim"],
+      "values": {
+        "system": "none"
+      }
+    },
+    {
+      "phrases": ["Room heaters", "Gwresogyddion ystafell"],
+      "values": {
+        "system": "room_heaters"
+      }
+    },
+    {
+      "phrases": ["Gas (including LPG) room heaters"],
+      "values": {
+        "system": "room_heaters",
+        "fuel": "gas"
+      }
+    },
+    {
+      "phrases": ["LPG room heaters"],
+      "values": {
+        "system": "room_heaters",
+        "fuel": "lpg"
+      }
+    },
+    {
+      "phrases": ["Mains Gas room heaters"],
+      "values": {
+        "system": "room_heaters",
+        "fuel": "mains_gas"
+      }
+    },
+    {
+      "phrases": [
+        "Portable electric heaters (assumed)",
+        "Portable electric heaters(assumed)",
+        "Gwresogyddion trydan cludadwy (rhagdybiaeth)"
+      ],
+      "values": {
+        "system": "portable_electric_heaters",
+        "fuel": "electricity"
+      },
+      "assumed": true
+    },
+    {
+      "phrases": ["Portable electric heaters", "Gwresogyddion trydan cludadwy"],
+      "values": {
+        "system": "portable_electric_heaters",
+        "fuel": "electricity"
+      }
+    },
+    {
+      "phrases": ["Electric underfloor heating", "Electric Underfloor Heating (Standard tariff)"],
+      "values": {
+        "system": "electric_underfloor",
+        "fuel": "electricity"
+      }
+    },
+    {
+      "phrases": ["Electric ceiling heating"],
+      "values": {
+        "system": "electric_ceiling",
+        "fuel": "electricity"
+      }
+    },
+    {
+      "phrases": [
+        "Gas/LPG boiler 1998 or later",
+        "Gas/LPG boiler pre-1998 with balanced or open-flue",
+        "Gas/LPG boiler pre-1998",
+        "Gas/LPG CPSU"
+      ],
+      "values": {
+        "system": "boiler"
+      }
+    },
+    {
+      "phrases": ["Hot-Water-Only Systems"],
+      "values": {
+        "system": "hot_water_only"
+      }
+    },
+    {
+      "phrases": ["Community scheme"],
+      "values": {
+        "system": "community"
+      }
+    },
+    {
+      "phrases": ["community"],
+      "values": {
+        "system": "community"
+      },
+      "otherwise": {
+        "fuel": "community_heat"
+      }
+    },
+    {
+      "phrases": ["Community scheme with CHP"],
+      "values": {
+        "system": "community_chp"
+      }
+    },
+    {
+      "phrases": ["Other Space Heating Systems"],
+      "values": {
+        "system": "other"
+      }
+    },
+    {
+      "phrases": ["mains gas", "nwy prif gyflenwad", "heat from boilers - mains gas"],
+      "values": {
+        "fuel": "mains_gas"
+      }
+    },
+    {
+      "phrases": ["gas"],
+      "values": {
+        "fuel": "gas"
+      },
+      "otherwise": {}
+    },
+    {
+      "phrases": ["electric", "trydan", "heat from eletric heat pump"],
+      "values": {
+        "fuel": "electricity"
+      }
+    },
+    {
+      "phrases": ["dual fuel (mineral and wood)", "dual fuel", "dau danwydd (mwynau a choed)"],
+      "values": {
+        "fuel": "dual_fuel"
+      }
+    },
+    {
+      "phrases": ["wood logs", "logiau coed"],
+      "values": {
+        "fuel": "wood_logs"
+      }
+    },
+    {
+      "phrases": ["coal", "glo"],
+      "values": {
+        "fuel": "coal"
+      }
+    },
+    {
+      "phrases": ["smokeless fuel", "tanwydd di-fwg"],
+      "values": {
+        "fuel": "smokeless_fuel"
+      }
+    },
+    {
+      "phrases": ["anthracite", "glo carreg"],
+      "values": {
+        "fuel": "anthracite"
+      }
+    },
+    {
+      "phrases": ["LPG", "bulk LPG"],
+      "values": {
+        "fuel": "lpg"
+      }
+    },
+    {
+      "phrases": ["bottled gas", "bottled LPG"],
+      "values": {
+        "fuel": "bottled_lpg"
+      }
+    },
+    {
+      "phrases": ["oil", "heating oil"],
+      "values": {
+        "fuel": "oil"
+      }
+    },
+    {
+      "phrases": [
+        "wood pellets",
+        "bulk wood pellets",
+        "main wood pellets",
+        "secondary wood pellets",
+        "wood pellets (bags)",
+        "wood pellets (bulk)",
+        "pelenni coed"
+      ],
+      "values": {
+        "fuel": "wood_pellets"
+      }
+    },
+    {
+      "phrases": ["wood chips", "asglodion coed"],
+      "values": {
+        "fuel": "wood_chips"
+      }
+    },
+    {
+      "phrases": ["bioethanol", "bioethanol from any biomass source"],
+      "values": {
+        "fuel": "bioethanol"
+      }
+    },
+    {
+      "phrases": [
+        "liquid biofuel",
+        "appliances able to use mineral oil or liquid biofuel",
+        "biodiesel from any biomass source",
+        "rapeseed oil"
+      ],
+      "values": {
+        "fuel": "liquid_biofuel"
+      }
+    },
+    {
+      "phrases": ["B30K"],
+      "values": {
+        "fuel": "b30k"
+      }
+    },
+    {
+      "phrases": ["LNG"],
+      "values": {
+        "fuel": "lng"
+      }
+    },
+    {
+      "phrases": ["biomass"],
+      "values": {
+        "fuel": "biomass"
+      }
+    },
+    {
+      "phrases": ["biogas", "Biogas (not Community)"],
+      "values": {
+        "fuel": "biogas"
+      }
+    },
+    {
+      "phrases": ["Waste combustion"],
+      "values": {
+        "fuel": "waste_combustion"
+      }
+    }
+  ]
+}
