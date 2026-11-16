@@ -58,6 +58,7 @@ Modules are private, with a leading underscore. The public API is what `src/py_e
 | `_dataset/_definition.py`       | Dataset definitions: the steps and parsers that build a source's dataset               |
 | `_dataset/_definitions/`        | The shipped definitions, one JSON file per source                                      |
 | `_dataset/_prepare.py`          | `prepare_certificates`, which runs a definition's steps on one year of a build         |
+| `_dataset/_summary.py`          | `count_kinds` and `summarise_year`, which count each parsed column's rows by kind      |
 
 A source's columns, types and names belong in its JSON definition, not in code. The code reads the definition.
 
