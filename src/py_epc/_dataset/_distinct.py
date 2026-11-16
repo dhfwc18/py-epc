@@ -1,4 +1,4 @@
-"""Change a text column by converting each of its distinct values once."""
+"""Change text columns by converting each of their distinct values once."""
 
 from collections.abc import Callable, Mapping, Sequence
 from typing import Final
@@ -100,24 +100,24 @@ type TableBuilder = Callable[[list[str]], pl.DataFrame]
 
 
 def join_distinct(
-    frame: pl.LazyFrame, column: str, build: TableBuilder
+    frame: pl.LazyFrame, builders: Mapping[str, TableBuilder]
 ) -> pl.LazyFrame:
     """
-    Return `frame` with columns built from each distinct value of `column`.
+    Return `frame` with columns built from each distinct value of columns.
 
-    Like `map_distinct` for one column, but `build` returns several columns for
-    each value, which are added after the frame's columns. `column` itself is
-    kept. Rows with null in `column` get null in every added column.
+    Like `map_distinct`, but each builder returns several columns for each
+    value, which are added after the frame's columns, in the order of
+    `builders`. The columns built from are kept. Rows with null in a column
+    get null in every column built from it.
 
     Parameters
     ----------
     frame : polars.LazyFrame
         Rows to add columns to.
-    column : str
-        Text column whose values the new columns are built from.
-    build : TableBuilder
-        Function given the distinct values, as a list, returning a frame
-        with one row for each, in the same order.
+    builders : Mapping[str, TableBuilder]
+        Function building columns from each text column, given its distinct
+        values as a list, returning a frame with one row for each, in the
+        same order.
 
     Returns
     -------
@@ -127,24 +127,34 @@ def join_distinct(
     Raises
     ------
     ValueError
-        If `build` returns a frame with a different number of rows, or a
-        column `frame` already has.
+        If a builder returns a frame with a different number of rows, or a
+        column the frame or another builder already has.
     """
-    values = _distinct_values(frame, {column: pl.col(column)})[column]
-    table = build(values)
-    if table.height != len(values):
-        raise ValueError(f"builder returned {table.height} rows for {len(values)}")
-    existing = sorted(set(table.columns) & set(frame.collect_schema().names()))
-    if existing:
-        raise ValueError(f"builder returned columns the frame has: {existing}")
-    mapping = table.with_columns(pl.Series(_RAW_COLUMN, values, dtype=pl.String))
-    return frame.join(
-        mapping.lazy(),
-        left_on=column,
-        right_on=_RAW_COLUMN,
-        how="left",
-        maintain_order="left",
-    )
+    values = _distinct_values(frame, {column: pl.col(column) for column in builders})
+    names = set(frame.collect_schema().names())
+    for column, build in builders.items():
+        table = build(values[column])
+        if table.height != len(values[column]):
+            raise ValueError(
+                f"builder of {column!r} returned {table.height} rows"
+                f" for {len(values[column])}"
+            )
+        if existing := sorted(names & set(table.columns)):
+            raise ValueError(
+                f"builder of {column!r} returned columns the frame has: {existing}"
+            )
+        names |= set(table.columns)
+        mapping = table.with_columns(
+            pl.Series(_RAW_COLUMN, values[column], dtype=pl.String)
+        )
+        frame = frame.join(
+            mapping.lazy(),
+            left_on=column,
+            right_on=_RAW_COLUMN,
+            how="left",
+            maintain_order="left",
+        )
+    return frame
 
 
 def _distinct_values(

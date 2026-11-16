@@ -11,6 +11,7 @@ from py_epc._dataset._phrases import (
     OutputColumn,
     ParsedPhrase,
     parse_column,
+    parse_columns,
     prepare_phrase,
 )
 
@@ -45,19 +46,21 @@ def parse_number(text: str | None) -> ParsedNumber:
     return _UNDESCRIBED_PHRASES.get(phrase, ParsedNumber("unknown"))
 
 
-def number_parser(*, replaces_column: bool = False) -> ColumnParser[ParsedNumber]:
+def number_parser(
+    column: str = "count", *, replaces_column: bool = False
+) -> ColumnParser[ParsedNumber]:
     """Return a parser of number words, adding or replacing the column."""
     return ColumnParser(
-        column="count",
+        column=column,
         parse_phrase=parse_number,
         outputs=(
             OutputColumn(
-                "count" if replaces_column else "count_value",
+                column if replaces_column else f"{column}_value",
                 lambda n: n.value,
                 pl.Int64(),
             ),
             OutputColumn(
-                "count_is_even", lambda n: (n.value or 0) % 2 == 0, pl.Boolean()
+                f"{column}_is_even", lambda n: (n.value or 0) % 2 == 0, pl.Boolean()
             ),
         ),
         replaces_column=replaces_column,
@@ -166,7 +169,9 @@ class TestParseColumn:
 
     def test_kind_column_named_as_output_raises_value_error(self) -> None:
         frame = pl.LazyFrame({"count": ["one"]})
-        with pytest.raises(ValueError, match="'count_value' is an output"):
+        with pytest.raises(
+            ValueError, match=r"kind columns named as outputs: \['count_value'\]"
+        ):
             parse_column(frame, number_parser(), kind_column="count_value")
 
     def test_unknown_phrase_without_strict_has_unknown_kind(self) -> None:
@@ -224,3 +229,45 @@ class TestParseColumn:
         with pytest.warns(UserWarning, match=r"1 unknown phrases.*given null"):
             result = parse_column(frame, number_parser(), strict=False)
         assert result.collect()["count_value"].to_list() == [None, 1]
+
+
+class TestParseColumns:
+    """`parse_columns` parses several columns from one read of phrases."""
+
+    def test_several_columns_are_parsed_with_their_kinds(self) -> None:
+        frame = pl.LazyFrame({"count": ["one", "none"], "total": ["two", None]})
+        parsers = [number_parser(), number_parser("total", replaces_column=True)]
+        result = parse_columns(
+            frame,
+            parsers,
+            kind_columns={"count": "count_kind", "total": "total_kind"},
+        ).collect()
+        assert result.to_dict(as_series=False) == {
+            "count": ["one", "none"],
+            "total": [2, None],
+            "count_value": [1, None],
+            "count_is_even": [False, None],
+            "count_kind": ["described", "not_a_description"],
+            "total_is_even": [True, None],
+            "total_kind": ["described", None],
+        }
+
+    def test_column_read_by_two_parsers_raises_value_error(self) -> None:
+        frame = pl.LazyFrame({"count": ["one"]})
+        with pytest.raises(ValueError, match=r"more than one parser: \['count'\]"):
+            parse_columns(frame, [number_parser(), number_parser()])
+
+    def test_kind_column_of_no_parsed_column_raises_value_error(self) -> None:
+        frame = pl.LazyFrame({"count": ["one"]})
+        with pytest.raises(ValueError, match=r"keyed by no parsed column: \['total'\]"):
+            parse_columns(frame, [number_parser()], kind_columns={"total": "kind"})
+
+    def test_unknown_phrases_of_each_column_are_listed(self) -> None:
+        frame = pl.LazyFrame({"count": ["seven"], "total": ["eight"]})
+        parsers = [number_parser(), number_parser("total")]
+        with pytest.raises(
+            ValueError,
+            match=r"1 unknown phrases in 'count': 'seven'\. "
+            r"1 unknown phrases in 'total': 'eight'",
+        ):
+            parse_columns(frame, parsers)

@@ -92,28 +92,47 @@ class TestMapDistinct:
 
 
 class TestJoinDistinct:
-    """`join_distinct` adds columns built from each distinct value once."""
+    """`join_distinct` builds columns from each distinct value once."""
 
     def test_columns_are_added_in_row_order(self) -> None:
         frame = pl.LazyFrame({"word": ["ccc", "a", "ccc"], "row": [1, 2, 3]})
-        result = join_distinct(frame, "word", lengths).collect()
+        result = join_distinct(frame, {"word": lengths}).collect()
         assert result.to_dict(as_series=False) == {
             "word": ["ccc", "a", "ccc"],
             "row": [1, 2, 3],
             "length": [3, 1, 3],
         }
 
+    def test_several_columns_add_their_columns_in_order(self) -> None:
+        frame = pl.LazyFrame({"word": ["a", "bb"], "name": ["ccc", None]})
+
+        def initials(values: list[str]) -> pl.DataFrame:
+            return pl.DataFrame({"initial": [value[0] for value in values]})
+
+        result = join_distinct(frame, {"word": lengths, "name": initials}).collect()
+        assert result.to_dict(as_series=False) == {
+            "word": ["a", "bb"],
+            "name": ["ccc", None],
+            "length": [1, 2],
+            "initial": ["c", None],
+        }
+
     def test_null_value_gives_null_in_added_columns(self) -> None:
         frame = pl.LazyFrame({"word": [None, "ab"]}, schema={"word": pl.String})
-        result = join_distinct(frame, "word", lengths).collect()
+        result = join_distinct(frame, {"word": lengths}).collect()
         assert result["length"].to_list() == [None, 2]
 
     def test_builder_of_wrong_height_raises_value_error(self) -> None:
         frame = pl.LazyFrame({"word": ["a", "b"]})
-        with pytest.raises(ValueError, match="returned 1 rows for 2"):
-            join_distinct(frame, "word", lambda values: lengths(values[:1]))
+        with pytest.raises(ValueError, match="builder of 'word' returned 1 rows for 2"):
+            join_distinct(frame, {"word": lambda values: lengths(values[:1])})
 
     def test_builder_returning_existing_column_raises_value_error(self) -> None:
         frame = pl.LazyFrame({"word": ["a"], "length": [9]})
         with pytest.raises(ValueError, match=r"columns the frame has: \['length'\]"):
-            join_distinct(frame, "word", lengths)
+            join_distinct(frame, {"word": lengths})
+
+    def test_builders_returning_same_column_raise_value_error(self) -> None:
+        frame = pl.LazyFrame({"word": ["a"], "name": ["b"]})
+        with pytest.raises(ValueError, match=r"builder of 'name' returned columns"):
+            join_distinct(frame, {"word": lengths, "name": lengths})
