@@ -39,6 +39,29 @@ gb = py_epc.scan_epc("gb", "domestic", root, stage="dataset", latest=True)
 gb.group_by("origin", "assessment_method").agg(pl.col("heating_cost_current").median()).collect()
 ```
 
+## In one call
+
+`run_epc_pipeline` covered every step outlined above for an origin and segment, then reads the result. It reuses the
+newest download, build and dataset already made, and only makes what is missing, so running it again is quick.
+
+```python
+# The latest certificates of Great Britain, as a lazy frame. England and Wales needs a token the first time.
+homes = py_epc.run_epc_pipeline("gb", "domestic", root, latest=True, token="...")
+
+# The same, written to one file, data/outputs/epc-gb-domestic-dataset-latest.parquet, whose path is returned.
+path = py_epc.run_epc_pipeline("gb", "domestic", root, latest=True, output_type="parquet")
+```
+
+- `output_type` is `"parquet"` or `"sqlite"`. A manifest beside the file, `<name>.manifest.json`, names every download
+  it was made from. SQLite stores categories, dates and lists as text, and is much larger, about 1.4 KB a certificate,
+  so all of England and Wales is about 42 GB. `output_path` writes the file elsewhere, and `overwrite=True` replaces an
+  existing one.
+- `stage="processed"` stops before the dataset, and reads the processed builds.
+- `update=True` downloads each register again. A download identical to the one already kept is deleted, and its build
+  and dataset are reused.
+- `clean_up=True`, with an output, deletes the download, build and dataset each register's output was made from, so only
+  the output is left. The postcode directory and other snapshots are kept. The next run downloads the registers again.
+
 ## What each step does
 
 - **Download** saves each published file unchanged, with a manifest of its source, size and SHA-256, in
@@ -138,6 +161,9 @@ covers the 9 English regions, Wales and Scotland. Changing them needs the postco
     ons/postcode-directory/<snapshot>/postcodes.parquet
   datasets/                              # Datasets, made again from processed at any time. Ignored by Git.
     epc/scotland/domestic/<snapshot>/certificates/lodgement_year=<year>/data.parquet
+  outputs/                               # Files written by run_epc_pipeline, with their manifests. Ignored by Git.
+    epc-gb-domestic-dataset-latest.parquet
+    epc-gb-domestic-dataset-latest.manifest.json
 ```
 
 ## Licences
