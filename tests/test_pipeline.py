@@ -316,3 +316,69 @@ class TestRunEpcPipelineOutput:
         with pytest.raises(ValueError, match="unknown OutputType"):
             run_epc_pipeline("scotland", "domestic", tmp_path, output_type="csv")
         assert steps.calls == []
+
+
+class TestRunEpcPipelineCleanUp:
+    """`run_epc_pipeline` deletes what an output was made from, if asked."""
+
+    def test_clean_up_deletes_snapshots_read_and_keeps_output(
+        self, tmp_path: Path, steps: Steps
+    ) -> None:
+        path = run_epc_pipeline(
+            "scotland", "domestic", tmp_path, output_type="parquet", clean_up=True
+        )
+        snapshot = "20260101T000000Z"
+        assert [
+            tmp_path.joinpath(stage, *_SCOTLAND_KEY.split("."), snapshot).exists()
+            for stage in ("raw", "processed", "datasets")
+        ] == [False, False, False]
+        assert path.is_file()
+        assert output_manifest_path(path).is_file()
+
+    def test_clean_up_keeps_postcodes_and_other_snapshots(
+        self, tmp_path: Path, steps: Steps
+    ) -> None:
+        older = complete(tmp_path, "raw", _SCOTLAND_KEY, "20250101T000000Z")
+        run_epc_pipeline(
+            "gb",
+            "domestic",
+            tmp_path,
+            token="t",
+            update=True,
+            output_type="parquet",
+            clean_up=True,
+        )
+        assert older.is_dir()
+        assert tmp_path.joinpath("processed", *_POSTCODES_KEY.split(".")).is_dir()
+        assert not tmp_path.joinpath(
+            "raw", *_ENGLAND_AND_WALES_KEY.split("."), "20260102T000000Z"
+        ).exists()
+
+    def test_without_clean_up_every_snapshot_is_kept(
+        self, tmp_path: Path, steps: Steps
+    ) -> None:
+        run_epc_pipeline("scotland", "domestic", tmp_path, output_type="parquet")
+        assert tmp_path.joinpath(
+            "datasets", *_SCOTLAND_KEY.split("."), "20260101T000000Z"
+        ).is_dir()
+
+    def test_clean_up_without_output_type_raises_value_error(
+        self, tmp_path: Path, steps: Steps
+    ) -> None:
+        with pytest.raises(ValueError, match="clean_up needs output_type"):
+            run_epc_pipeline("scotland", "domestic", tmp_path, clean_up=True)
+        assert steps.calls == []
+
+    def test_output_inside_a_cleaned_folder_raises_value_error(
+        self, tmp_path: Path, steps: Steps
+    ) -> None:
+        with pytest.raises(ValueError, match="which clean_up deletes from"):
+            run_epc_pipeline(
+                "scotland",
+                "domestic",
+                tmp_path,
+                output_type="parquet",
+                output_path=tmp_path / "datasets" / "homes.parquet",
+                clean_up=True,
+            )
+        assert steps.calls == []

@@ -1,6 +1,7 @@
 """Run every step for an EPC origin and segment in one call."""
 
 import os
+import shutil
 from datetime import UTC, datetime
 from importlib.metadata import version
 from pathlib import Path
@@ -30,6 +31,9 @@ _POSTCODE_DIRECTORY_KEY: Final = "ons.postcode-directory"
 
 # Folder under the root that holds the outputs, beside "datasets".
 OUTPUTS_FOLDER: Final = "outputs"
+
+# Folders under the root that `clean_up` deletes a register's snapshot from.
+_CLEANED_STAGES: Final = ("raw", "processed", DATASETS_FOLDER)
 
 # Suffix of the manifest written beside each output file, after its stem.
 _OUTPUT_MANIFEST_SUFFIX: Final = ".manifest.json"
@@ -105,6 +109,7 @@ def run_epc_pipeline(
     output_type: None = ...,
     output_path: str | os.PathLike[str] | None = ...,
     overwrite: bool = ...,
+    clean_up: bool = ...,
 ) -> pl.LazyFrame: ...
 
 
@@ -123,6 +128,7 @@ def run_epc_pipeline(
     output_type: OutputType | str,
     output_path: str | os.PathLike[str] | None = ...,
     overwrite: bool = ...,
+    clean_up: bool = ...,
 ) -> Path: ...
 
 
@@ -140,6 +146,7 @@ def run_epc_pipeline(
     output_type: OutputType | str | None = None,
     output_path: str | os.PathLike[str] | None = None,
     overwrite: bool = False,
+    clean_up: bool = False,
 ) -> pl.LazyFrame | Path:
     """
     Make whatever is missing for an origin and segment, then read it.
@@ -158,6 +165,12 @@ def run_epc_pipeline(
     returned. A manifest naming every download the file was made from is
     written beside it, as ``<name>.manifest.json``. The first output writes
     ``<root>/outputs/.gitignore``, which makes Git ignore every output.
+
+    With `clean_up`, the raw download, processed build and dataset of each
+    register read are deleted once the output and its manifest are written,
+    so only the output is left of them. The postcode directory, other
+    snapshots and other sources are kept. The next run downloads the
+    registers again.
 
     Parameters
     ----------
@@ -191,18 +204,23 @@ def run_epc_pipeline(
         File to write, instead of the default under ``<root>/outputs``.
     overwrite : bool, default False
         Whether to replace an existing output file and its manifest.
+    clean_up : bool, default False
+        Whether to delete what each register's output was made from, once
+        it is written. Needs `output_type`.
 
     Returns
     -------
     polars.LazyFrame or Path
-        The certificates, as `scan_epc` reads them, or without
-        `output_type`, or the path of the file written with it.
+        The certificates, as `scan_epc` reads them, without `output_type`,
+        or the path of the file written with it.
 
     Raises
     ------
     ValueError
-        If the origin, segment, stage or output type is unknown, England
-        and Wales must be downloaded but no token is given, or a step fails.
+        If the origin, segment, stage or output type is unknown, `clean_up`
+        is given without `output_type` or with an `output_path` inside a
+        folder it deletes from, England and Wales must be downloaded but no
+        token is given, or a step fails.
     KeyError
         If no register definition, or for ``stage="dataset"`` no dataset
         definition, is shipped for the segment, which is checked before any
@@ -238,6 +256,8 @@ def run_epc_pipeline(
         )
         if target.exists() and not overwrite:
             raise FileExistsError(f"{target} exists; pass overwrite=True to replace it")
+    if clean_up:
+        _check_clean_up(folder, target)
     builds = [
         _prepare_register(
             key, folder, stage=stage, update=update, token=token, strict=strict
@@ -280,6 +300,9 @@ def run_epc_pipeline(
     output_manifest_path(target).write_text(
         manifest.model_dump_json(indent=2) + "\n", encoding="utf-8"
     )
+    if clean_up:
+        for key, build in zip(keys, builds, strict=True):
+            _remove_snapshot(folder, key, build.name)
     return target
 
 
@@ -359,6 +382,26 @@ def _output_source(
         snapshot=manifest.snapshot,
         raw_sha256=manifest.raw_sha256,
     )
+
+
+def _check_clean_up(root: Path, target: Path | None) -> None:
+    """Raise ValueError unless `clean_up` can keep the output."""
+    if target is None:
+        raise ValueError("clean_up needs output_type, or nothing would be left")
+    for stage in _CLEANED_STAGES:
+        stage_folder = (root / stage).resolve()
+        if target.resolve().is_relative_to(stage_folder):
+            raise ValueError(
+                f"output {target} is inside {stage_folder}, which clean_up deletes from"
+            )
+
+
+def _remove_snapshot(root: Path, key: str, snapshot: str) -> None:
+    """Delete a source's raw snapshot, build and dataset, where they exist."""
+    for stage in _CLEANED_STAGES:
+        folder = root.joinpath(stage, *key.split("."), snapshot)
+        if folder.exists():
+            shutil.rmtree(folder)
 
 
 def _completed(folder: Path, name: str | None = None) -> Path | None:
