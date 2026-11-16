@@ -83,7 +83,7 @@ def systems(text: str | None) -> tuple[Mapping[str, str], ...]:
 class TestSystemVocabulary:
     """`SystemVocabulary` checks a vocabulary when it is made."""
 
-    @pytest.mark.parametrize("element", ["mainheat"])
+    @pytest.mark.parametrize("element", ["mainheat", "secondheat", "hotwater"])
     def test_shipped_vocabulary_is_valid(self, element: str) -> None:
         vocabulary = load_vocabulary(element, SystemVocabulary)
         assert (vocabulary.column, vocabulary.prefix) == (

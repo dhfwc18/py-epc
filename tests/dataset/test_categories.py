@@ -48,6 +48,7 @@ _TENURE_VOCABULARY: dict[str, Any] = {
 # Shipped phrase vocabularies, and the column each describes.
 _SHIPPED_COLUMNS: dict[str, str] = {
     "windows": "windows_description",
+    "mainheatcont": "mainheatcont_description",
     **{
         name: name
         for name in (
