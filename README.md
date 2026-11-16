@@ -1,5 +1,10 @@
 # Py-EPC
 
+[![PyPI](https://img.shields.io/pypi/v/py-epc-uk)](https://pypi.org/project/py-epc-uk/)
+[![Python](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fdhfwc18%2Fpy-epc%2Fmain%2Fpyproject.toml)](https://pypi.org/project/py-epc-uk/)
+[![Licence](https://img.shields.io/pypi/l/py-epc-uk)](https://github.com/dhfwc18/py-epc/blob/main/LICENSE)
+[![CI](https://github.com/dhfwc18/py-epc/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dhfwc18/py-epc/actions/workflows/ci.yml)
+
 Py-EPC downloads the published Energy Performance Certificate (EPC) registers for England and Wales and for Scotland,
 processes them into typed Parquet, marks each property's latest certificate, adds the ONS areas of each postcode, and
 builds a dataset whose text is cleaned and whose descriptions are parsed into columns. Both registers can be read
