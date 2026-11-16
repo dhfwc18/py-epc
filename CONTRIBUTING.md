@@ -46,7 +46,7 @@ Modules are private, with a leading underscore. The public API is what `src/py_e
 | `_dataset/_phrases.py`          | `ColumnParser` and `parse_column`, which parse each distinct phrase of a column once   |
 | `_dataset/_vocabulary.py`       | `Vocabulary`, the lists every vocabulary has, and `load_vocabulary`                    |
 | `_dataset/_vocabularies/`       | The shipped vocabularies, one JSON file per column                                     |
-| `_dataset/_categories.py`       | `PhraseVocabulary` and `category_parser`, giving one category for each whole phrase    |
+| `_dataset/_categories.py`       | `PhraseVocabulary` and the parsers giving the category of each phrase or list item     |
 | `_dataset/_fabric.py`           | Walls, roofs and floors: their construction, insulation and U-value                    |
 | `_dataset/_systems.py`          | Main and secondary heating and hot water, read as systems of parts                     |
 | `_dataset/_main_fuel.py`        | The main fuel, and whether it feeds a community heating scheme                         |
@@ -54,6 +54,7 @@ Modules are private, with a leading underscore. The public API is what `src/py_e
 | `_dataset/_air_tightness.py`    | The air permeability, how it was found and the test it was measured by                 |
 | `_dataset/_construction_age.py` | The years a dwelling was built, checked against its lodgement date                     |
 | `_dataset/_floor_level.py`      | The floor a flat or maisonette is on                                                   |
+| `_dataset/_photo_supply.py`     | Scotland's photovoltaic arrays, as totals for each dwelling                            |
 | `_dataset/_definition.py`       | Dataset definitions: the steps and parsers that build a source's dataset               |
 | `_dataset/_definitions/`        | The shipped definitions, one JSON file per source                                      |
 
