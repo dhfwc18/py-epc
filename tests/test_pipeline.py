@@ -1,13 +1,18 @@
 """Tests for running every step for an EPC origin and segment in one call."""
 
+import json
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import polars as pl
 import pytest
+from pydantic import BaseModel
 
-from py_epc import _pipeline, run_epc_pipeline
-from py_epc._manifest import MANIFEST_FILE
+from py_epc import PostcodeManifest, ProcessManifest, _pipeline, run_epc_pipeline
+from py_epc._manifest import MANIFEST_FILE, write_manifest
+from py_epc._pipeline import OutputManifest, output_manifest_path
+from py_epc._process._postcodes import FieldSummary
 
 # Keys of the registers, and of the postcode directory.
 _SCOTLAND_KEY = "epc.scotland.domestic"
@@ -15,12 +20,29 @@ _ENGLAND_AND_WALES_KEY = "epc.england-and-wales.domestic"
 _POSTCODES_KEY = "ons.postcode-directory"
 
 
-def complete(root: Path, stage: str, key: str, stamp: str) -> Path:
+# Certificates the fake scan returns.
+_FRAME = pl.LazyFrame({"certificate_number": ["a", "b"]})
+
+# When the fake steps ran.
+_WHEN = datetime(2026, 1, 1, tzinfo=UTC)
+
+
+def complete(
+    root: Path, stage: str, key: str, stamp: str, manifest: BaseModel | None = None
+) -> Path:
     """Write a completed folder of a step, as the step would leave it."""
     folder = root.joinpath(stage, *key.split("."), stamp)
     folder.mkdir(parents=True)
-    (folder / MANIFEST_FILE).write_text("{}", encoding="utf-8")
+    if manifest is None:
+        (folder / MANIFEST_FILE).write_text("{}", encoding="utf-8")
+    else:
+        write_manifest(folder, manifest)
     return folder
+
+
+def raw_sha256(stamp: str) -> str:
+    """Return the checksum the fakes give the download of `stamp`."""
+    return stamp[:8].ljust(64, "0")
 
 
 class Steps:
@@ -39,7 +61,17 @@ class Steps:
 
     def process(self, key: str, root: Path, *, snapshot: str) -> Path:
         self.calls.append(("process", key, snapshot))
-        return complete(root, "processed", key, snapshot)
+        manifest = ProcessManifest(
+            source_key=key,
+            snapshot=snapshot,
+            raw_sha256=raw_sha256(snapshot),
+            register_version=1,
+            package_version="0",
+            processed_at=_WHEN,
+            years=(),
+            latest=None,
+        )
+        return complete(root, "processed", key, snapshot, manifest)
 
     def build_dataset(
         self, key: str, root: Path, *, snapshot: str, strict: bool
@@ -53,11 +85,25 @@ class Steps:
 
     def process_postcodes(self, root: Path, *, snapshot: str) -> Path:
         self.calls.append(("process", _POSTCODES_KEY, snapshot))
-        return complete(root, "processed", _POSTCODES_KEY, snapshot)
+        manifest = PostcodeManifest(
+            source_key=_POSTCODES_KEY,
+            snapshot=snapshot,
+            raw_sha256=raw_sha256(snapshot),
+            package_version="0",
+            processed_at=_WHEN,
+            release="AUG_2026",
+            rows=1,
+            excluded_rows=0,
+            names=True,
+            fields={
+                "lad": FieldSummary(column="lad26cd", lookup_files=(), unmatched=0)
+            },
+        )
+        return complete(root, "processed", _POSTCODES_KEY, snapshot, manifest)
 
     def scan_epc(self, origin: Any, segment: Any, root: Any, **options: Any) -> Any:
         self.scanned = {"origin": str(origin), **options}
-        return pl.LazyFrame({"origin": [str(origin)]})
+        return _FRAME
 
 
 @pytest.fixture
@@ -175,3 +221,98 @@ class TestRunEpcPipeline:
     ) -> None:
         with pytest.raises(ValueError, match="unknown EPCOrigin"):
             run_epc_pipeline("wales", "domestic", tmp_path)
+
+
+class TestRunEpcPipelineOutput:
+    """`run_epc_pipeline` writes the certificates to a file, if asked."""
+
+    def test_output_type_writes_default_file_and_returns_its_path(
+        self, tmp_path: Path, steps: Steps
+    ) -> None:
+        path = run_epc_pipeline("scotland", "domestic", tmp_path, output_type="parquet")
+        assert path == tmp_path / "outputs" / "epc-scotland-domestic-dataset.parquet"
+        assert pl.read_parquet(path).equals(_FRAME.collect())
+
+    def test_latest_is_named_in_default_file(
+        self, tmp_path: Path, steps: Steps
+    ) -> None:
+        path = run_epc_pipeline(
+            "scotland", "domestic", tmp_path, latest=True, output_type="sqlite"
+        )
+        assert path.name == "epc-scotland-domestic-dataset-latest.sqlite"
+
+    def test_manifest_beside_output_names_every_download(
+        self, tmp_path: Path, steps: Steps
+    ) -> None:
+        path = run_epc_pipeline(
+            "gb", "domestic", tmp_path, token="t", output_type="parquet"
+        )
+        manifest = OutputManifest.model_validate_json(
+            output_manifest_path(path).read_bytes()
+        )
+        assert (manifest.origin, manifest.stage, manifest.geography) == (
+            "gb",
+            "dataset",
+            True,
+        )
+        assert manifest.file_name == path.name
+        assert [
+            (source.source_key, source.snapshot, source.raw_sha256)
+            for source in manifest.sources
+        ] == [
+            (_SCOTLAND_KEY, "20260101T000000Z", raw_sha256("20260101T000000Z")),
+            (
+                _ENGLAND_AND_WALES_KEY,
+                "20260102T000000Z",
+                raw_sha256("20260102T000000Z"),
+            ),
+            (_POSTCODES_KEY, "20260101T000000Z", raw_sha256("20260101T000000Z")),
+        ]
+
+    def test_first_default_output_makes_git_ignore_outputs(
+        self, tmp_path: Path, steps: Steps
+    ) -> None:
+        run_epc_pipeline("scotland", "domestic", tmp_path, output_type="parquet")
+        assert (tmp_path / "outputs" / ".gitignore").is_file()
+
+    def test_output_path_writes_there_with_manifest_beside(
+        self, tmp_path: Path, steps: Steps
+    ) -> None:
+        target = tmp_path / "elsewhere" / "homes.parquet"
+        path = run_epc_pipeline(
+            "scotland",
+            "domestic",
+            tmp_path / "data",
+            output_type="parquet",
+            output_path=target,
+        )
+        assert path == target
+        assert (tmp_path / "elsewhere" / "homes.manifest.json").is_file()
+
+    def test_existing_output_raises_file_exists_error_before_any_step(
+        self, tmp_path: Path, steps: Steps
+    ) -> None:
+        run_epc_pipeline("scotland", "domestic", tmp_path, output_type="parquet")
+        steps.calls.clear()
+        with pytest.raises(FileExistsError, match="overwrite=True"):
+            run_epc_pipeline("scotland", "domestic", tmp_path, output_type="parquet")
+        assert steps.calls == []
+
+    def test_existing_output_with_overwrite_is_replaced(
+        self, tmp_path: Path, steps: Steps
+    ) -> None:
+        path = run_epc_pipeline("scotland", "domestic", tmp_path, output_type="parquet")
+        path.write_bytes(b"old")
+        run_epc_pipeline(
+            "scotland", "domestic", tmp_path, output_type="parquet", overwrite=True
+        )
+        assert pl.read_parquet(path).equals(_FRAME.collect())
+        manifest = json.loads(output_manifest_path(path).read_text(encoding="utf-8"))
+        assert manifest["output_type"] == "parquet"
+
+    def test_unknown_output_type_raises_value_error(
+        self, tmp_path: Path, steps: Steps
+    ) -> None:
+        with pytest.raises(ValueError, match="unknown OutputType"):
+            run_epc_pipeline("scotland", "domestic", tmp_path, output_type="csv")
+        assert steps.calls == []

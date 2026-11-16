@@ -1,22 +1,129 @@
 """Run every step for an EPC origin and segment in one call."""
 
 import os
+from datetime import UTC, datetime
+from importlib.metadata import version
 from pathlib import Path
+from typing import Final, Literal, overload
 
 import polars as pl
+from pydantic import AwareDatetime, BaseModel
 
 from py_epc._dataset._build import DATASETS_FOLDER, build_dataset
 from py_epc._dataset._definition import load_dataset_definition
+from py_epc._dataset._models import MODEL_CONFIG
 from py_epc._download import download, download_ons_postcode_directory
 from py_epc._enums import EPC_REGISTERS, EPCOrigin, EPCSegment, parse_member
-from py_epc._manifest import find_completed
-from py_epc._process._build import process
-from py_epc._process._postcodes import process_ons_postcode_directory
+from py_epc._files import ensure_gitignore
+from py_epc._manifest import find_completed, read_manifest
+from py_epc._output import OutputType, write_output
+from py_epc._process._build import ProcessManifest, process
+from py_epc._process._postcodes import (
+    PostcodeManifest,
+    process_ons_postcode_directory,
+)
 from py_epc._process._register import load_register
 from py_epc._scan import Stage, scan_epc
 
 # Config key of the ONS Postcode Directory, which gives the areas of postcodes.
-_POSTCODE_DIRECTORY_KEY = "ons.postcode-directory"
+_POSTCODE_DIRECTORY_KEY: Final = "ons.postcode-directory"
+
+# Folder under the root that holds the outputs, beside "datasets".
+OUTPUTS_FOLDER: Final = "outputs"
+
+# Suffix of the manifest written beside each output file, after its stem.
+_OUTPUT_MANIFEST_SUFFIX: Final = ".manifest.json"
+
+
+class OutputSource(BaseModel):
+    """One downloaded source an output was made from."""
+
+    model_config = MODEL_CONFIG
+
+    source_key: str
+    """Config key of the source, such as ``"epc.scotland.domestic"``."""
+
+    snapshot: str
+    """Name of its raw snapshot, such as ``"20261111T093000Z"``."""
+
+    raw_sha256: str
+    """SHA-256 of its raw file, from its build's manifest."""
+
+
+class OutputManifest(BaseModel):
+    """The record of one output file, written beside it once it is complete."""
+
+    model_config = MODEL_CONFIG
+
+    version: Literal[1] = 1
+    """Version of the manifest format."""
+
+    origin: str
+    """Origin read, such as ``"gb"``."""
+
+    segment: str
+    """Type of certificate, such as ``"domestic"``."""
+
+    stage: str
+    """Stage read, ``"processed"`` or ``"dataset"``."""
+
+    latest: bool
+    """Whether only each property's latest certificate was kept."""
+
+    geography: bool
+    """Whether the areas of each certificate's postcode were added."""
+
+    output_type: str
+    """Type of the output file, such as ``"parquet"``."""
+
+    file_name: str
+    """Name of the output file, beside this manifest."""
+
+    sources: tuple[OutputSource, ...]
+    """Each register's download, then the postcode directory's if
+    `geography` is true."""
+
+    package_version: str
+    """Version of py-epc that wrote the output."""
+
+    written_at: AwareDatetime
+    """When writing started, in UTC."""
+
+
+@overload
+def run_epc_pipeline(
+    origin: EPCOrigin | str,
+    segment: EPCSegment | str,
+    root: str | os.PathLike[str],
+    *,
+    stage: Stage = ...,
+    latest: bool = ...,
+    geography: bool | None = ...,
+    update: bool = ...,
+    token: str | None = ...,
+    strict: bool = ...,
+    output_type: None = ...,
+    output_path: str | os.PathLike[str] | None = ...,
+    overwrite: bool = ...,
+) -> pl.LazyFrame: ...
+
+
+@overload
+def run_epc_pipeline(
+    origin: EPCOrigin | str,
+    segment: EPCSegment | str,
+    root: str | os.PathLike[str],
+    *,
+    stage: Stage = ...,
+    latest: bool = ...,
+    geography: bool | None = ...,
+    update: bool = ...,
+    token: str | None = ...,
+    strict: bool = ...,
+    output_type: OutputType | str,
+    output_path: str | os.PathLike[str] | None = ...,
+    overwrite: bool = ...,
+) -> Path: ...
 
 
 def run_epc_pipeline(
@@ -30,7 +137,10 @@ def run_epc_pipeline(
     update: bool = False,
     token: str | None = None,
     strict: bool = True,
-) -> pl.LazyFrame:
+    output_type: OutputType | str | None = None,
+    output_path: str | os.PathLike[str] | None = None,
+    overwrite: bool = False,
+) -> pl.LazyFrame | Path:
     """
     Make whatever is missing for an origin and segment, then read it.
 
@@ -40,6 +150,14 @@ def run_epc_pipeline(
     ``stage="dataset"`` built into a dataset if it has none. A step already
     done is never done again. If `geography` is on, the ONS Postcode
     Directory is downloaded and processed too, if it has not been.
+
+    Without `output_type`, the certificates are returned as a lazy frame.
+    With it, they are written to one file, by default
+    ``<root>/outputs/epc-<origin>-<segment>-<stage>.<suffix>``, with
+    ``-latest`` before the suffix if `latest` is true, and its path is
+    returned. A manifest naming every download the file was made from is
+    written beside it, as ``<name>.manifest.json``. The first output writes
+    ``<root>/outputs/.gitignore``, which makes Git ignore every output.
 
     Parameters
     ----------
@@ -65,91 +183,182 @@ def run_epc_pipeline(
     strict : bool, default True
         Whether a value that cannot be read stops the dataset's build, as in
         `build_dataset`.
+    output_type : OutputType | str, optional
+        Type of file to write the certificates to, such as ``"parquet"``.
+        An SQLite file is much larger, about 1.4 KB a certificate, and
+        slower to write.
+    output_path : str | os.PathLike[str], optional
+        File to write, instead of the default under ``<root>/outputs``.
+    overwrite : bool, default False
+        Whether to replace an existing output file and its manifest.
 
     Returns
     -------
-    polars.LazyFrame
-        The certificates, as `scan_epc` reads them.
+    polars.LazyFrame or Path
+        The certificates, as `scan_epc` reads them, or without
+        `output_type`, or the path of the file written with it.
 
     Raises
     ------
     ValueError
-        If the origin, segment or stage is unknown, England and Wales must
-        be downloaded but no token is given, or a step fails.
+        If the origin, segment, stage or output type is unknown, England
+        and Wales must be downloaded but no token is given, or a step fails.
     KeyError
         If no register definition, or for ``stage="dataset"`` no dataset
         definition, is shipped for the segment, which is checked before any
         download.
+    FileExistsError
+        If the output file exists and `overwrite` is false, which is checked
+        before any download.
 
     Examples
     --------
     >>> import py_epc
-    >>> homes = py_epc.run_epc_pipeline(  # doctest: +SKIP
-    ...     "gb", "domestic", "data", latest=True, token="..."
+    >>> py_epc.run_epc_pipeline(  # doctest: +SKIP
+    ...     "gb", "domestic", "data", latest=True, output_type="parquet"
     ... )
+    PosixPath('data/outputs/epc-gb-domestic-dataset-latest.parquet')
     """
     origin = parse_member(EPCOrigin, origin)
     segment = parse_member(EPCSegment, segment)
+    output = None if output_type is None else parse_member(OutputType, output_type)
+    folder = Path(root).expanduser()
     registers = EPC_REGISTERS if origin is EPCOrigin.GB else (origin,)
     keys = [f"epc.{register}.{segment}" for register in registers]
     for key in keys:
         load_register(key)
         if stage == "dataset":
             load_dataset_definition(key)
-    snapshots = [
+    target = None
+    if output is not None:
+        target = (
+            Path(output_path).expanduser()
+            if output_path is not None
+            else _default_output_path(folder, origin, segment, stage, latest, output)
+        )
+        if target.exists() and not overwrite:
+            raise FileExistsError(f"{target} exists; pass overwrite=True to replace it")
+    builds = [
         _prepare_register(
-            key, root, stage=stage, update=update, token=token, strict=strict
+            key, folder, stage=stage, update=update, token=token, strict=strict
         )
         for key in keys
     ]
     with_geography = origin is EPCOrigin.GB if geography is None else geography
-    if with_geography:
-        _prepare_postcode_directory(root)
-    return scan_epc(
+    postcodes = _prepare_postcode_directory(folder) if with_geography else None
+    frame = scan_epc(
         origin,
         segment,
-        root,
-        snapshot=None if origin is EPCOrigin.GB else snapshots[0],
+        folder,
+        snapshot=None if origin is EPCOrigin.GB else builds[0].name,
         stage=stage,
         latest=latest,
         geography=with_geography,
     )
+    if output is None or target is None:
+        return frame
+    written_at = datetime.now(UTC).replace(microsecond=0)
+    if output_path is None:
+        (folder / OUTPUTS_FOLDER).mkdir(parents=True, exist_ok=True)
+        ensure_gitignore(folder / OUTPUTS_FOLDER)
+    write_output(frame, target, output, overwrite=overwrite)
+    sources = [_output_source(build, ProcessManifest) for build in builds]
+    if postcodes is not None:
+        sources.append(_output_source(postcodes, PostcodeManifest))
+    manifest = OutputManifest(
+        origin=origin.value,
+        segment=segment.value,
+        stage=stage,
+        latest=latest,
+        geography=with_geography,
+        output_type=output.value,
+        file_name=target.name,
+        sources=tuple(sources),
+        package_version=version("py-epc"),
+        written_at=written_at,
+    )
+    output_manifest_path(target).write_text(
+        manifest.model_dump_json(indent=2) + "\n", encoding="utf-8"
+    )
+    return target
+
+
+def output_manifest_path(path: str | os.PathLike[str]) -> Path:
+    """
+    Return the path of the manifest written beside an output file.
+
+    Parameters
+    ----------
+    path : str | os.PathLike[str]
+        The output file, such as ``"epc-gb-domestic-dataset.parquet"``.
+
+    Returns
+    -------
+    Path
+        The manifest, such as ``"epc-gb-domestic-dataset.manifest.json"``.
+    """
+    output = Path(path)
+    return output.with_name(f"{output.stem}{_OUTPUT_MANIFEST_SUFFIX}")
+
+
+def _default_output_path(
+    root: Path,
+    origin: EPCOrigin,
+    segment: EPCSegment,
+    stage: Stage,
+    latest: bool,
+    output_type: OutputType,
+) -> Path:
+    """Return the default file of an output under ``<root>/outputs``."""
+    name = f"epc-{origin}-{segment}-{stage}{'-latest' if latest else ''}"
+    return root / OUTPUTS_FOLDER / f"{name}{output_type.suffix}"
 
 
 def _prepare_register(
     key: str,
-    root: str | os.PathLike[str],
+    root: Path,
     *,
     stage: Stage,
     update: bool,
     token: str | None,
     strict: bool,
-) -> str:
-    """Make a register's missing steps, returning the name of its snapshot."""
-    folder = Path(root).expanduser()
+) -> Path:
+    """Make a register's missing steps, returning its processed build."""
     parts = key.split(".")
-    raw = None if update else _completed(folder.joinpath("raw", *parts))
+    raw = None if update else _completed(root.joinpath("raw", *parts))
     if raw is None:
-        raw = download(key, folder, token=token).parent
-    if _completed(folder.joinpath("processed", *parts), raw.name) is None:
-        process(key, folder, snapshot=raw.name)
+        raw = download(key, root, token=token).parent
+    if _completed(root.joinpath("processed", *parts), raw.name) is None:
+        process(key, root, snapshot=raw.name)
     if stage == "dataset" and (
-        _completed(folder.joinpath(DATASETS_FOLDER, *parts), raw.name) is None
+        _completed(root.joinpath(DATASETS_FOLDER, *parts), raw.name) is None
     ):
-        build_dataset(key, folder, snapshot=raw.name, strict=strict)
-    return raw.name
+        build_dataset(key, root, snapshot=raw.name, strict=strict)
+    return root.joinpath("processed", *parts, raw.name)
 
 
-def _prepare_postcode_directory(root: str | os.PathLike[str]) -> None:
-    """Download and process the ONS Postcode Directory, if not done yet."""
-    folder = Path(root).expanduser()
+def _prepare_postcode_directory(root: Path) -> Path:
+    """Make the processed postcode directory if missing, and return it."""
     parts = _POSTCODE_DIRECTORY_KEY.split(".")
-    if _completed(folder.joinpath("processed", *parts)) is not None:
-        return
-    raw = _completed(folder.joinpath("raw", *parts))
+    processed = _completed(root.joinpath("processed", *parts))
+    if processed is not None:
+        return processed
+    raw = _completed(root.joinpath("raw", *parts))
     if raw is None:
-        raw = download_ons_postcode_directory(folder).parent
-    process_ons_postcode_directory(folder, snapshot=raw.name)
+        raw = download_ons_postcode_directory(root).parent
+    return process_ons_postcode_directory(root, snapshot=raw.name)
+
+
+def _output_source(
+    build: Path, model: type[ProcessManifest] | type[PostcodeManifest]
+) -> OutputSource:
+    """Return the record of the download a processed build was made from."""
+    manifest = read_manifest(build, model)
+    return OutputSource(
+        source_key=manifest.source_key,
+        snapshot=manifest.snapshot,
+        raw_sha256=manifest.raw_sha256,
+    )
 
 
 def _completed(folder: Path, name: str | None = None) -> Path | None:
