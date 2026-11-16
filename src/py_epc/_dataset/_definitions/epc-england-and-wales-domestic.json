@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "source_key": "epc.england-and-wales.domestic",
+  "bilingual_columns": [
+    "walls_description",
+    "roof_description",
+    "floor_description",
+    "windows_description",
+    "mainheat_description",
+    "secondheat_description",
+    "hotwater_description",
+    "lighting_description"
+  ],
+  "parsers": [
+    {
+      "column": "built_form",
+      "parser": "category",
+      "vocabulary": "built_form"
+    },
+    {
+      "column": "construction_age_band",
+      "parser": "construction_age"
+    },
+    {
+      "column": "energy_tariff",
+      "parser": "category",
+      "vocabulary": "energy_tariff"
+    },
+    {
+      "column": "floor_description",
+      "parser": "fabric",
+      "vocabulary": "floor"
+    },
+    {
+      "column": "floor_level",
+      "parser": "floor_level"
+    },
+    {
+      "column": "glazed_area",
+      "parser": "category",
+      "vocabulary": "glazed_area"
+    },
+    {
+      "column": "glazed_type",
+      "parser": "category",
+      "vocabulary": "glazed_type"
+    },
+    {
+      "column": "heat_loss_corridor",
+      "parser": "category",
+      "vocabulary": "heat_loss_corridor"
+    },
+    {
+      "column": "hotwater_description",
+      "parser": "system",
+      "vocabulary": "hotwater"
+    },
+    {
+      "column": "lighting_description",
+      "parser": "lighting"
+    },
+    {
+      "column": "main_fuel",
+      "parser": "main_fuel",
+      "vocabulary": "main_fuel"
+    },
+    {
+      "column": "mainheat_description",
+      "parser": "system",
+      "vocabulary": "mainheat"
+    },
+    {
+      "column": "mainheatcont_description",
+      "parser": "category",
+      "vocabulary": "mainheatcont"
+    },
+    {
+      "column": "mechanical_ventilation",
+      "parser": "category",
+      "vocabulary": "mechanical_ventilation"
+    },
+    {
+      "column": "property_type",
+      "parser": "category",
+      "vocabulary": "property_type"
+    },
+    {
+      "column": "roof_description",
+      "parser": "fabric",
+      "vocabulary": "roof"
+    },
+    {
+      "column": "secondheat_description",
+      "parser": "system",
+      "vocabulary": "secondheat"
+    },
+    {
+      "column": "tenure",
+      "parser": "category",
+      "vocabulary": "tenure"
+    },
+    {
+      "column": "transaction_type",
+      "parser": "category",
+      "vocabulary": "transaction_type"
+    },
+    {
+      "column": "walls_description",
+      "parser": "fabric",
+      "vocabulary": "walls"
+    },
+    {
+      "column": "windows_description",
+      "parser": "category",
+      "vocabulary": "windows"
+    }
+  ]
+}

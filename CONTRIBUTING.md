@@ -54,6 +54,8 @@ Modules are private, with a leading underscore. The public API is what `src/py_e
 | `_dataset/_air_tightness.py`    | The air permeability, how it was found and the test it was measured by                 |
 | `_dataset/_construction_age.py` | The years a dwelling was built, checked against its lodgement date                     |
 | `_dataset/_floor_level.py`      | The floor a flat or maisonette is on                                                   |
+| `_dataset/_definition.py`       | Dataset definitions: the steps and parsers that build a source's dataset               |
+| `_dataset/_definitions/`        | The shipped definitions, one JSON file per source                                      |
 
 A source's columns, types and names belong in its JSON definition, not in code. The code reads the definition.
 

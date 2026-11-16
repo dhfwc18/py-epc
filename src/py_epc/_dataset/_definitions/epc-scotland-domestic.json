@@ -1,0 +1,193 @@
+{
+  "version": 1,
+  "source_key": "epc.scotland.domestic",
+  "building_elements": [
+    {
+      "name": "walls",
+      "description": "walls_description",
+      "energy_eff": "walls_energy_eff",
+      "env_eff": "walls_env_eff"
+    },
+    {
+      "name": "roof",
+      "description": "roof_description",
+      "energy_eff": "roof_energy_eff",
+      "env_eff": "roof_env_eff"
+    },
+    {
+      "name": "floor",
+      "description": "floor_description",
+      "energy_eff": "floor_energy_eff",
+      "env_eff": "floor_env_eff"
+    },
+    {
+      "name": "windows",
+      "description": "windows_description",
+      "energy_eff": "windows_energy_eff",
+      "env_eff": "windows_env_eff"
+    },
+    {
+      "name": "mainheat",
+      "description": "mainheat_description",
+      "energy_eff": "mainheat_energy_eff",
+      "env_eff": "mainheat_env_eff"
+    },
+    {
+      "name": "mainheatcont",
+      "description": "mainheatcont_description",
+      "energy_eff": "mainheatc_energy_eff",
+      "env_eff": "mainheatc_env_eff"
+    },
+    {
+      "name": "secondheat",
+      "description": "secondheat_description",
+      "energy_eff": "sheating_energy_eff",
+      "env_eff": "sheating_env_eff"
+    },
+    {
+      "name": "hotwater",
+      "description": "hotwater_description",
+      "energy_eff": "hot_water_energy_eff",
+      "env_eff": "hot_water_env_eff"
+    },
+    {
+      "name": "lighting",
+      "description": "lighting_description",
+      "energy_eff": "lighting_energy_eff",
+      "env_eff": "lighting_env_eff"
+    },
+    {
+      "name": "air_tightness",
+      "description": "air_tightness_description",
+      "energy_eff": "air_tightness_energy_eff",
+      "env_eff": "air_tightness_env_eff"
+    }
+  ],
+  "parsers": [
+    {
+      "column": "walls_description",
+      "parser": "fabric",
+      "vocabulary": "walls"
+    },
+    {
+      "column": "roof_description",
+      "parser": "fabric",
+      "vocabulary": "roof"
+    },
+    {
+      "column": "floor_description",
+      "parser": "fabric",
+      "vocabulary": "floor"
+    },
+    {
+      "column": "windows_description",
+      "parser": "category",
+      "vocabulary": "windows"
+    },
+    {
+      "column": "mainheat_description",
+      "parser": "system",
+      "vocabulary": "mainheat"
+    },
+    {
+      "column": "mainheatcont_description",
+      "parser": "category",
+      "vocabulary": "mainheatcont"
+    },
+    {
+      "column": "secondheat_description",
+      "parser": "system",
+      "vocabulary": "secondheat"
+    },
+    {
+      "column": "hotwater_description",
+      "parser": "system",
+      "vocabulary": "hotwater"
+    },
+    {
+      "column": "lighting_description",
+      "parser": "lighting"
+    },
+    {
+      "column": "air_tightness_description",
+      "parser": "air_tightness"
+    },
+    {
+      "column": "alternative_improvements",
+      "parser": "category_list",
+      "vocabulary": "alternative_improvements"
+    },
+    {
+      "column": "lzc_energy_sources",
+      "parser": "category_list",
+      "vocabulary": "lzc_energy_sources"
+    },
+    {
+      "column": "construction_age_band",
+      "parser": "construction_age"
+    },
+    {
+      "column": "floor_level",
+      "parser": "floor_level"
+    },
+    {
+      "column": "glazed_area",
+      "parser": "category",
+      "vocabulary": "glazed_area"
+    },
+    {
+      "column": "heat_loss_corridor",
+      "parser": "category",
+      "vocabulary": "heat_loss_corridor"
+    },
+    {
+      "column": "main_heating_category",
+      "parser": "category",
+      "vocabulary": "main_heating_category"
+    },
+    {
+      "column": "main_fuel",
+      "parser": "main_fuel",
+      "vocabulary": "main_fuel"
+    },
+    {
+      "column": "mechanical_ventilation",
+      "parser": "category",
+      "vocabulary": "mechanical_ventilation"
+    },
+    {
+      "column": "energy_tariff",
+      "parser": "category",
+      "vocabulary": "energy_tariff"
+    },
+    {
+      "column": "glazed_type",
+      "parser": "category",
+      "vocabulary": "glazed_type"
+    },
+    {
+      "column": "photo_supply_description",
+      "parser": "photo_supply"
+    },
+    {
+      "column": "tenure",
+      "parser": "category",
+      "vocabulary": "tenure"
+    },
+    {
+      "column": "transaction_type",
+      "parser": "category",
+      "vocabulary": "transaction_type"
+    },
+    {
+      "column": "built_form",
+      "parser": "category",
+      "vocabulary": "built_form"
+    },
+    {
+      "column": "property_type",
+      "parser": "category",
+      "vocabulary": "property_type"
+    }
+  ]
+}
