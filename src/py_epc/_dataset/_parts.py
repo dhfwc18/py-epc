@@ -44,9 +44,6 @@ class MisalignedParts(BaseModel):
     """Certificates whose description and ratings have different numbers of
     parts, so the ratings may belong to other parts."""
 
-    main_part_without_ratings: int
-    """Certificates whose main part has a description but no ratings."""
-
 
 def split_building_parts(frame: pl.LazyFrame, element: BuildingElement) -> pl.LazyFrame:
     """
@@ -114,25 +111,12 @@ def misaligned_parts(frame: pl.LazyFrame, element: BuildingElement) -> Misaligne
         _parts(pl.col(column)).list.len()
         for column in (element.energy_eff, element.env_eff)
     ]
-    main = description.list.eval(pl.element().is_not_null()).list.arg_max()
-    main_ratings = [
-        _parts(pl.col(column)).list.get(main, null_on_oob=True)
-        for column in (element.energy_eff, element.env_eff)
-    ]
     different = pl.any_horizontal(
         counts[0].is_not_null() & count.is_not_null() & (count != counts[0])
         for count in counts[1:]
     )
-    without = description.list.get(main, null_on_oob=True).is_not_null() & (
-        pl.all_horizontal(rating.is_null() for rating in main_ratings)
-    )
-    result = frame.select(
-        different.sum().alias("different"), without.sum().alias("without")
-    ).collect(engine="streaming")
-    return MisalignedParts(
-        different_counts=int(result["different"][0]),
-        main_part_without_ratings=int(result["without"][0]),
-    )
+    result = frame.select(different.sum()).collect(engine="streaming")
+    return MisalignedParts(different_counts=int(result.item()))
 
 
 def _parts(column: pl.Expr) -> pl.Expr:

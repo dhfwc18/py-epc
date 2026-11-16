@@ -152,7 +152,7 @@ class TestBuildDataset:
             1,
         )
         assert manifest.years[0].misaligned_parts == {
-            "lighting": MisalignedParts(different_counts=0, main_part_without_ratings=0)
+            "lighting": MisalignedParts(different_counts=0)
         }
 
     def test_first_build_makes_git_ignore_datasets(

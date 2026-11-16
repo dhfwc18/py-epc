@@ -97,15 +97,12 @@ class TestMisalignedParts:
 
     def test_aligned_parts_count_nothing(self) -> None:
         frame = walls(["A | B", "C"], ["Good | Poor", "Good"])
-        assert misaligned_parts(frame, _WALLS).model_dump() == {
-            "different_counts": 0,
-            "main_part_without_ratings": 0,
-        }
+        assert misaligned_parts(frame, _WALLS).different_counts == 0
 
     def test_different_numbers_of_parts_are_counted(self) -> None:
         frame = walls(["A | B", "C | D"], ["Good", "Good | Poor"])
         assert misaligned_parts(frame, _WALLS).different_counts == 1
 
-    def test_main_part_without_ratings_is_counted(self) -> None:
-        frame = walls(["A", "B"], [None, "Good"], [None, "Good"])
-        assert misaligned_parts(frame, _WALLS).main_part_without_ratings == 1
+    def test_element_without_ratings_counts_nothing(self) -> None:
+        frame = walls(["A", "B | C"], [None, None], [None, None])
+        assert misaligned_parts(frame, _WALLS).different_counts == 0

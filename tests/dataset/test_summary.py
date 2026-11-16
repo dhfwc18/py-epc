@@ -88,7 +88,7 @@ class TestSummariseYear:
                 ),
             }
         )
-        misaligned = MisalignedParts(different_counts=2, main_part_without_ratings=1)
+        misaligned = MisalignedParts(different_counts=2)
         summary = summarise_year(
             2014, count_kinds(frame, _DEFINITION).collect(), {"walls": misaligned}
         )
