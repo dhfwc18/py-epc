@@ -1,8 +1,9 @@
 # Py-EPC
 
 Py-EPC downloads the published Energy Performance Certificate (EPC) registers for England and Wales and for Scotland,
-processes them into typed Parquet, marks each property's latest certificate, and adds the ONS areas of each postcode.
-Every step is an explicit call, and every result is a lazy [Polars](https://pola.rs) frame.
+processes them into typed Parquet, marks each property's latest certificate, adds the ONS areas of each postcode, and
+builds a dataset whose text is cleaned and whose descriptions are parsed into columns. Every step is an explicit call,
+and every result is a lazy [Polars](https://pola.rs) frame.
 
 Py-EPC was inspired by [carbon.place](https://www.carbon.place), by Malcolm Morgan at the University of Leeds. Its
 published behaviour informed the design of some modules, but none of its code is used.
@@ -26,9 +27,12 @@ py_epc.download_ons_postcode_directory(root)
 py_epc.process_epc("scotland", "domestic", root)
 py_epc.process_ons_postcode_directory(root)
 
-# 3. Read the latest certificate of each property, with its ONS areas.
-homes = py_epc.scan_epc("scotland", "domestic", root, latest=True, geography=True)
-homes.group_by("ons_itl1_name").agg(pl.col("current_energy_efficiency").mean()).collect()
+# 3. Build the dataset, with text cleaned and descriptions parsed into columns.
+py_epc.build_epc_dataset("scotland", "domestic", root)
+
+# 4. Read the latest certificate of each property, with its ONS areas.
+homes = py_epc.scan_epc("scotland", "domestic", root, stage="dataset", latest=True, geography=True)
+homes.group_by("ons_itl1_name").agg(pl.col("lighting_low_energy_percent").mean()).collect()
 ```
 
 ## What each step does
@@ -42,6 +46,36 @@ homes.group_by("ons_itl1_name").agg(pl.col("current_energy_efficiency").mean()).
   Scotland, the register's building reference.
 - **Geography**: the ONS Postcode Directory is processed into the chosen areas of each postcode, with codes and names.
   `scan(..., geography=True)` adds them to each certificate with the prefix `ons_`.
+- **Dataset** prepares each lodgement year of a build by the source's dataset definition. England and Wales's bilingual
+  values keep their English, and every text column is cleaned. Scotland describes each part of a building, such as an
+  extension, so each element is reduced to its main part, with every part kept in `<column>_parts`. Each description is
+  then parsed into columns. `scan(..., stage="dataset")` reads the result.
+
+## Dataset columns
+
+Each parsed description gives columns named after it. The table lists the main ones.
+
+| Published column                | Columns added                                                                      |
+| ------------------------------- | ---------------------------------------------------------------------------------- |
+| `walls_description`             | `walls_construction`, `walls_insulation`, `walls_u_value`, `walls_assumed`         |
+| `roof_description`              | as for walls, with `roof_insulation_mm`                                            |
+| `floor_description`             | as for walls                                                                       |
+| `mainheat_description`          | `mainheat_system`, `mainheat_emitter`, `mainheat_fuel`, and the same for a second  |
+| `hotwater_description`          | `hotwater_system`, `hotwater_cylinder_thermostat`, `hotwater_solar` and others     |
+| `lighting_description`          | `lighting_low_energy_percent`, or `lighting_efficiency`                            |
+| `construction_age_band`         | `construction_age_from`, `construction_age_to`                                     |
+| `floor_level`                   | `floor_level_number`, `floor_level_position`                                       |
+| `main_fuel`                     | `main_fuel` as a category, and `main_fuel_community`                               |
+| `air_tightness_description`     | `air_tightness_m3_per_h_m2`, `air_tightness_basis`, `air_tightness_test`, Scotland |
+| `photo_supply_description`      | `photo_supply_peak_kw` and the other totals of each dwelling's panels, Scotland    |
+| `tenure`, `built_form` and more | the same column, as a category                                                     |
+| `lzc_energy_sources`            | the same column, as a list of categories, Scotland                                 |
+
+Each parsed column also gets `<column>_kind`, saying what its phrase turned out to be. Only a `described` phrase gives
+values. A placeholder is `not_a_description`, a phrase belonging to another column is `misplaced`, and an impossible
+value, such as a share above 100%, is `invalid`. Each of these gives null, so it is never mistaken for a description. A
+phrase of no known form is `unknown`, and stops the build, unless it is built with `strict=False`, when it gives null
+with a warning. The dataset's manifest counts each column's rows by kind, for every year.
 
 ## Text and place names
 
@@ -77,6 +111,8 @@ covers the 9 English regions, Wales and Scotland. Changing them needs the postco
   processed/                             # Builds, made again from raw at any time. Ignored by Git.
     epc/scotland/domestic/<snapshot>/certificates/lodgement_year=<year>/data.parquet
     ons/postcode-directory/<snapshot>/postcodes.parquet
+  datasets/                              # Datasets, made again from processed at any time. Ignored by Git.
+    epc/scotland/domestic/<snapshot>/certificates/lodgement_year=<year>/data.parquet
 ```
 
 ## Resources
