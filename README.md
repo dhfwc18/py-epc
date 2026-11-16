@@ -2,8 +2,8 @@
 
 Py-EPC downloads the published Energy Performance Certificate (EPC) registers for England and Wales and for Scotland,
 processes them into typed Parquet, marks each property's latest certificate, adds the ONS areas of each postcode, and
-builds a dataset whose text is cleaned and whose descriptions are parsed into columns. Every step is an explicit call,
-and every result is a lazy [Polars](https://pola.rs) frame.
+builds a dataset whose text is cleaned and whose descriptions are parsed into columns. Both registers can be read
+together, for Great Britain. Every step is an explicit call, and every result is a lazy [Polars](https://pola.rs) frame.
 
 Py-EPC was inspired by [carbon.place](https://www.carbon.place), by Malcolm Morgan at the University of Leeds. Its
 published behaviour informed the design of some modules, but none of its code is used.
@@ -33,6 +33,10 @@ py_epc.build_epc_dataset("scotland", "domestic", root)
 # 4. Read the latest certificate of each property, with its ONS areas.
 homes = py_epc.scan_epc("scotland", "domestic", root, stage="dataset", latest=True, geography=True)
 homes.group_by("ons_itl1_name").agg(pl.col("lighting_low_energy_percent").mean()).collect()
+
+# 5. Once England and Wales is downloaded, processed and built too, read both for Great Britain.
+gb = py_epc.scan_epc("gb", "domestic", root, stage="dataset", latest=True)
+gb.group_by("origin", "assessment_method").agg(pl.col("heating_cost_current").median()).collect()
 ```
 
 ## What each step does
@@ -50,6 +54,7 @@ homes.group_by("ons_itl1_name").agg(pl.col("lighting_low_energy_percent").mean()
   values keep their English, and every text column is cleaned. Scotland describes each part of a building, such as an
   extension, so each element is reduced to its main part, with every part kept in `<column>_parts`. Each description is
   then parsed into columns. `scan(..., stage="dataset")` reads the result.
+- **Great Britain** reads both registers as one frame, with `scan_epc("gb", ...)`. See [Great Britain](#great-britain).
 
 ## Dataset columns
 
@@ -76,6 +81,26 @@ values. A placeholder is `not_a_description`, a phrase belonging to another colu
 value, such as a share above 100%, is `invalid`. Each of these gives null, so it is never mistaken for a description. A
 phrase of no known form is `unknown`, and stops the build, unless it is built with `strict=False`, when it gives null
 with a warning. The dataset's manifest counts each column's rows by kind, for every year.
+
+## Great Britain
+
+`scan_epc("gb", ...)` reads the newest build, or dataset, of each register and stacks them. It keeps the columns both
+registers have with the same name and type, after an `origin` column of `scotland` or `england-and-wales`. Columns only
+one register publishes, such as Scotland's building parts or England and Wales's `constituency`, stay in that register's
+own build and dataset. `latest=True` keeps each register's latest certificates, and the ONS areas are added by default,
+so every certificate has the same areas regardless of register it is from.
+
+Each register's dataset reconciles the columns that differ, so they can be compared. The table shows how.
+
+| Column                           | England and Wales       | Scotland                                          |
+| -------------------------------- | ----------------------- | ------------------------------------------------- |
+| `assessment_method`              | `report_type`, 2 or 3   | `type_of_assessment`, such as "SAP, new dwelling" |
+| `heating_cost_current` and so on | published per year      | a third of the cost published over 3 years        |
+| `photo_supply_roof_area_percent` | `photo_supply`, renamed | parsed from `photo_supply_description`            |
+| `glazed_area`                    | published as text       | published as a number, parsed to one category     |
+
+`assessment_method` is `rdsap` or `sap`. A processed build has none of these, and leaves out `glazed_area`, so read
+Great Britain from the datasets.
 
 ## Text and place names
 

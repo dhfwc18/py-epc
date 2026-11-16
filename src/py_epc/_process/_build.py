@@ -11,7 +11,7 @@ from typing import Final, Literal
 import polars as pl
 from pydantic import AwareDatetime, BaseModel, ConfigDict
 
-from py_epc._enums import EPCOrigin, EPCSegment, parse_member
+from py_epc._enums import EPCOrigin, EPCSegment, parse_member, parse_register
 from py_epc._files import atomic_folder, ensure_gitignore
 from py_epc._manifest import DownloadManifest, read_manifest, write_manifest
 from py_epc._process._archive import find_snapshot, for_each_member
@@ -228,8 +228,8 @@ def process_epc(
     Raises
     ------
     ValueError
-        If the origin or segment is unknown, or processing fails, as in
-        `process`.
+        If the origin or segment is unknown, the origin is ``"gb"``, or
+        processing fails, as in `process`.
     KeyError
         If no register definition is shipped for the origin and segment.
     FileNotFoundError
@@ -243,7 +243,7 @@ def process_epc(
     >>> py_epc.process_epc("scotland", "domestic", "data")  # doctest: +SKIP
     PosixPath('data/processed/epc/scotland/domestic/20261111T093000Z')
     """
-    origin = parse_member(EPCOrigin, origin)
+    origin = parse_register(origin)
     segment = parse_member(EPCSegment, segment)
     key = f"epc.{origin}.{segment}"
     return process(key, root, snapshot=snapshot, overwrite=overwrite)

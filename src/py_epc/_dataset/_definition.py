@@ -68,10 +68,10 @@ class DatasetDefinition(BaseModel):
     """
     How to build one source's dataset from its processed build.
 
-    England and Wales's bilingual columns are first put in English, or
-    Scotland's building elements reduced to their main part. Every text
-    column of the register is then cleaned, and each column of phrases is
-    parsed.
+    England and Wales's bilingual columns are first put in English. Every
+    text column is then cleaned, Scotland's building elements are reduced to
+    their main part, and each column of phrases is parsed. Costs over 3 years
+    are given per year & some columns are renamed to match the other register.
     """
 
     model_config = MODEL_CONFIG
@@ -94,11 +94,28 @@ class DatasetDefinition(BaseModel):
     parsers: tuple[ParserDefinition, ...] = Field(min_length=1)
     """How each column of phrases is parsed, in order."""
 
+    per_year_costs: dict[str, str] = {}
+    """
+    Name of the column of each cost per year, keyed by the column of that
+    cost over 3 years, which it is a third of. The cost over 3 years is
+    kept.
+    """
+
+    renamed_columns: dict[str, str] = {}
+    """
+    New name of each published column renamed, keyed by its published name,
+    so it has the name the other register's matching column has.
+    """
+
     @model_validator(mode="after")
     def _check(self) -> Self:
         _check_unique("bilingual column", self.bilingual_columns)
         _check_unique("building element", (e.name for e in self.building_elements))
         _check_unique("parsed column", (p.column for p in self.parsers))
+        _check_unique(
+            "new column name",
+            [*self.per_year_costs.values(), *self.renamed_columns.values()],
+        )
         return self
 
 

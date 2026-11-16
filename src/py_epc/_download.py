@@ -11,7 +11,14 @@ from typing import Final
 import httpx
 
 from py_epc._config import Config
-from py_epc._enums import EPCOrigin, EPCSegment, ONSProduct, OSProduct, parse_member
+from py_epc._enums import (
+    EPCOrigin,
+    EPCSegment,
+    ONSProduct,
+    OSProduct,
+    parse_member,
+    parse_register,
+)
 from py_epc._files import atomic_folder, ensure_gitignore
 from py_epc._manifest import DownloadManifest, write_manifest
 from py_epc._source import Source
@@ -150,8 +157,8 @@ def download_epc(
     Raises
     ------
     ValueError
-        If the origin or segment is unknown, or the register requires a
-        token and none is given.
+        If the origin or segment is unknown, the origin is ``"gb"``, or the
+        register requires a token and none is given.
     KeyError
         If the config has no source for the origin and segment, such as
         Scotland's display certificates.
@@ -164,7 +171,7 @@ def download_epc(
     >>> py_epc.download_epc("scotland", "domestic", "data")  # doctest: +SKIP
     PosixPath('data/raw/epc/scotland/domestic/20261110T093000Z/...')
     """
-    origin = parse_member(EPCOrigin, origin)
+    origin = parse_register(origin)
     segment = parse_member(EPCSegment, segment)
     key = f"epc.{origin}.{segment}"
     return download(key, root, token=token, client=client)

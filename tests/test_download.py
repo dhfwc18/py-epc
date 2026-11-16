@@ -274,6 +274,12 @@ class TestDownloadEpc:
         with pytest.raises(ValueError, match=f"{match} .*; expected one of"):
             download_epc(origin, segment, tmp_path, client=client)
 
+    def test_gb_origin_raises_value_error(
+        self, tmp_path: Path, client: httpx.Client
+    ) -> None:
+        with pytest.raises(ValueError, match="'gb' combines both registers"):
+            download_epc("gb", "domestic", tmp_path, client=client)
+
     def test_unpublished_pair_raises_key_error(
         self, tmp_path: Path, client: httpx.Client
     ) -> None:

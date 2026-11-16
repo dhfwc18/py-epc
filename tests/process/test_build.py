@@ -356,3 +356,7 @@ class TestProcessEpc:
     def test_unknown_origin_raises_value_error(self, tmp_path: Path) -> None:
         with pytest.raises(ValueError, match="unknown EPCOrigin"):
             process_epc("scottland", "domestic", tmp_path)
+
+    def test_gb_origin_raises_value_error(self, tmp_path: Path) -> None:
+        with pytest.raises(ValueError, match="'gb' combines both registers"):
+            process_epc("gb", "domestic", tmp_path)

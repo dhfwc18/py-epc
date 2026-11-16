@@ -15,6 +15,9 @@ from py_epc._dataset._text import normalise_text_columns
 # of the parsed column, such as "walls_description_kind".
 KIND_COLUMN_SUFFIX: Final = "_kind"
 
+# Years a cost over 3 years covers, as Scotland publishes some costs.
+_YEARS_OF_COST: Final = 3
+
 
 def prepare_certificates(
     frame: pl.LazyFrame, definition: DatasetDefinition, *, strict: bool = True
@@ -30,6 +33,8 @@ def prepare_certificates(
     4. Each column of phrases is parsed, and ``<column>_kind`` gives the kind
        of each row's phrase.
     5. A construction age starting after the lodgement date is set to null.
+    6. Each cost over 3 years is added as a cost per year, a third of it.
+    7. Columns given new names by the definition are renamed.
 
     The cleaning and parsing steps hold every distinct value of their
     columns in memory, so give one year at a time.
@@ -74,4 +79,8 @@ def prepare_certificates(
     )
     if any(parser.parser == "construction_age" for parser in definition.parsers):
         frame = null_construction_age_after_lodgement(frame)
-    return frame
+    frame = frame.with_columns(
+        (pl.col(column) / _YEARS_OF_COST).alias(name)
+        for column, name in definition.per_year_costs.items()
+    )
+    return frame.rename(definition.renamed_columns)

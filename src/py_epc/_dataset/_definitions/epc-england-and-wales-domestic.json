@@ -85,6 +85,11 @@
       "vocabulary": "property_type"
     },
     {
+      "column": "report_type",
+      "parser": "category",
+      "vocabulary": "report_type"
+    },
+    {
       "column": "roof_description",
       "parser": "fabric",
       "vocabulary": "roof"
@@ -114,5 +119,8 @@
       "parser": "category",
       "vocabulary": "windows"
     }
-  ]
+  ],
+  "renamed_columns": {
+    "photo_supply": "photo_supply_roof_area_percent"
+  }
 }
