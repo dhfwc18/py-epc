@@ -186,6 +186,8 @@ class TestNormaliseTextColumns:
             return clean_text(value)
 
         monkeypatch.setattr(text_module, "clean_text", record)
-        frame = pl.LazyFrame({"text": ["Flat 1, High Street", "Flat 2 ", None]})
+        frame = pl.LazyFrame(
+            {"text": ["Flat 1, High Street", "%'->@~", "Flat 2 ", "a?b", None]}
+        )
         normalise_text_columns(frame, ["text"]).collect()
-        assert cleaned == ["Flat 2 "]
+        assert set(cleaned) == {"Flat 2 ", "a?b"}

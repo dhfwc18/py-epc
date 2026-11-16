@@ -91,15 +91,13 @@ _ASCII_TABLE: Final = str.maketrans(
 # Runs of whitespace, made one space.
 _WHITESPACE_PATTERN: Final = re.compile(r"\s+")
 
-# Values `clean_text` returns as they are: printable ASCII or pound signs,
-# with no space at either end, and none of `_CHANGED_BY_CLEANING`.
-_CLEAN_VALUE_PATTERN: Final = (
-    rf"^[!-~{_POUND_SIGN}](?:[ -~{_POUND_SIGN}]*[!-~{_POUND_SIGN}])?$"
-)
+# A character `clean_text` keeps as it is.
+_CLEAN_CHARACTER_PATTERN: Final = rf"[!-%'->@-~{_POUND_SIGN}]"
 
-# Text that `clean_text` may change in an otherwise clean value: an HTML
-# entity, a lost character or a run of spaces.
-_CHANGED_BY_CLEANING: Final = ("&", "?", "  ")
+# Values `clean_text` returns as they are.
+_CLEAN_VALUE_PATTERN: Final = (
+    rf"^{_CLEAN_CHARACTER_PATTERN}(?: ?{_CLEAN_CHARACTER_PATTERN})*$"
+)
 
 # Temporary column containing the values that may change when cleaned.
 _TO_CLEAN_COLUMN: Final = "_to_clean"
@@ -235,9 +233,7 @@ def normalise_text_columns(
 
 def _may_change(value: pl.Expr) -> pl.Expr:
     """Return whether `clean_text` may change each value, null for null."""
-    return ~value.str.contains(_CLEAN_VALUE_PATTERN) | pl.any_horizontal(
-        value.str.contains(text, literal=True) for text in _CHANGED_BY_CLEANING
-    )
+    return ~value.str.contains(_CLEAN_VALUE_PATTERN)
 
 
 def _clean_all(
