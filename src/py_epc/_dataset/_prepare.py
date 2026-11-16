@@ -30,6 +30,7 @@ def prepare_certificates(
     4. Each column of phrases is parsed, and ``<column>_kind`` gives the kind
        of each row's phrase.
     5. A construction age starting after the lodgement date is set to null.
+    6. Columns given new names by the definition are renamed.
 
     The cleaning and parsing steps hold every distinct value of their
     columns in memory, so give one year at a time.
@@ -74,4 +75,4 @@ def prepare_certificates(
     )
     if any(parser.parser == "construction_age" for parser in definition.parsers):
         frame = null_construction_age_after_lodgement(frame)
-    return frame
+    return frame.rename(definition.renamed_columns)

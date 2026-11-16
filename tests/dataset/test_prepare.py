@@ -117,6 +117,24 @@ class TestPrepareCertificates:
             None,
         )
 
+    def test_renamed_column_is_renamed_after_parsing(self) -> None:
+        frame = certificates([_HALF], photo_supply=[25.0])
+        prepared = prepare_certificates(
+            frame,
+            definition(
+                renamed_columns={
+                    "photo_supply": "photo_supply_roof_area_percent",
+                    "lighting_description": "lighting_text",
+                }
+            ),
+        ).collect()
+        assert prepared.select(
+            "photo_supply_roof_area_percent",
+            "lighting_text",
+            "lighting_low_energy_percent",
+        ).row(0) == (25.0, _HALF, 50.0)
+        assert "photo_supply" not in prepared.columns
+
     def test_rows_keep_their_order(self) -> None:
         frame = certificates([_ALL, _HALF, _ALL, None], row=[1, 2, 3, 4])
         result = prepare_certificates(frame, definition()).collect()

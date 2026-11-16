@@ -118,6 +118,12 @@ class TestDatasetDefinition:
                 "parsed column",
                 id="parsed-column",
             ),
+            pytest.param(
+                "renamed_columns",
+                {"a": "same", "b": "same"},
+                "new column name",
+                id="new-column-name",
+            ),
         ],
     )
     def test_repeated_name_raises_validation_error_naming_it(
@@ -231,3 +237,12 @@ class TestShippedDatasetDefinitions:
             for name in shared
             if dtypes[0][name] != dtypes[1][name]
         } == {}
+
+    @pytest.mark.parametrize("key", _SHIPPED_KEYS)
+    def test_renamed_columns_are_in_register_and_new_names_are_not(
+        self, key: str
+    ) -> None:
+        columns = {column.name for column in load_register(key).columns}
+        renamed = load_dataset_definition(key).renamed_columns
+        assert set(renamed) <= columns
+        assert set(renamed.values()) & columns == set()
