@@ -436,7 +436,7 @@ wheels = [
 ]
 
 [[package]]
-name = "py-epc"
+name = "py-epc-uk"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

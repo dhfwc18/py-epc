@@ -309,7 +309,7 @@ def process_ons_postcode_directory(
                     source_key=_SOURCE_KEY,
                     snapshot=raw.name,
                     raw_sha256=download_manifest.sha256,
-                    package_version=version("py-epc"),
+                    package_version=version("py-epc-uk"),
                     processed_at=processed_at,
                     release=_release(path.name),
                     rows=rows,

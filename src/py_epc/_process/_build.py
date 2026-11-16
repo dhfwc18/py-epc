@@ -183,7 +183,7 @@ def process(
             snapshot=raw.name,
             raw_sha256=download_manifest.sha256,
             register_version=register.version,
-            package_version=version("py-epc"),
+            package_version=version("py-epc-uk"),
             processed_at=processed_at,
             years=tuple(years),
             latest=latest,
