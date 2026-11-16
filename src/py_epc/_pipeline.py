@@ -295,7 +295,7 @@ def run_epc_pipeline(
         output_type=output.value,
         file_name=target.name,
         sources=tuple(sources),
-        package_version=version("py-epc"),
+        package_version=version("py-epc-uk"),
         written_at=written_at,
     )
     output_manifest_path(target).write_text(

@@ -124,7 +124,7 @@ def build_dataset(
             snapshot=build.name,
             raw_sha256=process_manifest.raw_sha256,
             definition_version=definition.version,
-            package_version=version("py-epc"),
+            package_version=version("py-epc-uk"),
             built_at=built_at,
             years=years,
         )
