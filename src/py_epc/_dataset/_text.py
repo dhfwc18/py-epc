@@ -33,7 +33,7 @@ from typing import Final
 
 import polars as pl
 
-from py_epc._dataset._distinct import map_distinct
+from py_epc._dataset._distinct import Converter, map_distinct
 
 # The one character kept that is not ASCII.
 _POUND_SIGN: Final = "\N{POUND SIGN}"
@@ -98,9 +98,6 @@ _CLEAN_CHARACTER_PATTERN: Final = rf"[!-%'->@-~{_POUND_SIGN}]"
 _CLEAN_VALUE_PATTERN: Final = (
     rf"^{_CLEAN_CHARACTER_PATTERN}(?: ?{_CLEAN_CHARACTER_PATTERN})*$"
 )
-
-# Temporary column containing the values that may change when cleaned.
-_TO_CLEAN_COLUMN: Final = "_to_clean"
 
 
 def clean_text(value: str | None) -> str | None:
@@ -173,9 +170,9 @@ def normalise_text_columns(
 
     Only values that cleaning may change are cleaned, so a column of
     addresses, with millions of distinct values that are nearly all plain
-    ASCII already, is cleaned quickly. Each distinct value that may change
-    is cleaned once, then joined back to every row with it, and only those
-    values are held in memory.
+    ASCII already, is cleaned quickly. The distinct values that may change
+    are read for every column in one pass, each is cleaned once, then joined
+    back to every row with it, and only those values are held in memory.
 
     Parameters
     ----------
@@ -199,28 +196,21 @@ def normalise_text_columns(
         The message names every such character and its column.
     """
     unknown: dict[str, set[str]] = {}
-    for column in columns:
 
-        def convert(values: list[str], column: str = column) -> list[str | None]:
+    def converter(column: str) -> Converter:
+        def convert(values: list[str]) -> list[str | None]:
             cleaned, found = _clean_all(values, strict=strict)
             if found:
                 unknown[column] = found
             return cleaned
 
-        to_clean = _may_change(pl.col(column))
-        frame = map_distinct(
-            frame.with_columns(
-                pl.when(to_clean).then(pl.col(column)).alias(_TO_CLEAN_COLUMN)
-            ),
-            _TO_CLEAN_COLUMN,
-            convert,
-        )
-        frame = frame.with_columns(
-            pl.when(to_clean)
-            .then(pl.col(_TO_CLEAN_COLUMN))
-            .otherwise(pl.col(column))
-            .alias(column)
-        ).drop(_TO_CLEAN_COLUMN)
+        return convert
+
+    frame = map_distinct(
+        frame,
+        {column: converter(column) for column in columns},
+        is_unchanged=_is_clean,
+    )
     if unknown:
         listed = "; ".join(
             f"{column}: {sorted(found)}" for column, found in unknown.items()
@@ -231,9 +221,9 @@ def normalise_text_columns(
     return frame
 
 
-def _may_change(value: pl.Expr) -> pl.Expr:
-    """Return whether `clean_text` may change each value, null for null."""
-    return ~value.str.contains(_CLEAN_VALUE_PATTERN)
+def _is_clean(value: pl.Expr) -> pl.Expr:
+    """Return whether `clean_text` cannot change each value, null for null."""
+    return value.str.contains(_CLEAN_VALUE_PATTERN)
 
 
 def _clean_all(

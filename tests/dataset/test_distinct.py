@@ -17,11 +17,11 @@ def lengths(values: list[str]) -> pl.DataFrame:
 
 
 class TestMapDistinct:
-    """`map_distinct` converts each distinct value of a column once."""
+    """`map_distinct` converts each distinct value of each column once."""
 
     def test_values_are_converted_in_row_order(self) -> None:
         frame = pl.LazyFrame({"word": ["b", "a", "b", None], "row": [1, 2, 3, 4]})
-        result = map_distinct(frame, "word", upper).collect()
+        result = map_distinct(frame, {"word": upper}).collect()
         assert result.to_dict(as_series=False) == {
             "word": ["B", "A", "B", None],
             "row": [1, 2, 3, 4],
@@ -29,15 +29,47 @@ class TestMapDistinct:
 
     def test_column_keeps_its_place(self) -> None:
         frame = pl.LazyFrame({"row": [1], "word": ["a"], "other": [2]})
-        assert map_distinct(frame, "word", upper).collect().columns == [
+        assert map_distinct(frame, {"word": upper}).collect().columns == [
             "row",
             "word",
             "other",
         ]
 
+    def test_several_columns_are_each_converted_by_their_own(self) -> None:
+        frame = pl.LazyFrame({"word": ["a", "b"], "name": ["c", "d"]})
+
+        def first(values: list[str]) -> list[str | None]:
+            return [f"first {value}" for value in values]
+
+        result = map_distinct(frame, {"word": upper, "name": first}).collect()
+        assert result.to_dict(as_series=False) == {
+            "word": ["A", "B"],
+            "name": ["first c", "first d"],
+        }
+
+    def test_unchanged_values_are_kept_and_never_converted(self) -> None:
+        seen: list[list[str]] = []
+
+        def record(values: list[str]) -> list[str | None]:
+            seen.append(sorted(values))
+            return upper(values)
+
+        frame = pl.LazyFrame({"word": ["a", "kept", "skip", None]})
+        result = map_distinct(
+            frame,
+            {"word": record},
+            is_unchanged=lambda value: value.str.starts_with("k"),
+        ).collect()
+        assert result["word"].to_list() == ["A", "kept", None, None]
+        assert seen == [["a", "skip"]]
+
+    def test_no_converters_leaves_frame_unchanged(self) -> None:
+        frame = pl.LazyFrame({"word": ["a"]})
+        assert map_distinct(frame, {}).collect().equals(frame.collect())
+
     def test_converter_returning_none_gives_null(self) -> None:
         frame = pl.LazyFrame({"word": ["skip", "a"]})
-        result = map_distinct(frame, "word", upper).collect()
+        result = map_distinct(frame, {"word": upper}).collect()
         assert result["word"].to_list() == [None, "A"]
 
     def test_each_distinct_value_is_converted_once(self) -> None:
@@ -48,13 +80,15 @@ class TestMapDistinct:
             return list(values)
 
         frame = pl.LazyFrame({"word": ["a", "b", "a", "a", None]})
-        map_distinct(frame, "word", record).collect()
+        map_distinct(frame, {"word": record}).collect()
         assert seen == [["a", "b"]]
 
     def test_converter_of_wrong_length_raises_value_error(self) -> None:
         frame = pl.LazyFrame({"word": ["a", "b"]})
-        with pytest.raises(ValueError, match="returned 1 values for 2"):
-            map_distinct(frame, "word", lambda values: values[:1])
+        with pytest.raises(
+            ValueError, match="converter of 'word' returned 1 values for 2"
+        ):
+            map_distinct(frame, {"word": lambda values: values[:1]})
 
 
 class TestJoinDistinct:
