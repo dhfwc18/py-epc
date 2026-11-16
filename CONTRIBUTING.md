@@ -65,7 +65,11 @@ A source's columns, types and names belong in its JSON definition, not in code. 
 - **Text**: files are ASCII, except for `£`. In Markdown, write `&copy;` for the copyright sign. Spelling is British,
   with "licence" as the noun.
 - **Constants**: say what a name holds, with a suffix such as `_COLUMN`, `_FILE` or `_FOLDER`. A regular expression,
-  compiled or given to Polars as text, ends in `_PATTERN`.
+  compiled or given to Polars as text, ends in `_PATTERN`, and a fixed set of published phrases ends in `_PHRASES`.
+- **Parsers**: a column of phrases is parsed by a `ColumnParser` from a `<thing>_parser` function, given to
+  `parse_column`, which parses each distinct phrase once. Only a described phrase gives values, and only an unknown one
+  stops a strict run. A column's phrases belong in its vocabulary in `_vocabularies/`, unless they are a short fixed
+  set. A check against another column, such as `lodgement_date`, is a Polars expression run after `parse_column`.
 - **Models**: a Pydantic model, frozen and strict, for anything read from or written to a file, such as a register, a
   vocabulary or a manifest and its summaries. A frozen dataclass for a value made and used in code, such as a parsed
   phrase or a building element.
