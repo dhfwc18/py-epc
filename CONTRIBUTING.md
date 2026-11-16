@@ -30,7 +30,7 @@ Modules are private, with a leading underscore. The public API is what `src/py_e
 | `_download.py`                  | The download functions                                                                 |
 | `_manifest.py`                  | Manifest models, reading and writing them, and `find_completed`                        |
 | `_files.py`                     | Safe folder writes and `.gitignore`                                                    |
-| `_scan.py`                      | `scan` and `scan_epc`, which read processed builds                                     |
+| `_scan.py`                      | `scan` and `scan_epc`, which read processed builds and datasets                        |
 | `_process/_archive.py`          | Finding a raw snapshot and reading its archive's members one at a time                 |
 | `_process/_register.py`         | Register definitions: how to read, type and name a register's columns                  |
 | `_process/_registers/`          | The shipped definitions, one JSON file per source                                      |
