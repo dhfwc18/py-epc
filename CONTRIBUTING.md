@@ -21,23 +21,45 @@ uv run pytest
 
 Modules are private, with a leading underscore. The public API is what `src/py_epc/__init__.py` exports in `__all__`.
 
-| Module                   | Holds                                                                  |
-| ------------------------ | ---------------------------------------------------------------------- |
-| `_config.py`             | `Config`, the settings checked against a schema                        |
-| `defaults.json`          | The shipped default settings                                           |
-| `_source.py`             | `Source`, one published file and where to download it                  |
-| `_enums.py`              | Names used in config keys, and `parse_member`                          |
-| `_download.py`           | The download functions                                                 |
-| `_manifest.py`           | Manifest models, reading and writing them, and `find_completed`        |
-| `_files.py`              | Safe folder writes and `.gitignore`                                    |
-| `_scan.py`               | `scan` and `scan_epc`, which read processed builds                     |
-| `_process/_archive.py`   | Finding a raw snapshot and reading its archive's members one at a time |
-| `_process/_register.py`  | Register definitions: how to read, type and name a register's columns  |
-| `_process/_registers/`   | The shipped definitions, one JSON file per source                      |
-| `_process/_values.py`    | Parsing raw text into each column's type                               |
-| `_process/_build.py`     | `process` and `process_epc`, which write typed Parquet builds          |
-| `_process/_latest.py`    | Marking each property's latest certificate                             |
-| `_process/_postcodes.py` | Processing the ONS Postcode Directory, and `normalise_postcode`        |
+| Module                          | Holds                                                                                  |
+| ------------------------------- | -------------------------------------------------------------------------------------- |
+| `_config.py`                    | `Config`, the settings checked against a schema                                        |
+| `defaults.json`                 | The shipped default settings                                                           |
+| `_source.py`                    | `Source`, one published file and where to download it                                  |
+| `_enums.py`                     | Names used in config keys, and `parse_member`                                          |
+| `_download.py`                  | The download functions                                                                 |
+| `_manifest.py`                  | Manifest models, reading and writing them, and `find_completed`                        |
+| `_files.py`                     | Safe folder writes and `.gitignore`                                                    |
+| `_scan.py`                      | `scan` and `scan_epc`, which read processed builds and datasets                        |
+| `_process/_archive.py`          | Finding a raw snapshot and reading its archive's members one at a time                 |
+| `_process/_register.py`         | Register definitions: how to read, type and name a register's columns                  |
+| `_process/_registers/`          | The shipped definitions, one JSON file per source                                      |
+| `_process/_values.py`           | Parsing raw text into each column's type                                               |
+| `_process/_build.py`            | `process` and `process_epc`, which write typed Parquet builds                          |
+| `_process/_latest.py`           | Marking each property's latest certificate                                             |
+| `_process/_postcodes.py`        | Processing the ONS Postcode Directory, and `normalise_postcode`                        |
+| `_dataset/_models.py`           | `MODEL_CONFIG`, the settings shared by the dataset stage's models                      |
+| `_dataset/_distinct.py`         | `map_distinct` and `join_distinct`, which convert each distinct value of a column once |
+| `_dataset/_text.py`             | `clean_text` and `normalise_text_columns`, which repair published text                 |
+| `_dataset/_bilingual.py`        | `keep_english_text`, which keeps the English of England and Wales's bilingual values   |
+| `_dataset/_parts.py`            | `split_building_parts`, which splits Scotland's values into the parts of a building    |
+| `_dataset/_phrases.py`          | `ColumnParser` and `parse_column`, which parse each distinct phrase of a column once   |
+| `_dataset/_vocabulary.py`       | `Vocabulary`, the lists every vocabulary has, and `load_vocabulary`                    |
+| `_dataset/_vocabularies/`       | The shipped vocabularies, one JSON file per column                                     |
+| `_dataset/_categories.py`       | `PhraseVocabulary` and the parsers giving the category of each phrase or list item     |
+| `_dataset/_fabric.py`           | Walls, roofs and floors: their construction, insulation and U-value                    |
+| `_dataset/_systems.py`          | Main and secondary heating and hot water, read as systems of parts                     |
+| `_dataset/_main_fuel.py`        | The main fuel, and whether it feeds a community heating scheme                         |
+| `_dataset/_lighting.py`         | The share of low energy lighting, or the lighting efficiency                           |
+| `_dataset/_air_tightness.py`    | The air permeability, how it was found and the test it was measured by                 |
+| `_dataset/_construction_age.py` | The years a dwelling was built, checked against its lodgement date                     |
+| `_dataset/_floor_level.py`      | The floor a flat or maisonette is on                                                   |
+| `_dataset/_photo_supply.py`     | Scotland's photovoltaic arrays, as totals for each dwelling                            |
+| `_dataset/_definition.py`       | The definition of each source's dataset, and the parsers it names                      |
+| `_dataset/_definitions/`        | The shipped definitions, one JSON file per source                                      |
+| `_dataset/_prepare.py`          | `prepare_certificates`, which runs a definition's steps on one year of a build         |
+| `_dataset/_summary.py`          | `count_kinds` and `summarise_year`, which count each parsed column's rows by kind      |
+| `_dataset/_build.py`            | `build_dataset` and `build_epc_dataset`, which write a dataset one year at a time      |
 
 A source's columns, types and names belong in its JSON definition, not in code. The code reads the definition.
 
@@ -48,7 +70,15 @@ A source's columns, types and names belong in its JSON definition, not in code. 
 - **Types**: every function is typed, and pyright must pass in standard mode.
 - **Text**: files are ASCII, except for `£`. In Markdown, write `&copy;` for the copyright sign. Spelling is British,
   with "licence" as the noun.
-- **Constants**: say what a name holds, with a suffix such as `_COLUMN`, `_FILE` or `_FOLDER`.
+- **Constants**: say what a name holds, with a suffix such as `_COLUMN`, `_FILE` or `_FOLDER`. A regular expression,
+  compiled or given to Polars as text, ends in `_PATTERN`, and a fixed set of published phrases ends in `_PHRASES`.
+- **Parsers**: a column of phrases is parsed by a `ColumnParser` from a `<thing>_parser` function, given to
+  `parse_column`, which parses each distinct phrase once. Only a described phrase gives values, and only an unknown one
+  stops a strict run. A column's phrases belong in its vocabulary in `_vocabularies/`, unless they are a short fixed
+  set. A check against another column, such as `lodgement_date`, is a Polars expression run after `parse_column`.
+- **Models**: a Pydantic model, frozen and strict, for anything read from or written to a file, such as a register, a
+  vocabulary or a manifest and its summaries. A frozen dataclass for a value made and used in code, such as a parsed
+  phrase or a building element.
 - **Memory**: work one year at a time, stream with `sink_parquet`, and join with small tables rather than using
   `replace`. Measure peak memory on the real files before relying on a new step.
 

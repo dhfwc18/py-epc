@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "format": "phrase",
+  "column": "main_heating_category",
+  "output_column": "main_heating_category",
+  "not_a_description": ["not recorded"],
+  "categories": {
+    "boiler": {
+      "label": "Boiler with radiators or underfloor heating",
+      "phrases": ["boiler with radiators or underfloor heating"]
+    },
+    "heat_pump_wet": {
+      "label": "Heat pump with radiators or underfloor heating",
+      "phrases": ["heat pump with radiators or underfloor heating"]
+    },
+    "heat_pump_warm_air": {
+      "label": "Heat pump with warm air",
+      "phrases": ["heat pump with warm air distribution"]
+    },
+    "community": {
+      "label": "Community heating",
+      "phrases": ["community heating system"]
+    },
+    "storage_heaters": {
+      "label": "Electric storage heaters",
+      "phrases": ["electric storage heaters"]
+    },
+    "electric_underfloor": {
+      "label": "Electric underfloor heating",
+      "phrases": ["electric underfloor heating"]
+    },
+    "warm_air": {
+      "label": "Warm air, not a heat pump",
+      "phrases": ["warm air system (not heat pump)"]
+    },
+    "room_heaters": {
+      "label": "Room heaters",
+      "phrases": ["room heaters"]
+    },
+    "micro_cogeneration": {
+      "label": "Micro-cogeneration",
+      "phrases": ["micro-cogeneration"]
+    },
+    "other": {
+      "label": "Other system",
+      "phrases": ["other system"]
+    },
+    "no_system": {
+      "label": "No heating system",
+      "phrases": ["none"]
+    }
+  }
+}

@@ -1,12 +1,14 @@
-"""Tests for reading a processed build."""
+"""Tests for reading a processed build or a dataset."""
 
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import polars as pl
 import pytest
 
 from py_epc import (
+    DatasetManifest,
     EPCOrigin,
     EPCSegment,
     PostcodeManifest,
@@ -17,6 +19,7 @@ from py_epc import (
 from py_epc._manifest import MANIFEST_FILE, write_manifest
 from py_epc._process._latest import LatestSummary
 from py_epc._process._postcodes import FieldSummary
+from py_epc._scan import Stage
 
 # Key of the source the tests read.
 _SOURCE_KEY = "epc.scotland.domestic"
@@ -37,14 +40,16 @@ def write_build(
     *,
     snapshot: str = "20261111T093000Z",
     with_latest: bool = True,
+    stage: Stage = "processed",
 ) -> Path:
     """
-    Write a build of certificates per year.
+    Write a build, or with ``stage="dataset"`` a dataset, of certificates.
 
     Each certificate is a certificate number, whether it is the latest, and
     optionally its postcode, which is ``"AB10 1AA"`` if not given.
     """
-    folder = root.joinpath("processed", *_SOURCE_KEY.split("."), snapshot)
+    stage_folder = "datasets" if stage == "dataset" else "processed"
+    folder = root.joinpath(stage_folder, *_SOURCE_KEY.split("."), snapshot)
     for year, rows in years.items():
         target = folder / "certificates" / f"lodgement_year={year}"
         target.mkdir(parents=True)
@@ -58,9 +63,18 @@ def write_build(
         if not with_latest:
             frame = frame.drop("is_latest")
         frame.write_parquet(target / "data.parquet")
-    write_manifest(
-        folder,
-        ProcessManifest(
+    manifest = (
+        DatasetManifest(
+            source_key=_SOURCE_KEY,
+            snapshot=snapshot,
+            raw_sha256="0" * 64,
+            definition_version=1,
+            package_version="0",
+            built_at=datetime(2026, 11, 11, tzinfo=UTC),
+            years=(),
+        )
+        if stage == "dataset"
+        else ProcessManifest(
             source_key=_SOURCE_KEY,
             snapshot=snapshot,
             raw_sha256="0" * 64,
@@ -69,8 +83,9 @@ def write_build(
             processed_at=datetime(2026, 11, 11, tzinfo=UTC),
             years=(),
             latest=_LATEST if with_latest else None,
-        ),
+        )
     )
+    write_manifest(folder, manifest)
     return folder
 
 
@@ -118,7 +133,7 @@ def numbers(frame: pl.LazyFrame) -> list[str]:
 
 
 class TestScan:
-    """`scan` reads a processed build as a lazy frame."""
+    """`scan` reads a processed build or dataset as a lazy frame."""
 
     def test_build_returns_every_certificate_with_its_year(
         self, tmp_path: Path
@@ -172,6 +187,33 @@ class TestScan:
         write_build(tmp_path, {2024: [("a", True)]}, with_latest=False)
         with pytest.raises(ValueError, match="has no is_latest"):
             scan(_SOURCE_KEY, tmp_path, latest=True)
+
+    def test_dataset_stage_reads_dataset_of_build(self, tmp_path: Path) -> None:
+        write_build(tmp_path, {2024: [("processed", True)]})
+        write_build(tmp_path, {2024: [("dataset", True)]}, stage="dataset")
+        assert numbers(scan(_SOURCE_KEY, tmp_path, stage="dataset")) == ["dataset"]
+
+    def test_dataset_stage_with_latest_keeps_only_latest_certificates(
+        self, tmp_path: Path
+    ) -> None:
+        write_build(tmp_path, {2024: [("a", False), ("b", True)]}, stage="dataset")
+        frame = scan(_SOURCE_KEY, tmp_path, stage="dataset", latest=True)
+        assert numbers(frame) == ["b"]
+
+    def test_dataset_without_flag_raises_value_error(self, tmp_path: Path) -> None:
+        write_build(tmp_path, {2024: [("a", True)]}, with_latest=False, stage="dataset")
+        with pytest.raises(ValueError, match=r"dataset '20261111T093000Z' .* has no"):
+            scan(_SOURCE_KEY, tmp_path, stage="dataset", latest=True)
+
+    def test_no_dataset_raises_file_not_found_error(self, tmp_path: Path) -> None:
+        write_build(tmp_path, {2024: [("a", True)]})
+        with pytest.raises(FileNotFoundError):
+            scan(_SOURCE_KEY, tmp_path, stage="dataset")
+
+    def test_unknown_stage_raises_value_error(self, tmp_path: Path) -> None:
+        stage: Any = "raw"
+        with pytest.raises(ValueError, match="unknown stage 'raw'"):
+            scan(_SOURCE_KEY, tmp_path, stage=stage)
 
 
 class TestScanGeography:
@@ -265,6 +307,11 @@ class TestScanEpc:
         write_postcodes(tmp_path, {"AB10 1AA": ("S12000033", "Aberdeen City")})
         frame = scan_epc("scotland", "domestic", tmp_path, geography=True)
         assert frame.collect()["ons_lad_name"].to_list() == ["Aberdeen City"]
+
+    def test_stage_is_passed_on_to_scan(self, tmp_path: Path) -> None:
+        write_build(tmp_path, {2024: [("dataset", True)]}, stage="dataset")
+        frame = scan_epc("scotland", "domestic", tmp_path, stage="dataset")
+        assert numbers(frame) == ["dataset"]
 
     def test_unknown_segment_raises_value_error(self, tmp_path: Path) -> None:
         with pytest.raises(ValueError, match="unknown EPCSegment"):

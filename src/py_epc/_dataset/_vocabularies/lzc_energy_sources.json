@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "format": "phrase_list",
+  "column": "lzc_energy_sources",
+  "output_column": "lzc_energy_sources",
+  "categories": {
+    "solar_photovoltaics": {
+      "label": "Solar photovoltaics",
+      "phrases": ["Solar photovoltaics"]
+    },
+    "solar_water_heating": {
+      "label": "Solar water heating",
+      "phrases": ["Solar water heating"]
+    },
+    "wind_turbine": {
+      "label": "Wind turbine",
+      "phrases": ["Wind turbine"]
+    },
+    "hydro_electric": {
+      "label": "Hydro-electric generation",
+      "phrases": ["Hydro-electric generation"]
+    },
+    "air_source_heat_pump": {
+      "label": "Air source heat pump",
+      "phrases": ["Air source heat pump"]
+    },
+    "ground_source_heat_pump": {
+      "label": "Ground source heat pump",
+      "phrases": ["Ground source heat pump"]
+    },
+    "water_source_heat_pump": {
+      "label": "Water source heat pump",
+      "phrases": ["Water source heat pump"]
+    },
+    "exhaust_air_heat_pump": {
+      "label": "Exhaust air heat pump",
+      "phrases": ["Exhaust air heat pump"]
+    },
+    "geothermal": {
+      "label": "Geothermal heat source",
+      "phrases": ["Geothermal heat source"]
+    },
+    "biomass_main_heating": {
+      "label": "Biomass main heating",
+      "phrases": ["Biomass main heating"]
+    },
+    "biomass_secondary_heating": {
+      "label": "Biomass secondary heating",
+      "phrases": ["Biomass secondary heating"]
+    },
+    "biomass_community_heating": {
+      "label": "Biomass community heating",
+      "phrases": ["Biomass community heating"]
+    },
+    "biomass_community_heating_partial": {
+      "label": "Biomass community heating for some of heat generation",
+      "phrases": ["Biomass community heating for some of heat generation"]
+    },
+    "community_heat_pump": {
+      "label": "Community heat pump",
+      "phrases": ["Community heat pump"]
+    },
+    "community_chp": {
+      "label": "Community combined heat and power",
+      "phrases": ["Community combined heat and power"]
+    },
+    "micro_chp": {
+      "label": "Micro-CHP",
+      "phrases": ["Micro-CHP"]
+    }
+  }
+}

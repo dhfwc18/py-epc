@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "format": "phrase",
+  "column": "tenure",
+  "output_column": "tenure",
+  "not_a_description": ["unknown"],
+  "categories": {
+    "owner_occupied": {
+      "label": "Owner-occupied",
+      "phrases": ["owner-occupied"]
+    },
+    "rented_social": {
+      "label": "Rented (social)",
+      "phrases": ["rented (social)"]
+    },
+    "rented_private": {
+      "label": "Rented (private)",
+      "phrases": ["rented (private)"]
+    }
+  }
+}

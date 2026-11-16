@@ -1,0 +1,296 @@
+{
+  "version": 1,
+  "format": "phrase",
+  "column": "mainheatcont_description",
+  "output_column": "mainheatcont_control",
+  "not_a_description": [
+    "SAP05:Main-Heating-Controls",
+    "SAP:Main-Heating-Controls",
+    "error",
+    "Undefined Welsh description for crtrl code 2113",
+    "Undefined Welsh description for crtrl code 2699"
+  ],
+  "categories": {
+    "none": {
+      "label": "No controls",
+      "phrases": ["None", "Dim"]
+    },
+    "no_time_or_thermostatic": {
+      "label": "No time or thermostatic control",
+      "phrases": [
+        "No time or thermostatic control of room temperature",
+        "No time or thermostatic control of room temp",
+        "No time or thermostatic control of temperature",
+        "Dim rheolaeth amser na rheolaeth thermostatig ar dymheredd yr ystafell",
+        "2110 Dim rheolaeth amser na rheolaeth thermostatig ar dymheredd yr ystafell"
+      ]
+    },
+    "no_thermostatic": {
+      "label": "No thermostatic control",
+      "phrases": ["No thermostatic control of room temperature", "Dim rheolaeth thermostatig ar dymheredd yr ystafell"]
+    },
+    "programmer_no_thermostat": {
+      "label": "Programmer, no room thermostat",
+      "phrases": ["Programmer, no room thermostat", "Programmer, no thermostat", "Rhaglennydd, dim thermostat ystafell"]
+    },
+    "room_thermostat": {
+      "label": "Room thermostat only",
+      "phrases": ["Room thermostat only", "Room thermostats only", "Thermostat ystafell yn unig"]
+    },
+    "programmer_room_thermostat": {
+      "label": "Programmer and room thermostat",
+      "phrases": [
+        "Programmer and room thermostat",
+        "Programmer and room thermostats",
+        "Thermostat and programmer",
+        "Rhaglennydd a thermostat ystafell",
+        "Rhaglennydd a thermostatau ystafell",
+        "2104 Rhaglennydd a thermostat ystafell",
+        "GROUP 5: WARM AIR SYSTEMS (including heat pumps with warm air distribution) Programmer and room thermostat"
+      ]
+    },
+    "programmer_two_room_thermostats": {
+      "label": "Programmer and at least two room thermostats",
+      "phrases": [
+        "Programmer and at least two room thermostats",
+        "Programmer and at least 2 room thermostats",
+        "Programmer and at least two room thermostat",
+        "Rhaglennydd ac o leiaf ddau thermostat ystafell",
+        "2205 Rhaglennydd ac o leiaf ddau thermostat ystafell"
+      ]
+    },
+    "programmer_two_room_thermostats_delayed_start": {
+      "label": "Programmer and at least two room thermostats, with delayed start",
+      "phrases": [
+        "Programmer and at least two room thermostats including a delayed start thermostat",
+        "Delayed start programmer and at least two room thermostats"
+      ]
+    },
+    "programmer_delayed_start": {
+      "label": "Programmer and delayed start thermostat",
+      "phrases": ["Programmer and delayed start thermostat", "Delayed start thermostat and programmer"]
+    },
+    "programmer_room_thermostat_trvs": {
+      "label": "Programmer, room thermostat and TRVs",
+      "phrases": [
+        "Programmer, room thermostat and TRVs",
+        "Programmer room thermostat and TRVs",
+        "Programmer, roomstat and TRVs",
+        "Thermostat, programmer and TRVs",
+        "Rhaglennydd, thermostat ystafell a TRVs",
+        "2106 Rhaglennydd, thermostat ystafell a TRVs",
+        "GROUP 1: BOILER SYSTEMS WITH RADIATORS OR UNDERFLOOR HEATING Programmer, room thermostat and TRVs"
+      ]
+    },
+    "programmer_trvs_delayed_start": {
+      "label": "Programmer and TRVs, with delayed start",
+      "phrases": ["Delayed start thermostat, programmer and TRVs", "Delayed start stat & program & TRV's"]
+    },
+    "room_thermostat_trvs": {
+      "label": "Room thermostat and TRVs",
+      "phrases": ["Room thermostat and TRVs"]
+    },
+    "trvs_bypass": {
+      "label": "TRVs and bypass",
+      "phrases": ["TRVs and bypass", "TRVs a falf osgoi"]
+    },
+    "programmer_trvs_bypass": {
+      "label": "Programmer, TRVs and bypass",
+      "phrases": [
+        "Programmer, TRVs and bypass",
+        "Rhaglennydd, TRVs a falf osgoi",
+        "2107 Rhaglennydd, TRVs a falf osgoi"
+      ]
+    },
+    "programmer_trvs_flow_switch": {
+      "label": "Programmer, TRVs and flow switch",
+      "phrases": ["Programmer, TRVs and flow switch", "TRV's, program & flow switch"]
+    },
+    "programmer_trvs_boiler_energy_manager": {
+      "label": "Programmer, TRVs and boiler energy manager",
+      "phrases": ["Programmer, TRVs and boiler energy manager", "Rhaglennydd, TRVs a rheolydd ynni ar y bwyler"]
+    },
+    "time_and_temperature_zone": {
+      "label": "Time and temperature zone control",
+      "phrases": [
+        "Time and temperature zone control",
+        "2207 Time and temperature zone control",
+        "Rheolaeth amser a rheolaeth parthau tymheredd",
+        "Time and temperature zone control by suitable arrangement of plumbing and electrical services",
+        "Time and temperature zone control by device in database"
+      ]
+    },
+    "temperature_zone": {
+      "label": "Temperature zone control",
+      "phrases": ["Temperature zone control", "Rheolaeth parthau tymheredd"]
+    },
+    "appliance_thermostats": {
+      "label": "Appliance thermostats",
+      "phrases": ["Appliance thermostats", "Appliance thermostat", "Thermostatau ar y cyfarpar"]
+    },
+    "programmer_appliance_thermostats": {
+      "label": "Programmer and appliance thermostats",
+      "phrases": [
+        "Programmer and appliance thermostats",
+        "Appliance thermostat and programmer",
+        "Rhaglennydd a thermostatau ar y cyfarpar",
+        "2603 Rhaglennydd a thermostatau ar y cyfarpar"
+      ]
+    },
+    "manual_charge": {
+      "label": "Manual charge control",
+      "phrases": [
+        "Manual charge control",
+        "Rheoli'r tal a llaw",
+        "Rheoli'r t?l ? llaw",
+        "2401 Rheoli'r tal a llaw",
+        "GROUP 4: ELECTRIC STORAGE SYSTEMS Manual charge control",
+        "al a llaw",
+        "llaw"
+      ]
+    },
+    "automatic_charge": {
+      "label": "Automatic charge control",
+      "phrases": ["Automatic charge control", "Rheoli gwefr drydanol yn awtomatig"]
+    },
+    "celect": {
+      "label": "Celect-type controls",
+      "phrases": [
+        "Celect-type controls",
+        "Celect controls",
+        "Celect control",
+        "Celect type controls",
+        "Rheolaeth Celect"
+      ]
+    },
+    "high_heat_retention": {
+      "label": "Controls for high heat retention storage heaters",
+      "phrases": [
+        "Controls for high heat retention storage heaters",
+        "Rheolyddion i wresogyddion storio sy'n cadw llawer o wres",
+        "2404 Rheolyddion i wresogyddion storio sy'n cadw llawer o wres"
+      ]
+    },
+    "flat_rate_no_thermostatic": {
+      "label": "Flat rate charging, no thermostatic control",
+      "phrases": [
+        "Flat rate charging, no thermostatic control of room temperature",
+        "Flat rate charging, no stat control of room temperature",
+        "Flat rate charging, no thermostatic control",
+        "Flat rate charging, no time or thermostatic control of room temperature",
+        "T?l un gyfradd, dim rheolaeth thermostatig ar dymheredd yr ystafell"
+      ]
+    },
+    "flat_rate_programmer_no_thermostat": {
+      "label": "Flat rate charging, programmer, no room thermostat",
+      "phrases": [
+        "Flat rate charging, programmer, no room thermostat",
+        "Flat rate charging, programmer no room thermostat"
+      ]
+    },
+    "flat_rate_room_thermostat": {
+      "label": "Flat rate charging, room thermostat only",
+      "phrases": ["Flat rate charging, room thermostat only", "Tal un gyfradd, thermostat ystafell yn unig"]
+    },
+    "flat_rate_programmer_room_thermostat": {
+      "label": "Flat rate charging, programmer and room thermostat",
+      "phrases": [
+        "Flat rate charging, programmer and room thermostat",
+        "Flat rate charging, programmer and room stat",
+        "Tal un gyfradd, rhaglennydd a thermostat ystafell"
+      ]
+    },
+    "flat_rate_programmer_two_room_thermostats": {
+      "label": "Flat rate charging, programmer and at least two room thermostats",
+      "phrases": ["Flat rate charging, programmer and at least two room thermostats"]
+    },
+    "flat_rate_trvs": {
+      "label": "Flat rate charging, TRVs",
+      "phrases": ["Flat rate charging, TRVs", "Flat rate charging TRVs", "Tal un gyfradd, TRVs"]
+    },
+    "flat_rate_programmer_trvs": {
+      "label": "Flat rate charging, programmer and TRVs",
+      "phrases": [
+        "Flat rate charging, programmer and TRVs",
+        "Flat rate charging*, programmer and TRVs",
+        "Tal un gyfradd, rhaglennydd a TRVs"
+      ]
+    },
+    "flat_rate_room_thermostat_trvs": {
+      "label": "Flat rate charging, room thermostat and TRVs",
+      "phrases": ["Flat rate charging, room thermostat and TRVs", "Flat rate charging room thermostat and TRVs"]
+    },
+    "use_linked_programmer": {
+      "label": "Charging linked to use, programmer",
+      "phrases": ["Charging system linked to use of community heating, programmer"]
+    },
+    "use_linked_trvs": {
+      "label": "Charging linked to use, TRVs",
+      "phrases": [
+        "Charging system linked to use of community heating, TRVs",
+        "Charging system linked to use of communit heating, TRVs",
+        "System dalu wedi'i chysylltu a defnyddio gwres cymunedol, TRVs"
+      ]
+    },
+    "use_linked_room_thermostat": {
+      "label": "Charging linked to use, room thermostat only",
+      "phrases": [
+        "Charging system linked to use of community heating, room thermostat only",
+        "Charging system linked to use of communit heating, room thermostat only",
+        "System dalu wedi'i chysylltu a defnyddio gwres cymunedol, thermostat ystafell yn unig"
+      ]
+    },
+    "use_linked_programmer_room_thermostat": {
+      "label": "Charging linked to use, programmer and room thermostat",
+      "phrases": [
+        "Charging system linked to use of community heating, programmer and room thermostat",
+        "Charging system linked to use of community heating, programmerand room thermostat",
+        "Charging system linked to use of communit heating, programmer and room thermostat",
+        "System dalu wedi'i chysylltu a defnyddio gwres cymunedol, rhaglennydd a thermostat ystafell"
+      ]
+    },
+    "use_linked_programmer_two_room_thermostats": {
+      "label": "Charging linked to use, programmer and at least two room thermostats",
+      "phrases": [
+        "Charging system linked to use of community heating, programmer and at least two room stats",
+        "Charging system linked to use of community heating, programmer and at least two room thermostats",
+        "Charging system linked to use of community heating, programmer, and two room thermostats",
+        "System dalu wedi'i chysylltu a defnyddio gwres cymunedol, rhaglennydd ac o leiaf ddau thermostat ystafell"
+      ]
+    },
+    "use_linked_programmer_trvs": {
+      "label": "Charging linked to use, programmer and TRVs",
+      "phrases": [
+        "Charging system linked to use of community heating, programmer and TRVs",
+        "Charging system linked to the use of community heating, prog and TRVs",
+        "Charging system linked to the use of community heating, programmer and TRVs",
+        "Charging linked to use, programmer and TRVs",
+        "Charging system linked to community heating use, programmer and TRVs",
+        "Charging system linked to use of communit heating, programmer and TRVs",
+        "Charging system linked to use of community heating, programmer?and TRVs",
+        "System dalu wedi'i chysylltu a defnyddio gwres cymunedol, rhaglennydd a TRVs"
+      ]
+    },
+    "use_linked_room_thermostat_trvs": {
+      "label": "Charging linked to use, room thermostat and TRVs",
+      "phrases": [
+        "Charging system linked to use of community heating, room thermostat and TRVs",
+        "Charging system linked to use of heating, room thermostat and TRVs",
+        "Charging system linked to use of heating room thermostat and TRVs"
+      ]
+    },
+    "unit_charging_programmer_trvs": {
+      "label": "Unit charging, programmer and TRVs",
+      "phrases": ["Unit charging, programmer and TRVs"]
+    },
+    "not_applicable_hot_water_only": {
+      "label": "Not applicable: the system only heats water",
+      "phrases": [
+        "Not relevant (supplies DHW only)",
+        "Not applicable (boiler provides DHW only)",
+        "Not applicable (heating provides DHW only)",
+        "Not relevant"
+      ]
+    }
+  }
+}

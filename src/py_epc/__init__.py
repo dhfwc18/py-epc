@@ -1,6 +1,11 @@
 """Py-EPC library to download & process Energy Performance of Building data."""
 
 from py_epc._config import Config
+from py_epc._dataset._build import (
+    DatasetManifest,
+    build_dataset,
+    build_epc_dataset,
+)
 from py_epc._download import (
     DownloadError,
     download,
@@ -25,6 +30,7 @@ from py_epc._source import Source
 
 __all__ = [
     "Config",
+    "DatasetManifest",
     "DownloadError",
     "DownloadManifest",
     "EPCOrigin",
@@ -35,6 +41,8 @@ __all__ = [
     "ProcessManifest",
     "ProcessWarning",
     "Source",
+    "build_dataset",
+    "build_epc_dataset",
     "download",
     "download_epc",
     "download_ons_postcode_directory",

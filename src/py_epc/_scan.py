@@ -1,11 +1,14 @@
-"""Read a processed build as a lazy frame."""
+"""Read a processed build or a dataset as a lazy frame."""
 
 import os
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Final
+from typing import Final, Literal, get_args
 
 import polars as pl
+from pydantic import BaseModel
 
+from py_epc._dataset._build import DATASETS_FOLDER, DatasetManifest
 from py_epc._enums import EPCOrigin, EPCSegment, parse_member
 from py_epc._manifest import find_completed, read_manifest
 from py_epc._process._build import CERTIFICATES_FOLDER, ProcessManifest
@@ -16,6 +19,30 @@ from py_epc._process._postcodes import (
     PostcodeManifest,
     normalise_postcode,
 )
+
+# Stage of the pipeline whose results are read.
+type Stage = Literal["processed", "dataset"]
+
+
+@dataclass(frozen=True)
+class _StageResults:
+    """Where one stage's results are kept, and what each one is called."""
+
+    folder: str
+    """Folder under the root, such as ``"processed"``."""
+
+    manifest: type[BaseModel]
+    """Model of each result's manifest."""
+
+    noun: str
+    """What one result is called in errors, such as ``"build"``."""
+
+
+# Results of each stage.
+_STAGE_RESULTS: Final[dict[str, _StageResults]] = {
+    "processed": _StageResults("processed", ProcessManifest, "build"),
+    "dataset": _StageResults(DATASETS_FOLDER, DatasetManifest, "dataset"),
+}
 
 # Prefix of the columns added from the ONS Postcode Directory.
 _GEOGRAPHY_PREFIX: Final = "ons_"
@@ -32,16 +59,16 @@ def scan(
     root: str | os.PathLike[str],
     *,
     snapshot: str | None = None,
+    stage: Stage = "processed",
     latest: bool = False,
     geography: bool = False,
 ) -> pl.LazyFrame:
     """
-    Return the certificates of a processed build, as a lazy frame.
+    Return the certificates of a processed build or dataset, as a lazy frame.
 
     Nothing is read until the frame is collected, so filter and select first
-    to read only what is needed. The frame has every processed column, then
-    ``is_latest`` if the build has it, then ``lodgement_year``, taken from
-    the build's yearly folders.
+    to read only what is needed. The frame has every column of the build or
+    dataset, then ``lodgement_year``, taken from its yearly folders.
 
     Parameters
     ----------
@@ -53,6 +80,9 @@ def scan(
         Name of the raw snapshot whose build to read, such as
         ``"20261111T093000Z"``, as given to `process`. By default, the newest
         build.
+    stage : {"processed", "dataset"}, default "processed"
+        Whether to read the processed build, as typed by `process`, or its
+        dataset, as cleaned and parsed by `build_dataset`.
     latest : bool, default False
         Whether to keep only each property's latest certificate.
     geography : bool, default False
@@ -70,21 +100,27 @@ def scan(
     Raises
     ------
     FileNotFoundError
-        If there is no completed build, or none with that name, or `geography`
-        is true but no postcode directory is processed.
+        If there is no completed build or dataset, or none with that name, or
+        `geography` is true but no postcode directory is processed.
     ValueError
-        If `latest` is true but the build has no ``is_latest`` column.
+        If `stage` is unknown, or `latest` is true but the build or dataset
+        has no ``is_latest`` column.
     pydantic.ValidationError
-        If the build was made by an earlier version of py-epc. Process the
-        snapshot again with ``overwrite=True``.
+        If the build or dataset was made by an earlier version of py-epc.
+        Make it again with ``overwrite=True``.
     """
-    builds = Path(root).expanduser().joinpath("processed", *key.split("."))
-    folder = find_completed(builds, snapshot)
-    manifest = read_manifest(folder, ProcessManifest)
+    if stage not in get_args(Stage.__value__):
+        raise ValueError(f"unknown stage {stage!r}")
+    results = _STAGE_RESULTS[stage]
+    folders = Path(root).expanduser().joinpath(results.folder, *key.split("."))
+    folder = find_completed(folders, snapshot)
+    read_manifest(folder, results.manifest)
     frame = pl.scan_parquet(folder / CERTIFICATES_FOLDER, hive_partitioning=True)
     if latest:
-        if manifest.latest is None:
-            raise ValueError(f"build {folder.name!r} of {key!r} has no {LATEST_COLUMN}")
+        if LATEST_COLUMN not in frame.collect_schema():
+            raise ValueError(
+                f"{results.noun} {folder.name!r} of {key!r} has no {LATEST_COLUMN}"
+            )
         frame = frame.filter(pl.col(LATEST_COLUMN))
     if geography:
         frame = _add_geography(frame, Path(root).expanduser())
@@ -124,11 +160,12 @@ def scan_epc(
     root: str | os.PathLike[str],
     *,
     snapshot: str | None = None,
+    stage: Stage = "processed",
     latest: bool = False,
     geography: bool = False,
 ) -> pl.LazyFrame:
     """
-    Return the certificates of a processed EPC build, as a lazy frame.
+    Return the certificates of a processed EPC build or dataset, lazily.
 
     This is `scan` for the source ``"epc.<origin>.<segment>"``, and works the
     same way.
@@ -144,6 +181,8 @@ def scan_epc(
     snapshot : str, optional
         Name of the raw snapshot whose build to read. By default, the newest
         build.
+    stage : {"processed", "dataset"}, default "processed"
+        Whether to read the processed build or its dataset, as in `scan`.
     latest : bool, default False
         Whether to keep only each property's latest certificate.
     geography : bool, default False
@@ -157,8 +196,8 @@ def scan_epc(
     Raises
     ------
     ValueError
-        If the origin or segment is unknown, or `latest` is true but the build
-        has no ``is_latest`` column.
+        If the origin, segment or stage is unknown, or `latest` is true but
+        the build or dataset has no ``is_latest`` column.
     FileNotFoundError
         If there is no completed build, or no postcode directory for
         `geography`, as in `scan`.
@@ -167,11 +206,23 @@ def scan_epc(
     --------
     >>> import py_epc
     >>> homes = py_epc.scan_epc(  # doctest: +SKIP
-    ...     "scotland", "domestic", "data", latest=True, geography=True
+    ...     "scotland",
+    ...     "domestic",
+    ...     "data",
+    ...     stage="dataset",
+    ...     latest=True,
+    ...     geography=True,
     ... )
     >>> homes.group_by("ons_itl1_name").len()  # doctest: +SKIP
     """
     origin = parse_member(EPCOrigin, origin)
     segment = parse_member(EPCSegment, segment)
     key = f"epc.{origin}.{segment}"
-    return scan(key, root, snapshot=snapshot, latest=latest, geography=geography)
+    return scan(
+        key,
+        root,
+        snapshot=snapshot,
+        stage=stage,
+        latest=latest,
+        geography=geography,
+    )

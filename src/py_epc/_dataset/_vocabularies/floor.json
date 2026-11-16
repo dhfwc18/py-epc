@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "format": "fabric",
+  "column": "floor_description",
+  "prefix": "floor",
+  "not_a_description": ["SAP05:Floor", "2K", "'i inswleiddio", "i inswleiddio", "limited insulation insulated"],
+  "construction": {
+    "solid": {
+      "label": "Solid",
+      "phrases": ["Solid", "Solet"]
+    },
+    "suspended": {
+      "label": "Suspended",
+      "phrases": ["Suspended", "Crog"]
+    },
+    "to_unheated_space": {
+      "label": "To an unheated space",
+      "phrases": ["To unheated space", "Above unheated space", "I ofod heb ei wresogi"]
+    },
+    "to_external_air": {
+      "label": "To external air",
+      "phrases": ["To external air", "Fully exposed", "I'r awyr y tu allan", "I?r awyr y tu allan"]
+    },
+    "basement": {
+      "label": "Basement",
+      "phrases": ["Basement"]
+    },
+    "conservatory": {
+      "label": "Conservatory",
+      "phrases": ["Conservatory"]
+    },
+    "dwelling_below": {
+      "label": "Another dwelling below",
+      "phrases": ["(another dwelling below)", "(anheddiad arall islaw)"]
+    },
+    "premises_below": {
+      "label": "Other premises below",
+      "phrases": ["(other premises below)", "Other premises below", "(eiddo arall islaw)"]
+    },
+    "same_dwelling_below": {
+      "label": "Same dwelling below",
+      "phrases": ["(same dwelling below)", "(Same dwelling below) insulated"]
+    }
+  },
+  "insulation": {
+    "none": {
+      "label": "No insulation",
+      "phrases": ["no insulation", "uninsulated", "dim inswleiddio", "heb ei inswleiddio"]
+    },
+    "insulated": {
+      "label": "Insulated",
+      "phrases": ["insulated", "wedi'i inswleiddio", "wedi?i inswleiddio"]
+    },
+    "limited": {
+      "label": "Limited insulation",
+      "phrases": ["limited insulation", "inswleiddio cyfyngedig"]
+    }
+  }
+}

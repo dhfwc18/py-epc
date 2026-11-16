@@ -1,0 +1,667 @@
+{
+  "version": 1,
+  "format": "system",
+  "column": "mainheat_description",
+  "prefix": "mainheat",
+  "misplaced": [
+    "Fully double glazed",
+    "Partial double glazing",
+    "Single glazed",
+    "Full secondary glazing",
+    "Partial secondary glazing"
+  ],
+  "not_a_description": ["SAP05:Main-Heating", "Heating system", "with fan-assisted flue", "(EX1 3FS)"],
+  "fields": ["system", "emitter", "emitter_detail", "fuel"],
+  "max_systems": 2,
+  "labels": {
+    "system": {
+      "boiler": "Boiler",
+      "room_heaters": "Room heaters",
+      "storage_heaters": "Electric storage heaters",
+      "electric_underfloor": "Electric underfloor heating",
+      "electric_ceiling": "Electric ceiling heating",
+      "portable_electric_heaters": "Portable electric heaters",
+      "none": "No system",
+      "warm_air": "Warm air",
+      "community": "Community scheme",
+      "community_chp": "Community scheme with CHP",
+      "community_waste_heat": "Community scheme using waste heat",
+      "community_geothermal": "Community scheme using geothermal heat",
+      "community_heat_pump": "Community heat pump",
+      "air_source_heat_pump": "Air source heat pump",
+      "ground_source_heat_pump": "Ground source heat pump",
+      "water_source_heat_pump": "Water source heat pump",
+      "exhaust_air_heat_pump": "Exhaust air heat pump",
+      "solar_assisted_heat_pump": "Solar assisted heat pump",
+      "gas_fired_heat_pump": "Gas-fired heat pump",
+      "heat_pump": "Heat pump, source not stated",
+      "micro_chp": "Micro-cogeneration",
+      "hot_water_only": "Hot water only"
+    },
+    "emitter": {
+      "radiators": "Radiators",
+      "underfloor": "Underfloor",
+      "radiators_and_underfloor": "Radiators and underfloor",
+      "fan_coil": "Fan coil units",
+      "warm_air": "Warm air",
+      "electricaire": "Electricaire"
+    },
+    "emitter_detail": {
+      "screed": "Pipes in screed above insulation",
+      "timber_floor": "Pipes in insulated timber floor",
+      "concrete_slab": "Pipes in concrete slab"
+    },
+    "fuel": {
+      "mains_gas": "Mains gas",
+      "gas": "Gas, type not stated",
+      "electricity": "Electricity",
+      "oil": "Oil",
+      "lpg": "LPG",
+      "bottled_lpg": "Bottled LPG",
+      "lng": "LNG",
+      "coal": "Coal",
+      "anthracite": "Anthracite",
+      "smokeless_fuel": "Smokeless fuel",
+      "solid_fuel": "Solid fuel",
+      "wood_logs": "Wood logs",
+      "wood_pellets": "Wood pellets",
+      "wood_chips": "Wood chips",
+      "dual_fuel": "Dual fuel (mineral and wood)",
+      "biomass": "Biomass",
+      "biogas": "Biogas",
+      "liquid_biofuel": "Liquid biofuel",
+      "bioethanol": "Bioethanol",
+      "b30k": "B30K",
+      "waste_combustion": "Waste combustion",
+      "geothermal": "Geothermal",
+      "community_heat": "Community heat",
+      "biomass_and_mains_gas": "Biomass and mains gas",
+      "wood_pellets_and_mains_gas": "Wood pellets and mains gas",
+      "wood_chips_and_mains_gas": "Wood chips and mains gas",
+      "oil_and_mains_gas": "Oil and mains gas",
+      "biomass_and_oil": "Biomass and oil",
+      "electricity_and_mains_gas": "Electricity and mains gas"
+    }
+  },
+  "parts": [
+    {
+      "phrases": ["Boiler and radiators", "Bwyler a rheiddiaduron", "Back boiler to radiators source heat pump"],
+      "values": {
+        "system": "boiler",
+        "emitter": "radiators"
+      }
+    },
+    {
+      "phrases": [
+        "Boiler and underfloor heating",
+        "Boiler& underfloor",
+        "Boiler & underfloor",
+        "Bwyler a gwres dan y llawr"
+      ],
+      "values": {
+        "system": "boiler",
+        "emitter": "underfloor"
+      }
+    },
+    {
+      "phrases": ["Boiler with radiators and underfloor heating", "Bwyler gyda rheiddiaduron a gwres dan y llawr"],
+      "values": {
+        "system": "boiler",
+        "emitter": "radiators_and_underfloor"
+      }
+    },
+    {
+      "phrases": ["Boiler and fan coil units", "Boiler& fan coil units", "Boiler & fan coil units"],
+      "values": {
+        "system": "boiler",
+        "emitter": "fan_coil"
+      }
+    },
+    {
+      "phrases": ["Air source heat pump fan coil units"],
+      "values": {
+        "system": "air_source_heat_pump",
+        "emitter": "fan_coil"
+      }
+    },
+    {
+      "phrases": ["Ground source heat pump fan coil units"],
+      "values": {
+        "system": "ground_source_heat_pump",
+        "emitter": "fan_coil"
+      }
+    },
+    {
+      "phrases": ["Air source heat pump and underfloor heating"],
+      "values": {
+        "system": "air_source_heat_pump",
+        "emitter": "underfloor"
+      }
+    },
+    {
+      "phrases": ["Warm air heat pump"],
+      "values": {
+        "system": "heat_pump",
+        "emitter": "warm_air"
+      }
+    },
+    {
+      "phrases": ["Boiler", "Boiler and"],
+      "values": {
+        "system": "boiler"
+      }
+    },
+    {
+      "phrases": [
+        "Gas/LPG boiler pre-1998 with balanced or open-flue",
+        "Gas/LPG boiler 1998 or later",
+        "Gas/LPG boiler pre-1998"
+      ],
+      "values": {
+        "system": "boiler"
+      }
+    },
+    {
+      "phrases": ["Electric boiler"],
+      "values": {
+        "system": "boiler",
+        "fuel": "electricity"
+      }
+    },
+    {
+      "phrases": ["Oil boiler"],
+      "values": {
+        "system": "boiler",
+        "fuel": "oil"
+      }
+    },
+    {
+      "phrases": ["Solid-fuel boiler"],
+      "values": {
+        "system": "boiler",
+        "fuel": "solid_fuel"
+      }
+    },
+    {
+      "phrases": ["Room heaters", "Gwresogyddion ystafell"],
+      "values": {
+        "system": "room_heaters"
+      }
+    },
+    {
+      "phrases": [
+        "Electric storage heaters",
+        "Electric storage",
+        "Stor wresogyddion trydan",
+        "St?r wresogyddion trydan",
+        "or wresogyddion trydan",
+        "r wresogyddion trydan"
+      ],
+      "values": {
+        "system": "storage_heaters",
+        "fuel": "electricity"
+      }
+    },
+    {
+      "phrases": [
+        "Electric underfloor heating",
+        "Electric Underfloor Heating (Standard tariff)",
+        "Gwresogi dan y llawr trydan"
+      ],
+      "values": {
+        "system": "electric_underfloor",
+        "fuel": "electricity"
+      }
+    },
+    {
+      "phrases": ["Electric ceiling heating", "Electric ceiling"],
+      "values": {
+        "system": "electric_ceiling",
+        "fuel": "electricity"
+      }
+    },
+    {
+      "phrases": ["Portable electric heaters"],
+      "values": {
+        "system": "portable_electric_heaters",
+        "fuel": "electricity"
+      }
+    },
+    {
+      "phrases": [
+        "Portable electric heaters assumed for most rooms",
+        "Portable electric heating assumed for most rooms",
+        "Gwresogyddion trydan cludadwy wedi'i ragdybio ar gyfer y rhan fwyaf o'r ystafelloedd"
+      ],
+      "values": {
+        "system": "portable_electric_heaters",
+        "fuel": "electricity"
+      },
+      "assumed": true
+    },
+    {
+      "phrases": [
+        "No system present: electric heaters assumed",
+        "Dim system ar gael: rhagdybir bod gwresogyddion trydan",
+        "Dim system ar gael: rhagdybir bod twymwr tanddwr trydan"
+      ],
+      "values": {
+        "system": "none",
+        "fuel": "electricity"
+      },
+      "assumed": true
+    },
+    {
+      "phrases": ["Warm air", "Awyr gynnes"],
+      "values": {
+        "system": "warm_air"
+      },
+      "otherwise": {
+        "emitter": "warm_air"
+      }
+    },
+    {
+      "phrases": ["Electricaire"],
+      "values": {
+        "emitter": "electricaire",
+        "fuel": "electricity"
+      }
+    },
+    {
+      "phrases": ["Community scheme", "Community heating", "Cynllun cymunedol"],
+      "values": {
+        "system": "community"
+      }
+    },
+    {
+      "phrases": ["community"],
+      "values": {
+        "system": "community"
+      },
+      "otherwise": {
+        "fuel": "community_heat"
+      }
+    },
+    {
+      "phrases": ["Community scheme with CHP"],
+      "values": {
+        "system": "community_chp"
+      }
+    },
+    {
+      "phrases": ["Community scheme with CHP and mains gas"],
+      "values": {
+        "system": "community_chp",
+        "fuel": "mains_gas"
+      }
+    },
+    {
+      "phrases": ["Community scheme with CHP and electric"],
+      "values": {
+        "system": "community_chp",
+        "fuel": "electricity"
+      }
+    },
+    {
+      "phrases": ["Community scheme with CHP and oil"],
+      "values": {
+        "system": "community_chp",
+        "fuel": "oil"
+      }
+    },
+    {
+      "phrases": ["Community scheme with CHP and geothermal"],
+      "values": {
+        "system": "community_chp",
+        "fuel": "geothermal"
+      }
+    },
+    {
+      "phrases": ["Community scheme with CHP and waste combustion"],
+      "values": {
+        "system": "community_chp",
+        "fuel": "waste_combustion"
+      }
+    },
+    {
+      "phrases": ["Community scheme with CHP and wood logs"],
+      "values": {
+        "system": "community_chp",
+        "fuel": "wood_logs"
+      }
+    },
+    {
+      "phrases": ["Community scheme utilising waste heat"],
+      "values": {
+        "system": "community_waste_heat"
+      }
+    },
+    {
+      "phrases": ["Community scheme utilising geothermal heat"],
+      "values": {
+        "system": "community_geothermal"
+      }
+    },
+    {
+      "phrases": ["Community scheme utilising geothermal heat and biomass"],
+      "values": {
+        "system": "community_geothermal",
+        "fuel": "biomass"
+      }
+    },
+    {
+      "phrases": ["Community heat pump", "Community heap pump"],
+      "values": {
+        "system": "community_heat_pump"
+      }
+    },
+    {
+      "phrases": [
+        "Air source heat pump",
+        "Air sourceheat pump",
+        "Pwmp gwres sy'n tarddu yn yr awyr",
+        "'n tarddu yn yr awyr"
+      ],
+      "values": {
+        "system": "air_source_heat_pump"
+      }
+    },
+    {
+      "phrases": [
+        "Ground source heat pump",
+        "Ground sourceheat pump",
+        "ground source source heat pump",
+        "Pwmp gwres sy'n tarddu yn y ddaear",
+        "Ground-to-water heat pump with auxiliary heater (electric) source heat pump",
+        "Ground-to-air heat pump with auxiliary heater (electric) source heat pump"
+      ],
+      "values": {
+        "system": "ground_source_heat_pump"
+      }
+    },
+    {
+      "phrases": ["Water source heat pump", "water source source heat pump"],
+      "values": {
+        "system": "water_source_heat_pump"
+      }
+    },
+    {
+      "phrases": ["Water-to-air heat pump (electric) source heat pump"],
+      "values": {
+        "system": "water_source_heat_pump",
+        "emitter": "warm_air"
+      }
+    },
+    {
+      "phrases": ["Exhaust air MEV source heat pump", "Exhaust source heat pump", "Mixed exhaust air source heat pump"],
+      "values": {
+        "system": "exhaust_air_heat_pump"
+      }
+    },
+    {
+      "phrases": ["Solar assisted source heat pump", "Solar-assisted heat pump", "Solar assisted heat pump"],
+      "values": {
+        "system": "solar_assisted_heat_pump"
+      }
+    },
+    {
+      "phrases": ["Gas-fired heat pumps", "Gas-fired"],
+      "values": {
+        "system": "gas_fired_heat_pump"
+      }
+    },
+    {
+      "phrases": ["Heat pump", "Electric heat pumps", "heat from heat pump"],
+      "values": {
+        "system": "heat_pump"
+      }
+    },
+    {
+      "phrases": ["Heat pumptrydan"],
+      "values": {
+        "system": "heat_pump",
+        "fuel": "electricity"
+      }
+    },
+    {
+      "phrases": ["Micro-cogeneration"],
+      "values": {
+        "system": "micro_chp"
+      }
+    },
+    {
+      "phrases": ["Hot-Water-Only Systems"],
+      "values": {
+        "system": "hot_water_only"
+      }
+    },
+    {
+      "phrases": ["radiators", "ratiators", "rheiddiaduron", "Radiator heating", "Systems with radiators"],
+      "values": {
+        "emitter": "radiators"
+      }
+    },
+    {
+      "phrases": ["underfloor", "Underfloor heating", "dan y llawr"],
+      "values": {
+        "emitter": "underfloor"
+      }
+    },
+    {
+      "phrases": ["radiators and underfloor", "Underfloor heating and radiators"],
+      "values": {
+        "emitter": "radiators_and_underfloor"
+      }
+    },
+    {
+      "phrases": ["fan coil units"],
+      "values": {
+        "emitter": "fan_coil"
+      }
+    },
+    {
+      "phrases": ["pipes in screed above insulation"],
+      "values": {
+        "emitter_detail": "screed"
+      }
+    },
+    {
+      "phrases": ["pipes in insulated timber floor"],
+      "values": {
+        "emitter_detail": "timber_floor"
+      }
+    },
+    {
+      "phrases": ["pipes in concrete slab"],
+      "values": {
+        "emitter_detail": "concrete_slab"
+      }
+    },
+    {
+      "phrases": [
+        "mains gas",
+        "nwy prif gyflenwad",
+        "mains gas and mains gas",
+        "heat from boilers - mains gas",
+        "heat from boilers- mains gas"
+      ],
+      "values": {
+        "fuel": "mains_gas"
+      }
+    },
+    {
+      "phrases": ["gas", "heat from boilers - gas"],
+      "values": {
+        "fuel": "gas"
+      }
+    },
+    {
+      "phrases": [
+        "electric",
+        "electricity",
+        "trydan",
+        "electicity",
+        "eletric",
+        "electricity (24-hr heating tariff)",
+        "electricity (7-hour off-peak)"
+      ],
+      "values": {
+        "fuel": "electricity"
+      }
+    },
+    {
+      "phrases": ["oil", "olew", "heat from boilers - oil"],
+      "values": {
+        "fuel": "oil"
+      }
+    },
+    {
+      "phrases": ["LPG", "bulk LPG", "LPG subject to Special Condition 18"],
+      "values": {
+        "fuel": "lpg"
+      }
+    },
+    {
+      "phrases": ["bottled LPG", "lpg (bottled)", "bottled gas", "nwy potel"],
+      "values": {
+        "fuel": "bottled_lpg"
+      }
+    },
+    {
+      "phrases": ["LNG"],
+      "values": {
+        "fuel": "lng"
+      }
+    },
+    {
+      "phrases": ["coal", "house coal", "glo"],
+      "values": {
+        "fuel": "coal"
+      }
+    },
+    {
+      "phrases": ["anthracite", "glo carreg"],
+      "values": {
+        "fuel": "anthracite"
+      }
+    },
+    {
+      "phrases": ["smokeless fuel", "tanwydd di-fwg"],
+      "values": {
+        "fuel": "smokeless_fuel"
+      }
+    },
+    {
+      "phrases": ["solid fuel"],
+      "values": {
+        "fuel": "solid_fuel"
+      }
+    },
+    {
+      "phrases": ["wood logs", "logiau coed"],
+      "values": {
+        "fuel": "wood_logs"
+      }
+    },
+    {
+      "phrases": ["wood pellets", "bulk wood pellets", "main wood pellets", "secondary wood pellets", "pelenni coed"],
+      "values": {
+        "fuel": "wood_pellets"
+      }
+    },
+    {
+      "phrases": ["wood chips"],
+      "values": {
+        "fuel": "wood_chips"
+      }
+    },
+    {
+      "phrases": [
+        "dual fuel (mineral and wood)",
+        "dual fuel appliance (mineral and wood)",
+        "dual fuel appliance",
+        "dual fuel",
+        "dau danwydd (mwynau a choed)"
+      ],
+      "values": {
+        "fuel": "dual_fuel"
+      }
+    },
+    {
+      "phrases": ["biomass", "biomass and biomass"],
+      "values": {
+        "fuel": "biomass"
+      }
+    },
+    {
+      "phrases": ["biogas", "biogas - landfill"],
+      "values": {
+        "fuel": "biogas"
+      }
+    },
+    {
+      "phrases": [
+        "liquid biofuel",
+        "appliances able to use mineral oil or liquid biofuel",
+        "appliances able to used mineral oil or liquid biofuel"
+      ],
+      "values": {
+        "fuel": "liquid_biofuel"
+      }
+    },
+    {
+      "phrases": ["bioethanol"],
+      "values": {
+        "fuel": "bioethanol"
+      }
+    },
+    {
+      "phrases": ["B30K"],
+      "values": {
+        "fuel": "b30k"
+      }
+    },
+    {
+      "phrases": ["waste combustion", "waste combustion and waste combustion"],
+      "values": {
+        "fuel": "waste_combustion"
+      }
+    },
+    {
+      "phrases": ["biomass and mains gas", "mains gas and biomass"],
+      "values": {
+        "fuel": "biomass_and_mains_gas"
+      }
+    },
+    {
+      "phrases": ["wood pellets and mains gas", "mains gas and wood pellets"],
+      "values": {
+        "fuel": "wood_pellets_and_mains_gas"
+      }
+    },
+    {
+      "phrases": ["wood chips and mains gas"],
+      "values": {
+        "fuel": "wood_chips_and_mains_gas"
+      }
+    },
+    {
+      "phrases": ["oil and mains gas", "mains gas and oil"],
+      "values": {
+        "fuel": "oil_and_mains_gas"
+      }
+    },
+    {
+      "phrases": ["biomass and oil"],
+      "values": {
+        "fuel": "biomass_and_oil"
+      }
+    },
+    {
+      "phrases": ["electric and mains gas"],
+      "values": {
+        "fuel": "electricity_and_mains_gas"
+      }
+    }
+  ]
+}

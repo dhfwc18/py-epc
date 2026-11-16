@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "format": "phrase",
+  "column": "transaction_type",
+  "output_column": "transaction_type",
+  "not_a_description": ["not recorded"],
+  "categories": {
+    "marketed_sale": {
+      "label": "Marketed sale",
+      "phrases": ["marketed sale"]
+    },
+    "non_marketed_sale": {
+      "label": "Non-marketed sale",
+      "phrases": ["non marketed sale", "Non-marketed sale"]
+    },
+    "rental": {
+      "label": "Rental, sector not stated",
+      "phrases": ["rental"]
+    },
+    "rental_private": {
+      "label": "Rental (private)",
+      "phrases": ["rental (private)"]
+    },
+    "rental_social": {
+      "label": "Rental (social)",
+      "phrases": ["rental (social)"]
+    },
+    "new_dwelling": {
+      "label": "New dwelling",
+      "phrases": ["new dwelling"]
+    },
+    "not_sale_or_rental": {
+      "label": "Not a sale or rental",
+      "phrases": ["not sale or rental"]
+    },
+    "eco_assessment": {
+      "label": "ECO assessment",
+      "phrases": ["ECO assessment"]
+    },
+    "green_deal_assessment": {
+      "label": "Assessment for Green Deal",
+      "phrases": ["assessment for green deal"]
+    },
+    "following_green_deal": {
+      "label": "Following Green Deal",
+      "phrases": ["following green deal"]
+    },
+    "fit_application": {
+      "label": "Feed-in Tariff application",
+      "phrases": ["FiT application"]
+    },
+    "rhi_application": {
+      "label": "Renewable Heat Incentive application",
+      "phrases": ["RHI application"]
+    },
+    "stock_condition_survey": {
+      "label": "Stock condition survey",
+      "phrases": ["Stock condition survey"]
+    },
+    "remortgaging": {
+      "label": "Re-mortgaging",
+      "phrases": ["Re-mortgaging"]
+    },
+    "grant_scheme": {
+      "label": "Grant scheme",
+      "phrases": ["Grant scheme"]
+    },
+    "non_grant_scheme": {
+      "label": "Non-grant scheme",
+      "phrases": ["Non-grant scheme"]
+    },
+    "none_of_the_above": {
+      "label": "None of the above",
+      "phrases": ["none of the above"]
+    }
+  }
+}

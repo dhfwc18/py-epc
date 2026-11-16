@@ -1,0 +1,269 @@
+{
+  "version": 1,
+  "format": "system",
+  "column": "hotwater_description",
+  "prefix": "hotwater",
+  "misplaced": ["Room heaters"],
+  "not_a_description": [
+    "SAP05:Hot-Water",
+    "SAP:Hot-Water",
+    "Hot water system",
+    "Description",
+    "***SAMPLE***",
+    "1998 or later",
+    "pre 1998",
+    "gas",
+    "electric"
+  ],
+  "fields": ["system", "tariff", "cylinder_thermostat", "solar", "flue_gas_heat_recovery", "waste_water_heat_recovery"],
+  "labels": {
+    "system": {
+      "from_main_system": "From the main heating system",
+      "from_second_main_system": "From the second main heating system",
+      "from_secondary_system": "From the secondary heating system",
+      "electric_immersion": "Electric immersion",
+      "community": "Community scheme",
+      "community_chp": "Community scheme with CHP",
+      "community_heat_pump": "Community heat pump",
+      "electric_instantaneous": "Electric, instantaneous at point of use",
+      "electric_multipoint": "Electric multipoint",
+      "gas_multipoint": "Gas multipoint",
+      "gas_instantaneous": "Gas, instantaneous at point of use",
+      "gas_boiler": "Gas boiler or circulator",
+      "back_boiler": "Back boiler",
+      "oil_boiler": "Oil boiler or circulator",
+      "solid_fuel_boiler": "Solid fuel boiler or circulator",
+      "oil_range_cooker": "Oil range cooker",
+      "solid_fuel_range_cooker": "Solid fuel range cooker",
+      "gas_range_cooker": "Gas range cooker",
+      "heat_pump": "Heat pump for water heating only",
+      "none": "No system"
+    },
+    "tariff": {
+      "off_peak": "Off-peak",
+      "standard": "Standard tariff",
+      "dual": "Dual tariff",
+      "seven_hour_on_peak": "7-hour tariff, on-peak"
+    },
+    "cylinder_thermostat": {
+      "no": "No cylinder thermostat"
+    },
+    "solar": {
+      "yes": "Solar water heating"
+    },
+    "flue_gas_heat_recovery": {
+      "yes": "Flue gas heat recovery"
+    },
+    "waste_water_heat_recovery": {
+      "yes": "Waste water heat recovery"
+    }
+  },
+  "parts": [
+    {
+      "phrases": [
+        "From main system",
+        "From main heating system",
+        "O'r brif system",
+        "O?r brif system",
+        "'r brif system",
+        "r brif system"
+      ],
+      "values": {
+        "system": "from_main_system"
+      }
+    },
+    {
+      "phrases": ["From second main heating system"],
+      "values": {
+        "system": "from_second_main_system"
+      }
+    },
+    {
+      "phrases": ["From secondary system", "From secondary heater", "O system eilaidd"],
+      "values": {
+        "system": "from_secondary_system"
+      }
+    },
+    {
+      "phrases": ["Electric immersion", "Electric immersion (on-peak or off-peak)", "Twymwr tanddwr", "Trochi trydan"],
+      "values": {
+        "system": "electric_immersion"
+      }
+    },
+    {
+      "phrases": [
+        "Community scheme",
+        "From community scheme",
+        "From hot-water only community scheme - boilers",
+        "Cynllun cymunedol",
+        "O gynllun cymunedol"
+      ],
+      "values": {
+        "system": "community"
+      }
+    },
+    {
+      "phrases": ["Community scheme with CHP", "From community CHP scheme"],
+      "values": {
+        "system": "community_chp"
+      }
+    },
+    {
+      "phrases": [
+        "Community heat pump",
+        "From community heat pump",
+        "From hot-water only community scheme - heat pump"
+      ],
+      "values": {
+        "system": "community_heat_pump"
+      }
+    },
+    {
+      "phrases": [
+        "Electric instantaneous at point of use",
+        "Trydan ar unwaith yn y fan lle mae'n cael ei ddefnyddio",
+        "'n cael ei ddefnyddio"
+      ],
+      "values": {
+        "system": "electric_instantaneous"
+      }
+    },
+    {
+      "phrases": ["Electric multipoint"],
+      "values": {
+        "system": "electric_multipoint"
+      }
+    },
+    {
+      "phrases": [
+        "Gas multipoint",
+        "Multi-point gas water heater (instantaneous serving several taps)",
+        "Nwy wrth fwy nag un pwynt"
+      ],
+      "values": {
+        "system": "gas_multipoint"
+      }
+    },
+    {
+      "phrases": ["Gas instantaneous at point of use", "Single-point gas water heater", "Point gas water heater"],
+      "values": {
+        "system": "gas_instantaneous"
+      }
+    },
+    {
+      "phrases": [
+        "Gas boiler/circulator",
+        "Gas boiler/circulator for water heating only",
+        "Bwyler/cylchredydd nwy",
+        "From a circulator built into a gas warm air system"
+      ],
+      "values": {
+        "system": "gas_boiler"
+      }
+    },
+    {
+      "phrases": ["Back boiler (hot water only)"],
+      "values": {
+        "system": "back_boiler"
+      }
+    },
+    {
+      "phrases": ["Oil boiler/circulator"],
+      "values": {
+        "system": "oil_boiler"
+      }
+    },
+    {
+      "phrases": ["Solid fuel boiler/circulator", "Solid fuel boiler/circulator for water heating only"],
+      "values": {
+        "system": "solid_fuel_boiler"
+      }
+    },
+    {
+      "phrases": ["Oil range cooker", "Popty estynedig olew"],
+      "values": {
+        "system": "oil_range_cooker"
+      }
+    },
+    {
+      "phrases": ["Solid fuel range cooker"],
+      "values": {
+        "system": "solid_fuel_range_cooker"
+      }
+    },
+    {
+      "phrases": ["Gas range cooker"],
+      "values": {
+        "system": "gas_range_cooker"
+      }
+    },
+    {
+      "phrases": ["Electric heat pump for water heating only", "Electric heat pump", "Heat pump", "Pwmp gwres"],
+      "values": {
+        "system": "heat_pump"
+      }
+    },
+    {
+      "phrases": [
+        "No system present: electric immersion assumed",
+        "No system present : electric immersion assumed",
+        "No system present?electric immersion assumed",
+        "No system present:electric immersion assumed",
+        "No hot water system present - electric immersion assumed",
+        "Dim system ar gael: rhagdybir bod twymwr tanddwr trydan"
+      ],
+      "values": {
+        "system": "none"
+      },
+      "assumed": true
+    },
+    {
+      "phrases": ["off-peak", "an-frig"],
+      "values": {
+        "tariff": "off_peak"
+      }
+    },
+    {
+      "phrases": ["standard tariff", "tarriff safonol"],
+      "values": {
+        "tariff": "standard"
+      }
+    },
+    {
+      "phrases": ["dual tariff"],
+      "values": {
+        "tariff": "dual"
+      }
+    },
+    {
+      "phrases": ["7-hour tariff (on-peak)"],
+      "values": {
+        "tariff": "seven_hour_on_peak"
+      }
+    },
+    {
+      "phrases": ["no cylinder thermostat", "no cylinderstat", "dim thermostat ar y silindr"],
+      "values": {
+        "cylinder_thermostat": "no"
+      }
+    },
+    {
+      "phrases": ["plus solar", "gydag ynni'r haul", "r haul"],
+      "values": {
+        "solar": "yes"
+      }
+    },
+    {
+      "phrases": ["waste water heat recovery", "adfer gwres dwr gwastraff"],
+      "values": {
+        "waste_water_heat_recovery": "yes"
+      }
+    },
+    {
+      "phrases": ["flue gas heat recovery", "adfer gwres nwyon ffliw"],
+      "values": {
+        "flue_gas_heat_recovery": "yes"
+      }
+    }
+  ]
+}

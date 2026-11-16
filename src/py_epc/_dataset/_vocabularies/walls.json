@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "format": "fabric",
+  "column": "walls_description",
+  "prefix": "walls",
+  "misplaced": ["Pitched", "Flat", "Thatched", "Roof room(s)", "(another dwelling above)"],
+  "not_a_description": [
+    "SAP05:Walls",
+    "2K",
+    "Error",
+    "'u hadeiladwyd",
+    "u hadeiladwyd",
+    "'i lenwi",
+    "i lenwi",
+    "am bren",
+    "u hinswleiddio",
+    "l system",
+    "'u hadeiladu yn ol system",
+    "Co",
+    "with external insulation",
+    "fel y'u hadeiladwyd, wedi'u hinswleiddio fel y'u hadeiladwyd, dim inswleiddio",
+    "Co with external insulation"
+  ],
+  "construction": {
+    "cavity": {
+      "label": "Cavity wall",
+      "phrases": ["Cavity wall", "Waliau ceudod"]
+    },
+    "solid_brick": {
+      "label": "Solid brick",
+      "phrases": ["Solid brick", "Briciau solet"]
+    },
+    "system_built": {
+      "label": "System built",
+      "phrases": [
+        "System built",
+        "Wedi'u hadeiladu yn ol system",
+        "Wedi?u hadeiladu yn ol system",
+        "Wedi?u hadeiladu yn ?l system"
+      ]
+    },
+    "timber_frame": {
+      "label": "Timber frame",
+      "phrases": ["Timber frame", "Ffram bren", "Ffr?m bren"]
+    },
+    "sandstone_or_limestone": {
+      "label": "Sandstone or limestone",
+      "phrases": ["Sandstone or limestone", "Sandstone", "Tywodfaen"]
+    },
+    "granite_or_whinstone": {
+      "label": "Granite or whinstone",
+      "phrases": ["Granite or whinstone", "Granite or whin", "Gwenithfaen neu risgraig"]
+    },
+    "cob": {
+      "label": "Cob",
+      "phrases": ["Cob", "Cobbuilt"]
+    },
+    "park_home": {
+      "label": "Park home wall",
+      "phrases": ["Park home wall"]
+    },
+    "basement": {
+      "label": "Basement wall",
+      "phrases": ["Basement wall"]
+    },
+    "curtain_wall": {
+      "label": "Curtain wall",
+      "phrases": ["Curtain wall"]
+    }
+  },
+  "insulation": {
+    "none": {
+      "label": "No insulation",
+      "phrases": [
+        "as built, no insulation",
+        "no insulation",
+        "fel y'u hadeiladwyd, dim inswleiddio",
+        "fel y?u hadeiladwyd, dim inswleiddio",
+        "dim inswleiddio"
+      ]
+    },
+    "insulated": {
+      "label": "Insulated",
+      "phrases": [
+        "as built, insulated",
+        "insulated",
+        "fel y'u hadeiladwyd, wedi'u hinswleiddio",
+        "fel y?u hadeiladwyd, wedi?u hinswleiddio",
+        "wedi'u hinswleiddio"
+      ]
+    },
+    "partial": {
+      "label": "Partial insulation",
+      "phrases": [
+        "as built, partial insulation",
+        "partial insulation",
+        "limited insulation",
+        "fel y'u hadeiladwyd, inswleiddio rhannol",
+        "fel y?u hadeiladwyd, inswleiddio rhannol",
+        "inswleiddio rhannol"
+      ]
+    },
+    "filled_cavity": {
+      "label": "Filled cavity",
+      "phrases": ["filled cavity", "ceudod wedi'i lenwi", "ceudod wedi?i lenwi"]
+    },
+    "external": {
+      "label": "External insulation",
+      "phrases": ["with external insulation", "external", "gydag inswleiddio allanol"]
+    },
+    "internal": {
+      "label": "Internal insulation",
+      "phrases": ["with internal insulation", "internal", "gydag inswleiddio mewnol"]
+    },
+    "filled_cavity_and_external": {
+      "label": "Filled cavity and external insulation",
+      "phrases": ["filled cavity and external insulation", "ynysydd allanol a llenwi ceudod"]
+    },
+    "filled_cavity_and_internal": {
+      "label": "Filled cavity and internal insulation",
+      "phrases": ["filled cavity and internal insulation"]
+    },
+    "additional": {
+      "label": "Additional insulation",
+      "phrases": ["with additional insulation"]
+    },
+    "as_built": {
+      "label": "As built, insulation not stated",
+      "phrases": ["as built", "fel y'u hadeiladwyd"]
+    }
+  }
+}

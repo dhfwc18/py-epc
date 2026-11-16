@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "format": "fabric",
+  "column": "roof_description",
+  "prefix": "roof",
+  "not_a_description": [
+    "SAP05:Roof",
+    "2K",
+    "(error)",
+    "Thatchedinsulated at rafters",
+    "Thatchedinsulated",
+    "thatchedinsulated",
+    "Roof room(s)thatched",
+    "'i inswleiddio",
+    "i inswleiddio",
+    "'i inswleiddio wrth y trawstiau",
+    "i inswleiddio wrth y trawstiau",
+    "*** INVALID INPUT Code : 57 *** loft insulation",
+    "Flat Roof Insulation loft insulation",
+    "Joists loft insulation",
+    "Yes loft insulation"
+  ],
+  "insulation_has_thickness": true,
+  "construction": {
+    "pitched": {
+      "label": "Pitched",
+      "phrases": ["Pitched", "Ar oleddf"]
+    },
+    "flat": {
+      "label": "Flat",
+      "phrases": ["Flat", "Yn wastad"]
+    },
+    "roof_rooms": {
+      "label": "Roof rooms",
+      "phrases": ["Roof room(s)", "Ystafell(oedd) to"]
+    },
+    "thatched": {
+      "label": "Thatched",
+      "phrases": ["Thatched", "To gwellt"]
+    },
+    "dwelling_above": {
+      "label": "Another dwelling above",
+      "phrases": ["(another dwelling above)", "(other dwelling above)", "(annedd arall uwchben)"]
+    },
+    "premises_above": {
+      "label": "Other premises above",
+      "phrases": [
+        "(other premises above)",
+        "Other premises above",
+        "(another premises above)",
+        "Another Premises Above",
+        "(eiddo arall uwchben)"
+      ]
+    },
+    "same_dwelling_above": {
+      "label": "Same dwelling above",
+      "phrases": ["(same dwelling above)", "(yr un annedd uchod)"]
+    }
+  },
+  "insulation": {
+    "loft": {
+      "label": "Loft insulation",
+      "phrases": [
+        "loft insulation",
+        "mm loft insulation",
+        "o inswleiddio yn y llofft",
+        "mm o inswleiddio yn y llofft",
+        "lo inswleiddio yn y llof"
+      ]
+    },
+    "loft_thickness_unknown": {
+      "label": "Loft insulation, thickness unknown",
+      "phrases": ["unknown loft insulation", "Don't know loft insulation", "No Access loft insulation"]
+    },
+    "none": {
+      "label": "No insulation",
+      "phrases": ["no insulation", "no loft insulation", "dim inswleiddio"]
+    },
+    "insulated": {
+      "label": "Insulated",
+      "phrases": ["insulated", "wedi'i inswleiddio", "wedi'i hinswleiddio", "wedi?i inswleiddio", "wedi?i hinswleiddio"]
+    },
+    "limited": {
+      "label": "Limited insulation",
+      "phrases": ["limited insulation", "imited insulation", "inswleiddio cyfyngedig"]
+    },
+    "at_rafters": {
+      "label": "Insulated at rafters",
+      "phrases": [
+        "insulated at rafters",
+        "wedi'i inswleiddio wrth y trawstiau",
+        "wedi'i inswleiddio wrth y trawstia",
+        "wedi?i inswleiddio wrth y trawstiau"
+      ]
+    },
+    "ceiling": {
+      "label": "Ceiling insulated",
+      "phrases": ["ceiling insulated", "nenfwd wedi'i inswleiddio"]
+    },
+    "additional": {
+      "label": "Additional insulation",
+      "phrases": ["with additional insulation", "gydag inswleiddio ychwanegol"]
+    },
+    "thatched": {
+      "label": "Thatched",
+      "phrases": ["thatched"]
+    },
+    "thatched_with_additional": {
+      "label": "Thatched, with additional insulation",
+      "phrases": ["thatched with additional insulation", "thatched, with additional insulation"]
+    },
+    "thatched_ceiling": {
+      "label": "Thatched, ceiling insulated",
+      "phrases": ["thatched, ceiling insulated"]
+    }
+  }
+}
