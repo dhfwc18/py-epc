@@ -68,11 +68,10 @@ class DatasetDefinition(BaseModel):
     """
     How to build one source's dataset from its processed build.
 
-    England and Wales's bilingual columns are first put in English, or
-    Scotland's building elements reduced to their main part. Every text
-    column of the register is then cleaned, and each column of phrases is
-    parsed. Last, costs over 3 years are given per year, and some columns
-    are renamed, to match the other register.
+    England and Wales's bilingual columns are first put in English. Every
+    text column is then cleaned, Scotland's building elements are reduced to
+    their main part, and each column of phrases is parsed. Costs over 3 years
+    are given per year & some columns are renamed to match the other register.
     """
 
     model_config = MODEL_CONFIG
