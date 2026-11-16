@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "format": "phrase",
+  "column": "type_of_assessment",
+  "output_column": "assessment_method",
+  "categories": {
+    "rdsap": {
+      "label": "RdSAP, the reduced data method for existing dwellings",
+      "phrases": ["RdSAP, existing dwelling"]
+    },
+    "sap": {
+      "label": "SAP, the full method",
+      "phrases": ["SAP, existing dwelling", "SAP, new dwelling"]
+    }
+  }
+}

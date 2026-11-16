@@ -85,6 +85,11 @@
       "vocabulary": "property_type"
     },
     {
+      "column": "report_type",
+      "parser": "category",
+      "vocabulary": "report_type"
+    },
+    {
       "column": "roof_description",
       "parser": "fabric",
       "vocabulary": "roof"

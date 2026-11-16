@@ -65,6 +65,11 @@
   ],
   "parsers": [
     {
+      "column": "type_of_assessment",
+      "parser": "category",
+      "vocabulary": "type_of_assessment"
+    },
+    {
       "column": "walls_description",
       "parser": "fabric",
       "vocabulary": "walls"

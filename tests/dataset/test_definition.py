@@ -214,3 +214,20 @@ class TestShippedDatasetDefinitions:
             added.extend(outputs[1:] if parser.replaces_column else outputs)
         assert [name for name in added if name in columns] == []
         assert len(set(added)) == len(added)
+
+    def test_outputs_given_by_both_have_one_type(self) -> None:
+        dtypes = [
+            {
+                output.name: output.dtype
+                for definition in load_dataset_definition(key).parsers
+                for output in build_parser(definition).outputs
+            }
+            for key in _SHIPPED_KEYS
+        ]
+        shared = dtypes[0].keys() & dtypes[1].keys()
+        assert "assessment_method" in shared
+        assert {
+            name: (dtypes[0][name], dtypes[1][name])
+            for name in shared
+            if dtypes[0][name] != dtypes[1][name]
+        } == {}
