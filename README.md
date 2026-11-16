@@ -115,16 +115,6 @@ covers the 9 English regions, Wales and Scotland. Changing them needs the postco
     epc/scotland/domestic/<snapshot>/certificates/lodgement_year=<year>/data.parquet
 ```
 
-## Resources
-
-Measured on a 24-core machine with 15 GB of memory:
-
-| Source                     | Rows         | Processing | Peak memory | Build  |
-| -------------------------- | ------------ | ---------- | ----------- | ------ |
-| Scotland domestic          | 3.8 million  | 1 minute   | 2.9 GB      | 0.5 GB |
-| England and Wales domestic | 30.5 million | 3 minutes  | 4.5 GB      | 2.9 GB |
-| ONS Postcode Directory     | 2.7 million  | 5 seconds  | 2.3 GB      | 4 MB   |
-
 ## Licences
 
 Py-EPC's code is licensed under the [Mozilla Public License 2.0](LICENSE). Py-EPC does not publish any data. The user
