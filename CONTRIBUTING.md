@@ -21,23 +21,39 @@ uv run pytest
 
 Modules are private, with a leading underscore. The public API is what `src/py_epc/__init__.py` exports in `__all__`.
 
-| Module                   | Holds                                                                  |
-| ------------------------ | ---------------------------------------------------------------------- |
-| `_config.py`             | `Config`, the settings checked against a schema                        |
-| `defaults.json`          | The shipped default settings                                           |
-| `_source.py`             | `Source`, one published file and where to download it                  |
-| `_enums.py`              | Names used in config keys, and `parse_member`                          |
-| `_download.py`           | The download functions                                                 |
-| `_manifest.py`           | Manifest models, reading and writing them, and `find_completed`        |
-| `_files.py`              | Safe folder writes and `.gitignore`                                    |
-| `_scan.py`               | `scan` and `scan_epc`, which read processed builds                     |
-| `_process/_archive.py`   | Finding a raw snapshot and reading its archive's members one at a time |
-| `_process/_register.py`  | Register definitions: how to read, type and name a register's columns  |
-| `_process/_registers/`   | The shipped definitions, one JSON file per source                      |
-| `_process/_values.py`    | Parsing raw text into each column's type                               |
-| `_process/_build.py`     | `process` and `process_epc`, which write typed Parquet builds          |
-| `_process/_latest.py`    | Marking each property's latest certificate                             |
-| `_process/_postcodes.py` | Processing the ONS Postcode Directory, and `normalise_postcode`        |
+| Module                          | Holds                                                                                  |
+| ------------------------------- | -------------------------------------------------------------------------------------- |
+| `_config.py`                    | `Config`, the settings checked against a schema                                        |
+| `defaults.json`                 | The shipped default settings                                                           |
+| `_source.py`                    | `Source`, one published file and where to download it                                  |
+| `_enums.py`                     | Names used in config keys, and `parse_member`                                          |
+| `_download.py`                  | The download functions                                                                 |
+| `_manifest.py`                  | Manifest models, reading and writing them, and `find_completed`                        |
+| `_files.py`                     | Safe folder writes and `.gitignore`                                                    |
+| `_scan.py`                      | `scan` and `scan_epc`, which read processed builds                                     |
+| `_process/_archive.py`          | Finding a raw snapshot and reading its archive's members one at a time                 |
+| `_process/_register.py`         | Register definitions: how to read, type and name a register's columns                  |
+| `_process/_registers/`          | The shipped definitions, one JSON file per source                                      |
+| `_process/_values.py`           | Parsing raw text into each column's type                                               |
+| `_process/_build.py`            | `process` and `process_epc`, which write typed Parquet builds                          |
+| `_process/_latest.py`           | Marking each property's latest certificate                                             |
+| `_process/_postcodes.py`        | Processing the ONS Postcode Directory, and `normalise_postcode`                        |
+| `_dataset/_models.py`           | `MODEL_CONFIG`, the settings shared by the dataset stage's models                      |
+| `_dataset/_distinct.py`         | `map_distinct` and `join_distinct`, which convert each distinct value of a column once |
+| `_dataset/_text.py`             | `clean_text` and `normalise_text_columns`, which repair published text                 |
+| `_dataset/_bilingual.py`        | `keep_english_text`, which keeps the English of England and Wales's bilingual values   |
+| `_dataset/_parts.py`            | `split_building_parts`, which splits Scotland's values into the parts of a building    |
+| `_dataset/_phrases.py`          | `ColumnParser` and `parse_column`, which parse each distinct phrase of a column once   |
+| `_dataset/_vocabulary.py`       | `Vocabulary`, the lists every vocabulary has, and `load_vocabulary`                    |
+| `_dataset/_vocabularies/`       | The shipped vocabularies, one JSON file per column                                     |
+| `_dataset/_categories.py`       | `PhraseVocabulary` and `category_parser`, giving one category for each whole phrase    |
+| `_dataset/_fabric.py`           | Walls, roofs and floors: their construction, insulation and U-value                    |
+| `_dataset/_systems.py`          | Main and secondary heating and hot water, read as systems of parts                     |
+| `_dataset/_main_fuel.py`        | The main fuel, and whether it feeds a community heating scheme                         |
+| `_dataset/_lighting.py`         | The share of low energy lighting, or the lighting efficiency                           |
+| `_dataset/_air_tightness.py`    | The air permeability, how it was found and the test it was measured by                 |
+| `_dataset/_construction_age.py` | The years a dwelling was built, checked against its lodgement date                     |
+| `_dataset/_floor_level.py`      | The floor a flat or maisonette is on                                                   |
 
 A source's columns, types and names belong in its JSON definition, not in code. The code reads the definition.
 
