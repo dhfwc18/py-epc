@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "format": "phrase",
+  "column": "main_fuel",
+  "output_column": "main_fuel",
+  "not_a_description": [
+    "To be used only when there is no heating/hot-water system",
+    "To be used only when there is no heating/hot-water system or data is from a community network",
+    "no heating/hot-water system or data is from a community network"
+  ],
+  "categories": {
+    "mains_gas": {
+      "label": "Mains gas",
+      "phrases": [
+        "mains gas",
+        "mains gas (not community)",
+        "mains gas (community)",
+        "Gas: mains gas",
+        "Community heating schemes: heat from mains gas"
+      ]
+    },
+    "electricity": {
+      "label": "Electricity",
+      "phrases": [
+        "electricity",
+        "electricity (not community)",
+        "electricity (community)",
+        "Electricity: electricity, unspecified tariff",
+        "Electricity: electricity displaced from grid",
+        "Electricity: electricity sold to grid",
+        "Community heating schemes: heat from electric heat pump",
+        "Community heating schemes: heat from heat pump"
+      ]
+    },
+    "oil": {
+      "label": "Oil",
+      "phrases": ["oil", "oil (not community)", "oil (community)", "Oil: heating oil"]
+    },
+    "lpg": {
+      "label": "LPG",
+      "phrases": [
+        "LPG",
+        "LPG (not community)",
+        "LPG (community)",
+        "Gas: bulk LPG",
+        "LPG special condition",
+        "LPG subject to Special Condition 18"
+      ]
+    },
+    "bottled_lpg": {
+      "label": "Bottled LPG",
+      "phrases": ["bottled LPG", "Gas: bottled LPG"]
+    },
+    "lng": {
+      "label": "LNG",
+      "phrases": ["LNG"]
+    },
+    "coal": {
+      "label": "Coal",
+      "phrases": [
+        "house coal",
+        "house coal (not community)",
+        "house coal (community)",
+        "coal (community)",
+        "Solid fuel: house coal"
+      ]
+    },
+    "anthracite": {
+      "label": "Anthracite",
+      "phrases": ["anthracite", "Solid fuel: anthracite"]
+    },
+    "smokeless_fuel": {
+      "label": "Smokeless fuel",
+      "phrases": ["smokeless coal", "Solid fuel: manufactured smokeless fuel"]
+    },
+    "wood_logs": {
+      "label": "Wood logs",
+      "phrases": ["wood logs", "Solid fuel: wood logs"]
+    },
+    "wood_pellets": {
+      "label": "Wood pellets",
+      "phrases": [
+        "bulk wood pellets",
+        "wood pellets in bags for secondary heating",
+        "Solid fuel: wood pellets (bulk supply in bags, for main heating)",
+        "Solid fuel: wood pellets (in bags, for secondary heating)"
+      ]
+    },
+    "wood_chips": {
+      "label": "Wood chips",
+      "phrases": ["wood chips", "Solid fuel: wood chips"]
+    },
+    "dual_fuel": {
+      "label": "Dual fuel (mineral and wood)",
+      "phrases": ["dual fuel - mineral + wood", "Solid fuel: dual fuel appliance (mineral and wood)"]
+    },
+    "biomass": {
+      "label": "Biomass",
+      "phrases": ["biomass", "biomass (community)", "Community heating schemes: heat from boilers - biomass"]
+    },
+    "biogas": {
+      "label": "Biogas",
+      "phrases": ["biogas", "biogas (community)", "biogas (not community)", "biogas - landfill", "Gas: biogas"]
+    },
+    "liquid_biofuel": {
+      "label": "Liquid biofuel",
+      "phrases": [
+        "biodiesel from any biomass source",
+        "heat from boilers using biodiesel from any biomass source (community)",
+        "biodiesel from vegetable oil only",
+        "biodiesel from vegetable oil only (community)",
+        "biodiesel from vegetable oil only (not community)",
+        "biodiesel from used cooking oil only",
+        "rapeseed oil"
+      ]
+    },
+    "oil_or_biofuel": {
+      "label": "Mineral oil or liquid biofuel",
+      "phrases": [
+        "appliances able to use mineral oil or liquid biofuel",
+        "heat from boilers that can use mineral oil or biodiesel (community)"
+      ]
+    },
+    "bioethanol": {
+      "label": "Bioethanol",
+      "phrases": ["bioethanol"]
+    },
+    "b30k": {
+      "label": "B30K",
+      "phrases": ["B30K", "B30K (not community)"]
+    },
+    "b30d": {
+      "label": "B30D",
+      "phrases": ["B30D (community)"]
+    },
+    "waste_combustion": {
+      "label": "Waste combustion",
+      "phrases": [
+        "waste combustion",
+        "waste combustion (community)",
+        "waste combustion - this is for backwards compatibility only and should not be used"
+      ]
+    },
+    "waste_heat": {
+      "label": "Waste heat from power stations",
+      "phrases": ["Community heating schemes: waste heat from power stations"]
+    },
+    "community_heat": {
+      "label": "Community heat",
+      "phrases": ["from heat network data (community)"]
+    }
+  }
+}

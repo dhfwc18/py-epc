@@ -57,6 +57,7 @@ _SHIPPED_COLUMNS: dict[str, str] = {
             "glazed_area",
             "glazed_type",
             "heat_loss_corridor",
+            "main_fuel",
             "main_heating_category",
             "mechanical_ventilation",
             "property_type",
